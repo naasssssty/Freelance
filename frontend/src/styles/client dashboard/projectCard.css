@@ -1,0 +1,189 @@
+.project-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: white;
+}
+
+.project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.project-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background: #ffa726;
+    color: white;
+}
+
+.status-badge.approved {
+    background: #4caf50;
+    color: white;
+}
+
+.status-badge.denied {
+    background: #ff5252;
+    color: white;
+}
+
+.status-badge.in_progress {
+    background: #2196f3;
+    color: white;
+}
+
+.status-badge.completed {
+    background: #9c27b0;
+    color: white;
+}
+
+.project-details {
+    margin: 15px 0;
+}
+
+.project-details p {
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.project-details .description {
+    max-width: 60%;
+    text-align: right;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.value {
+    font-weight: 500;
+}
+
+.project-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.approve-button, .deny-button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.approve-button {
+    border: 2px solid #4caf50;
+    color: #4caf50;
+}
+
+.deny-button {
+    border: 2px solid #ff5252;
+    color: #ff5252;
+}
+
+.approve-button:hover {
+    background: #4caf50;
+    color: white;
+}
+
+.deny-button:hover {
+    background: #ff5252;
+    color: white;
+}
+
+.approve-button.loading, .deny-button.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    position: relative;
+    padding-right: 35px;
+}
+
+.approve-button.loading::after, .deny-button.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.approve-button.loading::after {
+    border-top-color: #4caf50;
+}
+
+.deny-button.loading::after {
+    border-top-color: #ff5252;
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg); }
+    100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .project-card {
+        margin: 10px 5px;
+        padding: 15px;
+    }
+
+    .project-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .project-details p {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .project-details .description {
+        max-width: 100%;
+        text-align: left;
+    }
+
+    .project-actions {
+        flex-direction: column;
+    }
+
+    .approve-button, .deny-button {
+        width: 100%;
+    }
+} 

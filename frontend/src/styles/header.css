@@ -1,0 +1,200 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+/* Header Styles */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    backdrop-filter: blur(10px);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    height: 80px; /* Fixed height for header */
+}
+
+/* Logo Container */
+.logo_container {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    margin-top: 5px;
+    width: 60px;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Inner Header */
+.inner_header {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap into multiple rows */
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 15px;
+    padding: 0 10px;
+}
+
+/* Logo Container */
+.logo_container {
+    display: flex;
+    align-items: center;
+}
+
+/* Logo Image */
+.logo {
+    width: 60px; /* Adjust the size as needed */
+    height: 60px; /* Ensure equal width and height for a perfect circle */
+    object-fit: cover; /* Ensure the image scales properly inside the circle */
+    border-radius: 50%; /* Make it circular */
+    cursor: pointer; /* Make the logo interactive */
+    transition: transform 0.3s ease; /* Add a hover effect */
+}
+
+/* Hover Effect */
+.logo:hover {
+    transform: scale(1.1); /* Slightly enlarge the logo on hover */
+}
+
+/* Search Bar */
+.search {
+    flex: 1; /* Allow the search to take up available space */
+    min-width: 250px; /* Ensure the search bar doesn't shrink too much */
+    display: flex;
+    margin-left: 10px;
+}
+
+.search_input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    outline: none;
+    border: 2px solid rgba(255, 255, 255, .2);
+    border-radius: 40px;
+    font-size: 16px;
+    color: #fff;
+    padding: 10px 20px; /* Adjust padding for consistent alignment */
+    text-align: left; /* Align text to the left */
+    text-align-last: left;
+    -webkit-appearance: none; /* Removes default dropdown arrow for WebKit browsers */
+    -moz-appearance: none;    /* Removes default dropdown arrow for Firefox */
+    appearance: none; /* Αφαιρεί το προεπιλεγμένο dropdown styling */
+    cursor: pointer;
+}
+
+.search_input::placeholder {
+    color: #000; /* Black placeholder text */
+    opacity: 1; /* Ensure the placeholder is fully visible */
+}
+
+.search_form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.search_button {
+    margin-top: 7px;
+    background: transparent;
+    color: white;
+    border: none;
+    border-radius: 50%; /* Make it circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.search_button:hover {
+    color: burlywood;
+}
+
+.search_button i {
+    font-size: 20px;
+}
+
+/* Navbar */
+.navbar {
+    flex: 2; /* Allow the navbar to take more space */
+}
+
+.navigation {
+    display: grid; /* Use a grid layout for two rows of two links */
+    grid-template-columns: repeat(2, 1fr); /* Two columns */
+    grid-gap: 3px; /* Add spacing between links */
+    justify-content: right; /* Align the links to the right */
+}
+
+.nav_button{
+    width: 100%;
+    height: 25px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, .2);
+    backdrop-filter: blur(30px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+    outline: none;
+    border-radius: 40px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    font-weight: 700;
+}
+
+.navigation li {
+    text-align: right;
+}
+
+.navigation li a {
+    font-size: 10px;
+    font-weight: 600;
+    color: black;
+    transition: color 0.3s ease;
+    white-space: nowrap; /* Prevent text from breaking within links */
+}
+
+.nav_button:hover {
+    background: #F8BA8EDA;
+}
+
+.profile_icon{
+    font-size: 35px; /* Adjust the icon size */
+    color: white; /* Set the icon color */
+    margin-left: 15px; /* Add spacing from adjacent elements */
+    transition: color 0.3s ease, transform 0.3s ease; /* Add hover effects */
+    cursor: pointer;
+}
+
+.profile_icon:hover{
+    color: burlywood;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .inner_header {
+        justify-content: center; /* Center-align items on smaller screens */
+        gap: 10px;
+    }
+
+    .search {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .navigation {
+        justify-content: center; /* Center navbar links on smaller screens */
+    }
+}

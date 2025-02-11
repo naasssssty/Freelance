@@ -1,0 +1,188 @@
+.client-project-card {
+    background: transparent;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: black;
+}
+
+.client-project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.project-header h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.header-badges {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.budget-badge {
+    background: #4caf50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-left: 15px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.status-badge.pending {
+    background: #ff9800;
+    color: white;
+}
+
+.status-badge.in_progress {
+    background: #2196f3;
+    color: white;
+}
+
+.status-badge.completed {
+    background: #4caf50;
+    color: white;
+}
+
+.status-badge.expired {
+    background: #f44336;
+    color: white;
+}
+
+.project-details {
+    margin: 15px 0;
+}
+
+.description {
+    color: rgba(0, 0, 0, 0.9);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+}
+
+.project-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.label {
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 0.85rem;
+}
+
+.value {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.applications-count {
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.project-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.view-applications-button {
+    background: transparent;
+    border: 2px solid #2196f3;
+    color: #2196f3;
+    padding: 8px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.view-applications-button:hover {
+    background: #2196f3;
+    color: white;
+}
+
+.chat-button {
+    background: #2196f3;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.chat-button:hover {
+    background: #1976d2;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .client-project-card {
+        margin: 10px 5px;
+        padding: 15px;
+    }
+
+    .project-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header-badges {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .project-meta {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .project-actions {
+        flex-direction: column;
+    }
+
+    .view-applications-button {
+        width: 100%;
+        text-align: center;
+    }
+} 

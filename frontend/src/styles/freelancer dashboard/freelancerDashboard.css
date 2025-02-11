@@ -1,0 +1,120 @@
+/* Main layout container */
+.dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+.dashboard-container {
+    flex: 1;
+    margin-top: 80px; /* Height of header */
+    padding: 0 20px 20px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: black;
+    overflow: hidden;
+    width: 100%;
+}
+
+
+.applications-grid,
+.projects-grid {
+    padding: 10px;
+    width: 100%;
+}
+
+.applications-container,
+.projects-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 10px;
+    width: 100%;
+}
+
+.search-result-container {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    margin: 10px 0;
+    width: 100%;
+}
+
+h2 {
+    color: black;
+    text-align: center;
+    margin: 10px 0 20px 0;
+    font-size: 1.8rem;
+}
+
+/* Table styles */
+.project-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.project-table th,
+.project-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.project-table th {
+    background: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    color: black;
+}
+
+.project-table tr:hover {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+    .applications-container,
+    .projects-container {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        padding: 10px;
+    }
+
+    .project-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 0 10px 10px 10px;
+    }
+
+    .applications-container,
+    .projects-container {
+        padding: 5px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin: 5px 0 15px 0;
+    }
+}
+
+/* Update card backgrounds for better contrast with the image */
+.search-result-container,
+.project-table,
+.application-card,
+.available-project-card,
+.my-project-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+} 

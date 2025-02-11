@@ -1,0 +1,154 @@
+.user-card {
+    background: transparent;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: black;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.user-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-main-info h3 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.user-badges {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.role-badge, .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.role-badge.admin {
+    background: #9c27b0;
+    color: white;
+}
+
+.role-badge.client {
+    background: #2196f3;
+    color: white;
+}
+
+.role-badge.freelancer {
+    background: #ff9800;
+    color: white;
+}
+
+.status-badge.active {
+    background: #4caf50;
+    color: white;
+}
+
+.status-badge.inactive {
+    background: #9e9e9e;
+    color: white;
+}
+
+.status-badge.banned {
+    background: #f44336;
+    color: white;
+}
+
+.user-id {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.user-details {
+    margin-top: 20px;
+}
+
+.contact-info {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.user-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.label {
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 0.85rem;
+}
+
+.value {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .user-card {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .user-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .user-id {
+        align-self: flex-start;
+    }
+
+    .contact-info,
+    .user-meta {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+} 
