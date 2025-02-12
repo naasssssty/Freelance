@@ -7,7 +7,7 @@ public class UserDTO {
     private String username;
     private String email;
     private Role role;
-    private Boolean verified;
+    private boolean verified;
 
     public UserDTO() {
     }

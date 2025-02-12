@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from 'react';
 import '../styles/client dashboard/clientApplicationCard.css';
 import Chat from "./Chat";
 

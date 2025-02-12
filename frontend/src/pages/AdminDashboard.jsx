@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import UserCard from '../components/UserCard';
 import ProjectCard from '../components/ProjectCard';
 import Footer from '../components/Footer';
+import '../styles/admin-dashboard/cards.css';
 
 const AdminDashboard = () => {
 
@@ -67,6 +68,14 @@ const AdminDashboard = () => {
         navigate('/login');
     };
 
+    const handleUserVerify = async (username) => {
+        try {
+            await handleVerify(username, JSON.stringify(true), dispatch, usersList);
+        } catch (error) {
+            console.error("Error verifying user:", error);
+        }
+    };
+
     const AdminMenuOptions = [
         {
             label: "Projects",
@@ -113,41 +122,85 @@ const AdminDashboard = () => {
                 {searchedUser && (
                     <div className="search-result-container">
                         <h2>Search Result</h2>
-                        <UserCard user={searchedUser} />
+                        <div className="cards-grid">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3>{searchedUser.username}</h3>
+                                </div>
+                                <div className="card-content">
+                                    <p>Email: {searchedUser.email}</p>
+                                    <p>Role: {searchedUser.role}</p>
+                                    <p>Status: {searchedUser.isVerified ? 'Verified' : 'Not Verified'}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
                 {showUsersList && usersList.length > 0 && (
                     <div className="users-grid">
                         <h2>Users List</h2>
-                        <div className="users-container">
+                        <div className="cards-grid">
                             {usersList.map(user => (
-                                <UserCard 
-                                    key={user.id}
-                                    user={user}
-                                    onVerify={handleVerify}
-                                    dispatch={dispatch}
-                                    usersList={usersList}
-                                />
+                                <div key={user.id} className="card">
+                                    <div className="card-header">
+                                        <h3>{user.username}</h3>
+                                    </div>
+                                    <div className="card-content">
+                                        <p>Email: {user.email}</p>
+                                        <p>Role: {user.role}</p>
+                                        <p>Status: {user.verified ? 'Verified' : 'Not Verified'}</p>
+                                    </div>
+                                    <div className="card-footer">
+                                        {!user.verified && user.role !== 'ADMIN' && (
+                                            <button 
+                                                className="card-button verify-button"
+                                                onClick={() => handleUserVerify(user.username)}
+                                            >
+                                                Verify
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
                 )}
 
-
-                {showProjectsList && [...projectsList].length > 0 && (
+                {showProjectsList && projectsList.length > 0 && (
                     <div className="projects-grid">
                         <h2>Projects List</h2>
-                        <div className="projects-container">
+                        <div className="cards-grid">
                             {projectsList.map(project => (
-                                <ProjectCard
-                                    key={project.id}
-                                    project={project}
-                                    onApprove={handleApproveProject}
-                                    onDeny={handleDenyProject}
-                                    dispatch={dispatch}
-                                    projectsList={projectsList}
-                                />
+                                <div key={project.id} className="card">
+                                    <div className="card-header">
+                                        <h3>{project.title}</h3>
+                                    </div>
+                                    <div className="card-content">
+                                        <p>Client: {project.client}</p>
+                                        <p>Budget: ${project.budget}</p>
+                                        <p>Status: {project.projectStatus}</p>
+                                        <p>Deadline: {project.deadline}</p>
+                                    </div>
+                                    <div className="card-footer">
+                                        {project.projectStatus === 'PENDING' && (
+                                            <>
+                                                <button 
+                                                    className="card-button verify-button"
+                                                    onClick={() => handleApproveProject(project.id, dispatch, projectsList)}
+                                                >
+                                                    Approve
+                                                </button>
+                                                <button 
+                                                    className="card-button deny-button"
+                                                    onClick={() => handleDenyProject(project.id, dispatch, projectsList)}
+                                                >
+                                                    Deny
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     </div>
