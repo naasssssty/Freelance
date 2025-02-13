@@ -1,11 +1,11 @@
 import React, { useState } from "react";
+import ReactDOM from 'react-dom';
 import '../styles/freelancer dashboard/freelancerProjectCard.css';
 import { handleCompleteProject } from "../services/FreelancerServices";
 import Chat from "./Chat";
 
-const FreelancerProjectCard = ({ project }) => {
+const FreelancerProjectCard = ({ project, onComplete }) => {
     const [isProcessing, setIsProcessing] = useState(false);
-
     const [showChat, setShowChat] = useState(false);
 
     const handleComplete = async () => {
@@ -18,6 +18,28 @@ const FreelancerProjectCard = ({ project }) => {
         } finally {
             setIsProcessing(false);
         }
+    };
+
+    const renderChat = () => {
+        if (!showChat || !project.id) return null;
+
+        return ReactDOM.createPortal(
+            <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                zIndex: 9999,
+                width: '300px',
+                height: '400px'
+            }}>
+                <Chat 
+                    key={project.id}
+                    projectId={Number(project.id)}
+                    onClose={() => setShowChat(false)}
+                />
+            </div>,
+            document.body
+        );
     };
 
     return (
@@ -64,9 +86,12 @@ const FreelancerProjectCard = ({ project }) => {
                 <div className="project-actions">
                     <button
                         className="chat-button"
-                        onClick={() => {/* Handle chat open */
+                        onClick={() => {
+                            if (project.id) {
+                                setShowChat(prev => !prev);
+                            }
                         }}>
-                        Open Chat
+                        {showChat ? 'Close Chat' : 'Open Chat'}
                     </button>
                     <button
                         className={`complete-button ${isProcessing ? 'loading' : ''}`}
@@ -77,13 +102,7 @@ const FreelancerProjectCard = ({ project }) => {
                 </div>
             )}
 
-            {showChat && (
-                <Chat
-                    projectId={project.id}
-                    onClose={() => setShowChat(false)}
-                />
-            )}
-
+            {renderChat()}
         </div>
     );
 };
