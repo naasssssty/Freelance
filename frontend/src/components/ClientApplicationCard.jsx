@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import '../styles/client dashboard/clientApplicationCard.css';
 import Chat from "./Chat";
 
 const ClientApplicationCard = ({ application, onAccept, onReject }) => {
+    const [showChat, setShowChat] = useState(false);
+
     const getStatusColor = (status) => {
         switch(status) {
             case 'WAITING':
                 return 'waiting';
-            case 'ACCEPTED':
-                return 'accepted';
+            case 'APPROVED':
+                return 'approved';
             case 'REJECTED':
                 return 'rejected';
             default:
@@ -16,79 +19,87 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
         }
     };
 
-    const [showChat, setShowChat] = useState(false);
+    const renderChat = () => {
+        if (!showChat || !application.project_id) return null;
+
+        return ReactDOM.createPortal(
+            <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                zIndex: 9999,
+                width: '300px',
+                height: '400px'
+            }}>
+                <Chat 
+                    key={application.project_id}
+                    projectId={Number(application.project_id)}
+                    onClose={() => setShowChat(false)}
+                />
+            </div>,
+            document.body
+        );
+    };
 
     return (
         <div className="client-application-card">
-            <div className="application-info">
-                <div className="application-header">
-                    <h3>{application.projectTitle}</h3>
-                    <span className={`status-badge ${getStatusColor(application.applicationStatus)}`}>
-                        {application.applicationStatus}
-                    </span>
+            <div className="application-header">
+                <h3>{application.projectTitle}</h3>
+                <span className={`status-badge ${getStatusColor(application.applicationStatus)}`}>
+                    {application.applicationStatus}
+                </span>
+            </div>
+            
+            <div className="application-details">
+                <div className="cover-letter">
+                    <span className="label">Cover Letter:</span>
+                    <p className="letter-text">{application.cover_letter}</p>
                 </div>
-
-                <div className="application-details">
-                    <div className="cover-letter">
-                        <span className="label">Cover Letter:</span>
-                        <p className="value letter-text">
-                            {application.cover_letter}
-                        </p>
+                
+                <div className="application-meta">
+                    <div className="meta-item">
+                        <span className="label">Freelancer:</span>
+                        <span className="value">{application.freelancer_username}</span>
                     </div>
-
-                    <div className="application-meta">
-                        <div className="meta-item">
-                            <span className="label">Application ID:</span>
-                            <span className="value">{application.id}</span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="label">Freelancer:</span>
-                            <span className="value">{application.freelancer}</span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="label">Submitted on:</span>
-                            <span className="value">
-                                {new Date(application.created_at).toLocaleDateString()}
-                            </span>
-                        </div>
+                    <div className="meta-item">
+                        <span className="label">Submitted:</span>
+                        <span className="value">{application.created_at}</span>
                     </div>
                 </div>
+            </div>
 
+            <div className="application-actions">
                 {application.applicationStatus === 'WAITING' && (
-                    <div className="application-actions">
-                        <button
+                    <>
+                        <button 
                             className="accept-button"
                             onClick={() => onAccept(application.id)}
                         >
                             Accept
                         </button>
-                        <button
+                        <button 
                             className="reject-button"
                             onClick={() => onReject(application.id)}
                         >
                             Reject
                         </button>
-                    </div>
+                    </>
                 )}
-
-                {application.projectStatus === 'IN_PROGRESS' && (
-                    <div className="application-actions">
-                        <button
-                            className="chat-button"
-                            onClick={() => setShowChat(true)}
-                        >
-                            Open Chat
-                        </button>
-                    </div>
-                )}
-
-                {showChat && (
-                    <Chat
-                        projectId={application.projectId}
-                        onClose={() => setShowChat(false)}
-                    />
+                {application.applicationStatus === 'APPROVED' && (
+                    <button 
+                        className="chat-button"
+                        onClick={() => {
+                            if (application.project_id) {
+                                setShowChat(prev => !prev);
+                            }
+                        }}
+                    >
+                        {showChat ? 'Close Chat' : 'Chat with Freelancer'}
+                    </button>
                 )}
             </div>
+
+            {renderChat()}
         </div>
     );
 };

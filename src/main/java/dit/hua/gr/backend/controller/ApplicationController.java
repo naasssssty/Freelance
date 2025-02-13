@@ -48,19 +48,21 @@ public class ApplicationController {
     public ResponseEntity<List<ApplicationDTO>> getApplicationsByClient(@PathVariable String username) {
         User client = userService.findUserByUsername(username).orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
         List<Application> applications = applicationService.getApplicationsByClient(client);
-        List<ApplicationDTO> dto = applications.stream().map(
-                application -> new ApplicationDTO(
-                        application.getId(),
-                        application.getProject().getTitle(),
-                        application.getCover_letter(),
-                        application.getApplicationStatus(),
-                        application.getFreelancer().getUsername(),
-                        application.getCreated_at().toString().substring(0,10) // Just date part
-                )).toList();
+        List<ApplicationDTO> dto = applications.stream().map(this::convertToDTO).toList();
         return ResponseEntity.ok(dto);
     }
 
-
+    private ApplicationDTO convertToDTO(Application application) {
+        return new ApplicationDTO(
+            application.getId(),
+            application.getProject().getTitle(),
+            application.getProject().getId(),
+            application.getCover_letter(),
+            application.getApplicationStatus(),
+            application.getFreelancer().getUsername(),
+            application.getCreated_at().toString().substring(0,10)
+        );
+    }
 
     // Εύρεση αιτήσεων από έναν freelancer (μόνο για τον FREELANCER ή ADMIN)
     @PreAuthorize("hasRole('FREELANCER') or hasRole('ADMIN')")
@@ -68,15 +70,7 @@ public class ApplicationController {
     public ResponseEntity<List<ApplicationDTO>> getApplicationsByFreelancer(@PathVariable String username) {
         User freelancer = userService.findUserByUsername(username).orElseThrow(() -> new IllegalArgumentException("Freelancer not found with username: " + username));
         List<Application> applications = applicationService.getApplicationsByFreelancer(freelancer);
-        List<ApplicationDTO> dto = applications.stream().map(
-                application -> new ApplicationDTO(
-                        application.getId(),
-                        application.getProject().getTitle(),
-                        application.getCover_letter(),
-                        application.getApplicationStatus(),
-                        application.getFreelancer().getUsername(),
-                        application.getCreated_at().toString().substring(0,10) // Just date part
-                )).toList();
+        List<ApplicationDTO> dto = applications.stream().map(this::convertToDTO).toList();
         return ResponseEntity.ok(dto);
     }
 

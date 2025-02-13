@@ -3,18 +3,14 @@ import React from "react";
 import logo from '../assets/logo.png';
 import { Link } from "react-router-dom";
 
-function Header({ menuOptions, searchComponent }) {
+const Header = ({ menuOptions, searchComponent, onLogoClick }) => {
     return (
         <header className="header">
-            <div className="logo_contairen">
-                <img
-                    src={logo}
-                    alt="Logo"
-                    className="logo"
-                />
-            </div>
-
             <div className="inner_header">
+                <div className="logo_container" onClick={onLogoClick}>
+                    <img src={logo} alt="Logo" className="logo" />
+                </div>
+
                 {/* Επανατοποθέτηση του search component */}
                 {searchComponent}
 
@@ -51,6 +47,6 @@ function Header({ menuOptions, searchComponent }) {
             </div>
         </header>
     );
-}
+};
 
 export default Header;

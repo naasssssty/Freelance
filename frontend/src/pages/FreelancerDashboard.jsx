@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import FreelancerSearchComponent from '../components/FreelancerSearchComponent';
 import "../styles/header.css";
@@ -15,6 +15,7 @@ import FreelancerProjectCard from '../components/FreelancerProjectCard';
 import ApplicationCard from '../components/ApplicationCard';
 import SearchedProjectCard from '../components/SearchedProjectCard';
 import Footer from '../components/Footer';
+import { FaProjectDiagram, FaClipboardList, FaCheckCircle } from 'react-icons/fa';
 
 const FreelancerDashboard = () => {
     const navigate = useNavigate();
@@ -30,6 +31,22 @@ const FreelancerDashboard = () => {
     const { availableProjects } = useSelector((state) => state.projects);
     const { myFApplications } = useSelector((state) => state.applications);
     const { myFProjects } = useSelector((state) => state.projects);
+
+    // Add new state for dashboard stats
+    const [dashboardStats, setDashboardStats] = useState({
+        totalAvailableProjects: 0,
+        myApplications: 0,
+        myActiveProjects: 0
+    });
+
+    // Add useEffect to calculate statistics when data is loaded
+    useEffect(() => {
+        setDashboardStats({
+            totalAvailableProjects: availableProjects?.length || 0,
+            myApplications: myFApplications?.length || 0,
+            myActiveProjects: myFProjects?.filter(p => p.projectStatus === 'IN_PROGRESS')?.length || 0
+        });
+    }, [availableProjects, myFApplications, myFProjects]);
 
     const handleSearchResult = (result) => {
         setSearchedProject(result);
@@ -110,7 +127,42 @@ const FreelancerDashboard = () => {
             />
 
             <div className="dashboard-container">
-                
+                {/* Add Welcome Dashboard Section */}
+                {!showAvailableProjects && !showMyApplications && !showMyProjects && !searchedProject && (
+                    <div className="welcome-dashboard">
+                        <h1>Welcome to Your Freelancer Dashboard</h1>
+                        <div className="stats-grid">
+                            <div className="stat-card">
+                                <div className="stat-icon">
+                                    <FaProjectDiagram />
+                                </div>
+                                <div className="stat-content">
+                                    <h3>Available Projects</h3>
+                                    <p>{dashboardStats.totalAvailableProjects}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon">
+                                    <FaClipboardList />
+                                </div>
+                                <div className="stat-content">
+                                    <h3>My Applications</h3>
+                                    <p>{dashboardStats.myApplications}</p>
+                                </div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-icon">
+                                    <FaCheckCircle />
+                                </div>
+                                <div className="stat-content">
+                                    <h3>Active Projects</h3>
+                                    <p>{dashboardStats.myActiveProjects}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {searchedProject && (
                     <div className="search-result-container">
                         <h2>Search Result</h2>

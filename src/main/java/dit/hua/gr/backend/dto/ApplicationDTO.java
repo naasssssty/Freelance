@@ -5,6 +5,7 @@ import dit.hua.gr.backend.model.ApplicationStatus;
 public class ApplicationDTO {
     private Integer id;
     private String projectTitle;
+    private Integer project_id;
     private String cover_letter;
     private ApplicationStatus applicationStatus;
     private String freelancer;
@@ -13,9 +14,10 @@ public class ApplicationDTO {
     public ApplicationDTO() {
     }
 
-    public ApplicationDTO(Integer id, String projectTitle, String cover_letter, ApplicationStatus applicationStatus, String freelancer, String created_at) {
+    public ApplicationDTO(Integer id, String projectTitle, Integer project_id, String cover_letter, ApplicationStatus applicationStatus, String freelancer, String created_at) {
         this.id = id;
         this.projectTitle = projectTitle;
+        this.project_id = project_id;
         this.cover_letter = cover_letter;
         this.applicationStatus = applicationStatus;
         this.freelancer = freelancer;
@@ -36,6 +38,14 @@ public class ApplicationDTO {
 
     public void setProjectTitle(String projectTitle) {
         this.projectTitle = projectTitle;
+    }
+
+    public Integer getProject_id() {
+        return project_id;
+    }
+
+    public void setProject_id(Integer project_id) {
+        this.project_id = project_id;
     }
 
     public String getCover_letter() {

@@ -38,6 +38,7 @@ const ClientDashboard = () => {
     const handleLoadMyApplications = async () => {
         try {
             const applications = await loadMyApplications();
+            console.log('Loaded applications:', applications); // Debugging
             dispatch({ type: "SET_MY_APPLICATIONS", payload: applications });
             setShowProjectForm(false);
             setShowMyApplications(true);

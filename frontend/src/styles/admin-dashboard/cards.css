@@ -1,3 +1,14 @@
+/* Add at the top of the file */
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-layout {
+    flex: 1 0 auto;
+}
+
 /* Container styling */
 .dashboard-container {
     padding-top: 80px; /* Αφήνει χώρο για το navbar */
@@ -5,6 +16,7 @@
     margin: 0 auto; /* Κεντράρει το περιεχόμενο */
     padding-left: 20px;
     padding-right: 20px;
+    padding-bottom: 40px; /* Add some bottom padding */
 }
 
 /* Grid styling */
@@ -119,4 +131,83 @@
         padding-left: 15px;
         padding-right: 15px;
     }
+}
+
+/* Add these styles to your existing CSS */
+
+.welcome-dashboard {
+    padding: 2rem;
+    text-align: center;
+    color: white;
+    margin-top: 2rem;
+}
+
+.welcome-dashboard h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.welcome-dashboard p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 3rem;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    color: #88d3ce;
+}
+
+.stat-info {
+    text-align: left;
+}
+
+.stat-info h3 {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+}
+
+.stat-info p {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+}
+
+/* Add styles for the footer */
+footer {
+    flex-shrink: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px 0;
+    margin-top: auto;
 } 
