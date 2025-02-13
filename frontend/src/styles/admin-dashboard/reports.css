@@ -1,0 +1,202 @@
+.reports-container {
+    padding: 20px;
+    width: 100%;
+}
+
+.reports-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.reports-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.report-card {
+    background: transparent;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 250px;
+    overflow: hidden;
+}
+
+.report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.report-card h3 {
+    color: #333;
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.report-card p {
+    margin: 8px 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.report-card p strong {
+    color: #444;
+}
+
+.report-card button {
+    margin-top: auto;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+}
+
+.report-card button:hover {
+    background-color: #45a049;
+}
+
+.report-review-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 500px;
+    z-index: 1000;
+}
+
+.report-review-modal h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+}
+
+.report-review-modal p {
+    margin: 10px 0;
+    color: #666;
+}
+
+.report-review-modal textarea {
+    width: 100%;
+    min-height: 100px;
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    color: #333;
+    font-size: 14px;
+    background-color: #fff;
+    font-family: inherit;
+}
+
+.report-review-modal textarea::placeholder {
+    color: #999;
+}
+
+.report-review-modal textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(74, 175, 80, 0.2);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.action-buttons button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    min-width: 120px;
+}
+
+.action-buttons button:nth-child(1) {
+    background-color: #ffd700;
+    color: black;
+}
+
+.action-buttons button:nth-child(2) {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.action-buttons button:nth-child(3) {
+    background-color: #f44336;
+    color: white;
+}
+
+.action-buttons button:nth-child(4) {
+    background-color: #808080;
+    color: white;
+}
+
+.action-buttons button:hover {
+    opacity: 0.9;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.status-badge.PENDING {
+    background-color: #ffd700;
+    color: black;
+}
+
+.status-badge.IN_REVIEW {
+    background-color: #2196F3;
+    color: white;
+}
+
+.status-badge.RESOLVED {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status-badge.DISMISSED {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Description text με περιορισμένο ύψος και ellipsis */
+.report-description {
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+} 

@@ -5,6 +5,8 @@ import Chat from "./Chat";
 
 const ClientApplicationCard = ({ application, onAccept, onReject }) => {
     const [showChat, setShowChat] = useState(false);
+    const [showReportForm, setShowReportForm] = useState(false);
+    const [reportDescription, setReportDescription] = useState('');
 
     const getStatusColor = (status) => {
         switch(status) {
@@ -36,6 +38,118 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
                     projectId={Number(application.project_id)}
                     onClose={() => setShowChat(false)}
                 />
+            </div>,
+            document.body
+        );
+    };
+
+    const handleReport = async () => {
+        try {
+            if (!reportDescription.trim()) {
+                alert('Please enter a description of the issue');
+                return;
+            }
+
+            const response = await fetch('/api/reports', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectId: application.project_id,
+                    description: reportDescription
+                })
+            });
+
+            if (response.ok) {
+                alert('Report submitted successfully');
+                setShowReportForm(false);
+                setReportDescription('');
+            } else {
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to submit report');
+            }
+        } catch (error) {
+            console.error('Error submitting report:', error);
+            alert(error.message || 'Failed to submit report');
+        }
+    };
+
+    const renderReportForm = () => {
+        if (!showReportForm) return null;
+
+        return ReactDOM.createPortal(
+            <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                zIndex: 9999,
+                width: '300px',
+                height: '400px',
+                background: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+                display: 'flex',
+                flexDirection: 'column'
+            }}>
+                <div style={{
+                    padding: '15px',
+                    borderBottom: '1px solid #eee',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}>
+                    <h3 style={{ margin: 0 }}>Report Issue</h3>
+                    <button 
+                        onClick={() => setShowReportForm(false)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '18px'
+                        }}
+                    >
+                        ×
+                    </button>
+                </div>
+                <div style={{
+                    padding: '15px',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    <textarea
+                        value={reportDescription}
+                        onChange={(e) => setReportDescription(e.target.value)}
+                        placeholder="Describe the issue..."
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            padding: '10px',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            resize: 'none',
+                            marginBottom: '10px',
+                            color: '#333',
+                            fontSize: '14px',
+                            backgroundColor: '#fff'
+                        }}
+                    />
+                    <button 
+                        onClick={handleReport}
+                        style={{
+                            background: '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            padding: '10px',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Submit Report
+                    </button>
+                </div>
             </div>,
             document.body
         );
@@ -86,20 +200,30 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
                     </>
                 )}
                 {application.applicationStatus === 'APPROVED' && (
-                    <button 
-                        className="chat-button"
-                        onClick={() => {
-                            if (application.project_id) {
-                                setShowChat(prev => !prev);
-                            }
-                        }}
-                    >
-                        {showChat ? 'Close Chat' : 'Chat with Freelancer'}
-                    </button>
+                    <>
+                        <button 
+                            className="chat-button"
+                            onClick={() => {
+                                if (application.project_id) {
+                                    setShowChat(prev => !prev);
+                                }
+                            }}
+                        >
+                            {showChat ? 'Close Chat' : 'Chat with Freelancer'}
+                        </button>
+                        <button 
+                            className="report-button"
+                            onClick={() => setShowReportForm(true)}
+                        >
+                            Report Issue
+                        </button>
+                    </>
                 )}
             </div>
 
             {renderChat()}
+
+            {renderReportForm()}
         </div>
     );
 };

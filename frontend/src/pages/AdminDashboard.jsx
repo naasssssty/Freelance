@@ -18,6 +18,7 @@ import ProjectCard from '../components/ProjectCard';
 import Footer from '../components/Footer';
 import '../styles/admin-dashboard/cards.css';
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaClock } from 'react-icons/fa';
+import ReportManagement from '../components/ReportManagement';
 
 const AdminDashboard = () => {
 
@@ -29,6 +30,8 @@ const AdminDashboard = () => {
     const [searchedUser, setSearchedUser] = useState(null);
     const [isLoadingUsers, setIsLoadingUsers] = useState(false);
     const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+    const [showReports, setShowReports] = useState(false);
+    const [showDashboard, setShowDashboard] = useState(true);
 
     const { usersList, loading: usersLoading, error: usersError } = useSelector((state) => state.users);
     const { projectsList, loading: projectsLoading, error: projectsError } = useSelector((state) => state.projects);
@@ -74,6 +77,8 @@ const AdminDashboard = () => {
             dispatch({ type: "SET_USERS_LIST", payload: users });
             setShowUsersList(true);
             setShowProjectsList(false);
+            setShowReports(false);
+            setShowDashboard(false);
         } catch (error) {
             console.error("Error loading users:", error);
         } finally {
@@ -83,10 +88,12 @@ const AdminDashboard = () => {
 
     const handleLoadProjects = async () => {
         try {
-            const projects = await loadProjectsList();  // Assuming loadProjectsList fetches the list from API
-            dispatch({ type: "SET_PROJECTS_LIST", payload: projects });  // Dispatch to Redux store if necessary
+            const projects = await loadProjectsList();
+            dispatch({ type: "SET_PROJECTS_LIST", payload: projects });
             setShowProjectsList(true);
             setShowUsersList(false);
+            setShowReports(false);
+            setShowDashboard(false);
         } catch (error) {
             console.error("Error loading projects:", error);
         }
@@ -108,28 +115,33 @@ const AdminDashboard = () => {
     const handleLogoClick = () => {
         setShowUsersList(false);
         setShowProjectsList(false);
+        setShowReports(false);
+        setShowDashboard(true);
         setSearchedUser(null);
     };
 
-    const AdminMenuOptions = [
+    const menuOptions = [
         {
-            label: "Projects",
-            link: "#",
-            onClick: handleLoadProjects
-        },
-        {
-            label: "Users",
-            link: "#",
+            label: "Users List",
             onClick: handleLoadUsers
         },
         {
-            label: "Reports",
-            link: "#",
-            onClick:  () => navigate('/reports')
+            label: "Projects List",
+            onClick: handleLoadProjects
         },
-        {   label: "Logout",
-            link: "#",
-            onClick: handleLogout }
+        {
+            label: "Reports",
+            onClick: () => {
+                setShowUsersList(false);
+                setShowProjectsList(false);
+                setShowReports(true);
+                setShowDashboard(false);
+            }
+        },
+        {
+            label: "Logout",
+            onClick: handleLogout
+        }
     ];
 
     // Add new welcome dashboard section after the Header component
@@ -181,119 +193,124 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="page-wrapper">
-            <div className="dashboard-layout">
-                <Header
-                    menuOptions={AdminMenuOptions}
-                    searchComponent={
-                        <AdminSearchComponent onSearchResult={handleSearchResult}/>
-                    }
-                    onLogoClick={handleLogoClick}
-                />
-                
-                <div className="dashboard-container">
-                    {renderWelcomeDashboard()}
-                    
-                    {usersError && (
-                        <div className="error-message">
-                            Failed to load users: {usersError}
-                        </div>
-                    )}
+        <div className="dashboard">
+            <Header
+                menuOptions={menuOptions}
+                searchComponent={
+                    <AdminSearchComponent onSearchResult={handleSearchResult}/>
+                }
+                onLogoClick={handleLogoClick}
+            />
+            
+            <main className="dashboard-content">
+                {showDashboard && (
+                    <div className="dashboard-stats">
+                        {renderWelcomeDashboard()}
+                    </div>
+                )}
 
-                    {projectsError && (
-                        <div className="error-message">
-                            Failed to load projects: {projectsError}
-                        </div>
-                    )}
+                {usersError && (
+                    <div className="error-message">
+                        Failed to load users: {usersError}
+                    </div>
+                )}
 
-                    {searchedUser && (
-                        <div className="search-result-container">
-                            <h2>Search Result</h2>
-                            <div className="cards-grid">
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3>{searchedUser.username}</h3>
-                                    </div>
-                                    <div className="card-content">
-                                        <p>Email: {searchedUser.email}</p>
-                                        <p>Role: {searchedUser.role}</p>
-                                        <p>Status: {searchedUser.isVerified ? 'Verified' : 'Not Verified'}</p>
-                                    </div>
+                {projectsError && (
+                    <div className="error-message">
+                        Failed to load projects: {projectsError}
+                    </div>
+                )}
+
+                {searchedUser && (
+                    <div className="search-result-container">
+                        <h2>Search Result</h2>
+                        <div className="cards-grid">
+                            <div className="card">
+                                <div className="card-header">
+                                    <h3>{searchedUser.username}</h3>
+                                </div>
+                                <div className="card-content">
+                                    <p>Email: {searchedUser.email}</p>
+                                    <p>Role: {searchedUser.role}</p>
+                                    <p>Status: {searchedUser.isVerified ? 'Verified' : 'Not Verified'}</p>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {showUsersList && usersList.length > 0 && (
-                        <div className="users-grid">
-                            <h2>Users List</h2>
-                            <div className="cards-grid">
-                                {usersList.map(user => (
-                                    <div key={user.id} className="card">
-                                        <div className="card-header">
-                                            <h3>{user.username}</h3>
-                                        </div>
-                                        <div className="card-content">
-                                            <p>Email: {user.email}</p>
-                                            <p>Role: {user.role}</p>
-                                            <p>Status: {user.verified ? 'Verified' : 'Not Verified'}</p>
-                                        </div>
-                                        <div className="card-footer">
-                                            {!user.verified && user.role !== 'ADMIN' && (
+                {showUsersList && usersList.length > 0 && (
+                    <div className="users-grid">
+                        <h2>Users List</h2>
+                        <div className="cards-grid">
+                            {usersList.map(user => (
+                                <div key={user.id} className="card">
+                                    <div className="card-header">
+                                        <h3>{user.username}</h3>
+                                    </div>
+                                    <div className="card-content">
+                                        <p>Email: {user.email}</p>
+                                        <p>Role: {user.role}</p>
+                                        <p>Status: {user.verified ? 'Verified' : 'Not Verified'}</p>
+                                    </div>
+                                    <div className="card-footer">
+                                        {!user.verified && user.role !== 'ADMIN' && (
+                                            <button 
+                                                className="card-button verify-button"
+                                                onClick={() => handleUserVerify(user.username)}
+                                            >
+                                                Verify
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {showProjectsList && projectsList.length > 0 && (
+                    <div className="projects-grid">
+                        <h2>Projects List</h2>
+                        <div className="cards-grid">
+                            {projectsList.map(project => (
+                                <div key={project.id} className="card">
+                                    <div className="card-header">
+                                        <h3>{project.title}</h3>
+                                    </div>
+                                    <div className="card-content">
+                                        <p>Client: {project.client}</p>
+                                        <p>Budget: ${project.budget}</p>
+                                        <p>Status: {project.projectStatus}</p>
+                                        <p>Deadline: {project.deadline}</p>
+                                    </div>
+                                    <div className="card-footer">
+                                        {project.projectStatus === 'PENDING' && (
+                                            <>
                                                 <button 
                                                     className="card-button verify-button"
-                                                    onClick={() => handleUserVerify(user.username)}
+                                                    onClick={() => handleApproveProject(project.id, dispatch, projectsList)}
                                                 >
-                                                    Verify
+                                                    Approve
                                                 </button>
-                                            )}
-                                        </div>
+                                                <button 
+                                                    className="card-button deny-button"
+                                                    onClick={() => handleDenyProject(project.id, dispatch, projectsList)}
+                                                >
+                                                    Deny
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {showProjectsList && projectsList.length > 0 && (
-                        <div className="projects-grid">
-                            <h2>Projects List</h2>
-                            <div className="cards-grid">
-                                {projectsList.map(project => (
-                                    <div key={project.id} className="card">
-                                        <div className="card-header">
-                                            <h3>{project.title}</h3>
-                                        </div>
-                                        <div className="card-content">
-                                            <p>Client: {project.client}</p>
-                                            <p>Budget: ${project.budget}</p>
-                                            <p>Status: {project.projectStatus}</p>
-                                            <p>Deadline: {project.deadline}</p>
-                                        </div>
-                                        <div className="card-footer">
-                                            {project.projectStatus === 'PENDING' && (
-                                                <>
-                                                    <button 
-                                                        className="card-button verify-button"
-                                                        onClick={() => handleApproveProject(project.id, dispatch, projectsList)}
-                                                    >
-                                                        Approve
-                                                    </button>
-                                                    <button 
-                                                        className="card-button deny-button"
-                                                        onClick={() => handleDenyProject(project.id, dispatch, projectsList)}
-                                                    >
-                                                        Deny
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+                {showReports && <ReportManagement />}
+            </main>
+            
             <Footer />
         </div>
     );
