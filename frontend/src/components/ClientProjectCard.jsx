@@ -12,6 +12,10 @@ const ClientProjectCard = ({ project }) => {
                 return 'completed';
             case 'EXPIRED':
                 return 'expired';
+            case 'APPROVED':
+                return 'approved';
+            case 'DENIED':
+                return 'denied';
             default:
                 return '';
         }

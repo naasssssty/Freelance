@@ -16,9 +16,10 @@ import { useNavigate } from 'react-router-dom';
 import UserCard from '../components/UserCard';
 import ProjectCard from '../components/ProjectCard';
 import Footer from '../components/Footer';
-import '../styles/admin-dashboard/cards.css';
-import { FaUsers, FaProjectDiagram, FaCheckCircle, FaClock } from 'react-icons/fa';
+import '../styles/admin dashboard/cards.css';
+import { FaUsers, FaProjectDiagram, FaCheckCircle, FaClock, FaUser, FaEnvelope, FaUserTag, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
 import ReportManagement from '../components/ReportManagement';
+import { jwtDecode } from "jwt-decode";
 
 const AdminDashboard = () => {
 
@@ -35,6 +36,19 @@ const AdminDashboard = () => {
 
     const { usersList, loading: usersLoading, error: usersError } = useSelector((state) => state.users);
     const { projectsList, loading: projectsLoading, error: projectsError } = useSelector((state) => state.projects);
+    
+    // Παίρνουμε το username απευθείας από το token
+    const getUsername = () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = jwtDecode(token);
+            return decoded.sub;
+        }
+        return '';
+    };
+
+    const username = getUsername();
+    console.log('Username from token:', username);
 
     // Add new state for statistics
     const [dashboardStats, setDashboardStats] = useState({
@@ -200,9 +214,10 @@ const AdminDashboard = () => {
                     <AdminSearchComponent onSearchResult={handleSearchResult}/>
                 }
                 onLogoClick={handleLogoClick}
+                username={username}
             />
             
-            <main className="dashboard-content">
+            <div className="dashboard-content">
                 {showDashboard && (
                     <div className="dashboard-stats">
                         {renderWelcomeDashboard()}
@@ -246,12 +261,14 @@ const AdminDashboard = () => {
                             {usersList.map(user => (
                                 <div key={user.id} className="card">
                                     <div className="card-header">
-                                        <h3>{user.username}</h3>
+                                        <h3><FaUser className="card-icon" /> {user.username}</h3>
                                     </div>
                                     <div className="card-content">
-                                        <p>Email: {user.email}</p>
-                                        <p>Role: {user.role}</p>
-                                        <p>Status: {user.verified ? 'Verified' : 'Not Verified'}</p>
+                                        <p><FaEnvelope className="card-icon" /> {user.email}</p>
+                                        <p><FaUserTag className="card-icon" /> {user.role}</p>
+                                        <p><FaCheckCircle className="card-icon" /> 
+                                           Status: {user.verified ? 'Verified' : 'Not Verified'}
+                                        </p>
                                     </div>
                                     <div className="card-footer">
                                         {!user.verified && user.role !== 'ADMIN' && (
@@ -276,13 +293,14 @@ const AdminDashboard = () => {
                             {projectsList.map(project => (
                                 <div key={project.id} className="card">
                                     <div className="card-header">
-                                        <h3>{project.title}</h3>
+                                        <h3><FaProjectDiagram className="card-icon" /> {project.title}</h3>
                                     </div>
                                     <div className="card-content">
-                                        <p>Client: {project.client}</p>
-                                        <p>Budget: ${project.budget}</p>
-                                        <p>Status: {project.projectStatus}</p>
-                                        <p>Deadline: {project.deadline}</p>
+                                        <p><FaUser className="card-icon" /> Client: {project.client_username}</p>
+                                        <p><FaUser className="card-icon" /> Freelancer: {project.client}</p>
+                                        <p><FaDollarSign className="card-icon" /> ${project.budget}</p>
+                                        <p><FaClock className="card-icon" /> {project.projectStatus}</p>
+                                        <p><FaCalendarAlt className="card-icon" /> {project.deadline}</p>
                                     </div>
                                     <div className="card-footer">
                                         {project.projectStatus === 'PENDING' && (
@@ -309,7 +327,7 @@ const AdminDashboard = () => {
                 )}
 
                 {showReports && <ReportManagement />}
-            </main>
+            </div>
             
             <Footer />
         </div>

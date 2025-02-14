@@ -1,0 +1,110 @@
+.verification-pending-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: transparent;
+    padding: 20px;
+}
+
+.verification-card {
+    background: transparent;
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.verification-card h1 {
+    color: #ffffff;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.verification-icon {
+    font-size: 48px;
+    color: #64b5f6;
+    margin: 20px 0;
+}
+
+.main-message {
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.info-text {
+    margin: 20px 0;
+    color: #e3f2fd;
+    line-height: 1.6;
+}
+
+.steps {
+    text-align: left;
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.steps p {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.steps ol {
+    margin-left: 20px;
+    color: #e3f2fd;
+}
+
+.steps li {
+    margin: 10px 0;
+    line-height: 1.4;
+}
+
+.back-to-login {
+    background-color: #1a237e;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.back-to-login:hover {
+    background-color: #283593;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.back-to-login:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 480px) {
+    .verification-card {
+        padding: 20px;
+    }
+
+    .verification-card h1 {
+        font-size: 24px;
+    }
+
+    .main-message {
+        font-size: 16px;
+    }
+} 

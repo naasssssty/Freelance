@@ -1,17 +1,18 @@
 .chat-container {
-    background: white;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     width: 100%;
     height: 100%;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
     overflow: hidden;
 }
 
 .chat-header {
     position: relative;
-    background: white;
+    background: linear-gradient(135deg, #2196f3, #1976d2);
     padding: 10px 15px;
     border-bottom: 1px solid #eee;
     display: flex;
@@ -22,8 +23,9 @@
 
 .chat-header h3 {
     margin: 0;
-    color: #333;
+    color: white;
     font-size: 1rem;
+    font-weight: 600;
 }
 
 .close-button {
@@ -31,7 +33,7 @@
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: #666;
+    color: white;
     padding: 0 8px;
 }
 
@@ -58,7 +60,8 @@
     margin: 8px 0;
     word-wrap: break-word;
     position: relative;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
     line-height: 1.4;
 }
 
@@ -69,7 +72,7 @@
 
 .message.sent {
     align-self: flex-end;
-    background: linear-gradient(135deg, #00B2FF, #006AFF);
+    background: linear-gradient(135deg, #2196f3, #1976d2);
     color: white;
     margin-left: auto;
     border-bottom-right-radius: 4px;
@@ -77,10 +80,11 @@
 
 .message.received {
     align-self: flex-start;
-    background: #f0f2f5;
+    background: #f8f9fa;
     color: #1c1e21;
     margin-right: auto;
     border-bottom-left-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .message-content {
@@ -126,7 +130,7 @@
     left: 0;
     right: 0;
     background: white;
-    padding: 15px;
+    padding: 10px;
     border-top: 1px solid #eee;
     display: flex;
     gap: 10px;
@@ -136,16 +140,18 @@
 .message-input {
     flex: 1;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 2px solid #e0e0e0;
     border-radius: 6px;
     font-size: 14px;
     outline: none;
     resize: none;
-    min-height: 40px;
-    max-height: 100px;
+    min-height: 20px;
+    max-height: 60px;
     position: relative;
     color: #333;
     background-color: #fff;
+    transition: border-color 0.2s ease;
+    line-height: 1.2;
 }
 
 .message-input::placeholder {
@@ -153,23 +159,26 @@
 }
 
 .message-input:focus {
-    border-color: #2196f3;
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 .send-button {
     padding: 0 20px;
-    height: 40px;
-    background: #2196f3;
+    height: 36px;
+    background: linear-gradient(135deg, #2196f3, #1976d2);
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
     font-weight: 500;
-    min-width: 80px;
+    min-width: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .send-button:disabled {
@@ -178,7 +187,9 @@
 }
 
 .send-button:hover {
-    background: #1976d2;
+    background: linear-gradient(135deg, #1976d2, #1565c0);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .send-button:active {

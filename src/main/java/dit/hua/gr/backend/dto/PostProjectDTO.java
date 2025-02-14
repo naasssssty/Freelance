@@ -2,6 +2,7 @@
 
 package dit.hua.gr.backend.dto;
 
+import dit.hua.gr.backend.model.ProjectStatus;
 import java.time.LocalDate;
 
 public class PostProjectDTO {
@@ -11,16 +12,20 @@ public class PostProjectDTO {
     private String description;
     private Double budget;
     private LocalDate deadline;
+    private String clientUsername;
+    private ProjectStatus projectStatus;
 
     public PostProjectDTO() {
     }
 
-    public PostProjectDTO(Integer id, String title, String description, Double budget, LocalDate deadline) {
+    public PostProjectDTO(Integer id, String title, String description, Double budget, LocalDate deadline, String clientUsername, ProjectStatus projectStatus) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.budget = budget;
         this.deadline = deadline;
+        this.clientUsername = clientUsername;
+        this.projectStatus = projectStatus;
     }
 
     public Integer getId() {
@@ -61,5 +66,21 @@ public class PostProjectDTO {
 
     public void setDeadline(LocalDate deadline) {
         this.deadline = deadline;
+    }
+
+    public String getClientUsername() {
+        return clientUsername;
+    }
+
+    public void setClientUsername(String clientUsername) {
+        this.clientUsername = clientUsername;
+    }
+
+    public ProjectStatus getProjectStatus() {
+        return projectStatus;
+    }
+
+    public void setProjectStatus(ProjectStatus projectStatus) {
+        this.projectStatus = projectStatus;
     }
 }

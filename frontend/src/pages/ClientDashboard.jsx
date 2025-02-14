@@ -16,6 +16,7 @@ import {
 import ClientProjectCard from '../components/ClientProjectCard';
 import ClientApplicationCard from '../components/ClientApplicationCard';
 import Footer from '../components/Footer';
+import { jwtDecode } from "jwt-decode";
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
@@ -60,7 +61,6 @@ const ClientDashboard = () => {
         }
     };
 
-
     const handleLogout = () => {
         localStorage.removeItem('token');
         navigate('/login');
@@ -84,12 +84,36 @@ const ClientDashboard = () => {
 
     const handleFormClose = () => {
         setShowProjectForm(false);
+    };
 
+    // Παίρνουμε το username από το token
+    const getUsername = () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = jwtDecode(token);
+            return decoded.sub;
+        }
+        return '';
+    };
+
+    const username = getUsername();
+    console.log('Username from token:', username);
+
+    // Προσθήκη του handleLogoClick
+    const handleLogoClick = () => {
+        setShowProjectForm(false);
+        setShowMyProjects(false);
+        setShowMyApplications(false);
     };
 
     return (
         <div className="dashboard-layout">
-            <Header menuOptions={clientMenuOptions}/>
+            <Header
+                menuOptions={clientMenuOptions}
+                searchComponent={null}
+                onLogoClick={handleLogoClick}
+                username={username}
+            />
             <div className="dashboard-container">
                 {showProjectForm && <ProjectForm handleFormClose={handleFormClose}/>}
 

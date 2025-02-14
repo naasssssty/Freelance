@@ -57,6 +57,12 @@ export const loadMyApplications = async () => {
 export const loadMyProjects = async () => {
     try {
         const { token, username } = getTokenAndDecode();
+        console.log('Token:', token);
+        console.log('Username:', username);
+        console.log('URL:', `http://localhost:8080/project/${username}/my-projects`);
+        const decoded = jwtDecode(token);
+        console.log('Decoded token:', decoded);
+
         const response = await axios.get(
             `http://localhost:8080/project/${username}/my-projects`,
             {
@@ -68,6 +74,8 @@ export const loadMyProjects = async () => {
         );
         return response.data;
     } catch (error) {
+        console.error("Full error:", error);
+        console.error("Error response:", error.response);
         console.error("Error loading projects:", error);
         alert('Failed to load projects.');
         throw error;

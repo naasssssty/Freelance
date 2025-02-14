@@ -35,9 +35,8 @@ public class Project {
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
 
-    @OneToOne
-    @JoinColumn(name = "freelancer_id", nullable = true)
-    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "freelancer_id")
     private User freelancer;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)

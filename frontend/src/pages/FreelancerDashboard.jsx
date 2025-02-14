@@ -15,7 +15,8 @@ import FreelancerProjectCard from '../components/FreelancerProjectCard';
 import ApplicationCard from '../components/ApplicationCard';
 import SearchedProjectCard from '../components/SearchedProjectCard';
 import Footer from '../components/Footer';
-import { FaProjectDiagram, FaClipboardList, FaCheckCircle } from 'react-icons/fa';
+import { FaProjectDiagram, FaClipboardList, FaCheckCircle, FaUser, FaClock, FaCalendarAlt, FaDollarSign, FaFileAlt } from 'react-icons/fa';
+import { jwtDecode } from "jwt-decode";
 
 const FreelancerDashboard = () => {
     const navigate = useNavigate();
@@ -38,6 +39,19 @@ const FreelancerDashboard = () => {
         myApplications: 0,
         myActiveProjects: 0
     });
+
+    // Παίρνουμε το username από το token
+    const getUsername = () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = jwtDecode(token);
+            return decoded.sub;
+        }
+        return '';
+    };
+
+    const username = getUsername();
+    console.log('Username from token:', username);
 
     // Add useEffect to calculate statistics when data is loaded
     useEffect(() => {
@@ -111,6 +125,13 @@ const FreelancerDashboard = () => {
         }
     };
 
+    // Προσθήκη του handleLogoClick
+    const handleLogoClick = () => {
+        setShowAvailableProjects(false);
+        setSearchedProject(null);
+        setShowMyProjects(false);
+        setShowMyApplications(false);
+    };
 
     const FreelancerMenuOptions = [
         { label: "Browse Projects", link: "#", onClick: handleLoadAvailableProjects },
@@ -124,8 +145,9 @@ const FreelancerDashboard = () => {
             <Header
                 menuOptions={FreelancerMenuOptions}
                 searchComponent={<FreelancerSearchComponent onSearchResult={handleSearchResult} />}
+                onLogoClick={handleLogoClick}
+                username={username}
             />
-
             <div className="dashboard-container">
                 {/* Add Welcome Dashboard Section */}
                 {!showAvailableProjects && !showMyApplications && !showMyProjects && !searchedProject && (
@@ -171,7 +193,7 @@ const FreelancerDashboard = () => {
                 )}
                 {showAvailableProjects && availableProjects.length > 0 && (
                     <div className="projects-grid">
-                        <h2>Available Projects</h2>
+                        <h2><FaProjectDiagram className="title-icon" /> Available Projects</h2>
                         <div className="projects-container">
                             {availableProjects.map(project => (
                                 <AvailableProjectCard
@@ -185,7 +207,7 @@ const FreelancerDashboard = () => {
 
                 {showMyApplications && myFApplications.length > 0 && (
                     <div className="applications-grid">
-                        <h2>Your Applications</h2>
+                        <h2><FaClipboardList className="title-icon" /> Your Applications</h2>
                         <div className="applications-container">
                             {myFApplications.map(application => (
                                 <ApplicationCard
@@ -199,7 +221,7 @@ const FreelancerDashboard = () => {
 
                 {showMyProjects && myFProjects.length > 0 && (
                     <div className="projects-grid">
-                        <h2>Your Projects</h2>
+                        <h2><FaCheckCircle className="title-icon" /> Your Projects</h2>
                         <div className="projects-container">
                             {myFProjects.map(project => (
                                 <FreelancerProjectCard

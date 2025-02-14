@@ -3,7 +3,9 @@ import React from "react";
 import logo from '../assets/logo.png';
 import { Link } from "react-router-dom";
 
-const Header = ({ menuOptions, searchComponent, onLogoClick }) => {
+const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
+    console.log('Header received username:', username);
+
     return (
         <header className="header">
             <div className="inner_header">
@@ -38,12 +40,13 @@ const Header = ({ menuOptions, searchComponent, onLogoClick }) => {
                 </div>
             </div>
 
-            <div>
-                <Link to="/profile">
-                    <i className="profile_icon">
-                        <FaUserCircle size={30}/>
-                    </i>
-                </Link>
+            <div className="profile_container">
+                <div className="profile_icon">
+                    <FaUserCircle size={30}/>
+                </div>
+                <span className="profile_username">
+                    {username || 'Guest'}
+                </span>
             </div>
         </header>
     );

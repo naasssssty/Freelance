@@ -1,4 +1,14 @@
 import React, { useState } from "react";
+import { 
+    FaUser, 
+    FaFileAlt, 
+    FaDollarSign, 
+    FaCalendarAlt,
+    FaClock,
+    FaTags,
+    FaTools,
+    FaInfoCircle
+} from 'react-icons/fa';
 import '../styles/freelancer dashboard/availableProjectCard.css';
 import { applyForProject } from "../services/FreelancerServices";
 
@@ -22,38 +32,72 @@ const AvailableProjectCard = ({ project }) => {
     };
 
     return (
-        <div className="available-project-card">
-            <div className="project-info">
-                <div className="project-header">
-                    <h3>{project.title}</h3>
-                    <span className="budget-badge">
-                        ${project.budget}
-                    </span>
-                </div>
-                
-                <div className="project-details">
-                    <p className="description">
-                        {project.description}
-                    </p>
-                    
-                    <div className="project-meta">
-                        <div className="meta-item">
-                            <span className="label">Client:</span>
-                            <span className="value">{project.client_username}</span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="label">Deadline:</span>
-                            <span className="value">{new Date(project.deadline).toLocaleDateString()}</span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="label">Posted:</span>
-                            <span className="value">{new Date(project.created_at).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                </div>
+        <div className="project-card">
+            <div className="project-header">
+                <h3>{project.title}</h3>
+                <span className="status-badge">
+                    <FaClock className="field-icon" /> {project.projectStatus}
+                </span>
             </div>
 
-            <div className="project-actions">
+            <div className="project-details">
+                <div className="detail-item">
+                    <span className="label">
+                        <FaUser className="field-icon" /> Client
+                    </span>
+                    <span className="value">{project.clientUsername || 'N/A'}</span>
+                </div>
+
+                <div className="detail-item">
+                    <span className="label">
+                        <FaFileAlt className="field-icon" /> Description
+                    </span>
+                    <p className="value description">{project.description}</p>
+                </div>
+
+                <div className="detail-item">
+                    <span className="label">
+                        <FaDollarSign className="field-icon" /> Budget
+                    </span>
+                    <span className="value">${project.budget}</span>
+                </div>
+
+                <div className="detail-item">
+                    <span className="label">
+                        <FaCalendarAlt className="field-icon" /> Deadline
+                    </span>
+                    <span className="value">{new Date(project.deadline).toLocaleDateString()}</span>
+                </div>
+
+                {project.category && (
+                    <div className="detail-item">
+                        <span className="label">
+                            <FaTags className="field-icon" /> Category:
+                        </span>
+                        <span className="value">{project.category}</span>
+                    </div>
+                )}
+
+                {project.requiredSkills && (
+                    <div className="detail-item">
+                        <span className="label">
+                            <FaTools className="field-icon" /> Required Skills:
+                        </span>
+                        <span className="value">{Array.isArray(project.requiredSkills) ? project.requiredSkills.join(', ') : project.requiredSkills}</span>
+                    </div>
+                )}
+
+                {project.additionalInfo && (
+                    <div className="detail-item">
+                        <span className="label">
+                            <FaInfoCircle className="field-icon" /> Additional Info:
+                        </span>
+                        <p className="value">{project.additionalInfo}</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="project-footer">
                 {!showApplyForm ? (
                     <button 
                         className="apply-button"

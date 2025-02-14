@@ -177,13 +177,13 @@
 }
 
 .status-badge.IN_REVIEW {
-    background-color: #2196F3;
-    color: white;
+    background-color: rgba(136, 211, 206, 0.3);
+    color: #88d3ce;
 }
 
 .status-badge.RESOLVED {
-    background-color: #4CAF50;
-    color: white;
+    background-color: rgba(152, 251, 152, 0.3);
+    color: #98FB98;
 }
 
 .status-badge.DISMISSED {

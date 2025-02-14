@@ -5,11 +5,13 @@ import { login, setAuthToken } from "../services/auth";
 import "../styles/auth.css";
 import { jwtDecode } from "jwt-decode";
 import {Link, useNavigate} from "react-router-dom";
+import { useDispatch } from 'react-redux';
 
 export const Login = () => {
     const [formData, setFormData] = useState({ username: "", password: "" });
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -27,10 +29,21 @@ export const Login = () => {
             const { token } = response.data;
             setAuthToken(token);
             localStorage.setItem("token", token);
+            localStorage.setItem("username", formData.username);
 
             const decoded = jwtDecode(token);
             const role = decoded?.role;
             const isVerified = decoded?.isVerified;
+
+            // Dispatch στο Redux store
+            dispatch({
+                type: 'LOGIN_SUCCESS',
+                payload: {
+                    username: formData.username,
+                    role: role,
+                    isVerified: isVerified
+                }
+            });
 
             if (!isVerified) {
                 setError("Account is not verified. Please wait for verification.");

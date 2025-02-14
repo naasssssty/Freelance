@@ -132,7 +132,9 @@ public class ProjectController {
                         project.getTitle(),
                         project.getDescription(),
                         project.getBudget(),
-                        project.getDeadline()
+                        project.getDeadline(),
+                        project.getClient().getUsername(),
+                        project.getProjectStatus()
                 ))
                 .collect(Collectors.toList());
 

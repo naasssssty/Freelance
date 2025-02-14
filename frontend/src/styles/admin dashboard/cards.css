@@ -19,6 +19,15 @@
     padding-bottom: 40px; /* Add some bottom padding */
 }
 
+.dashboard-content {
+    flex: 1;
+    margin-top: 100px;
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* Grid styling */
 .cards-grid {
     display: grid;
@@ -42,13 +51,12 @@
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 10px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    height: 180px; /* Μικρότερο ύψος */
+    height: 200px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -69,7 +77,8 @@
 }
 
 .card-content {
-    flex-grow: 1;
+    flex: 1;
+    overflow: hidden;
 }
 
 .card-content p {
@@ -81,19 +90,20 @@
 
 .card-footer {
     display: flex;
-    justify-content: flex-end; /* Ευθυγραμμίζει τα κουμπιά δεξιά */
-    gap: 10px; /* Κενό μεταξύ των κουμπιών */
-    margin-top: 10px;
+    justify-content: flex-end;
+    gap: 5px;
+    padding-top: 10px;
 }
 
 .card-button {
-    padding: 6px 12px;
+    padding: 4px 8px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     transition: all 0.2s ease;
     font-weight: 500;
+    min-width: 60px;
 }
 
 .verify-button {
@@ -203,11 +213,43 @@
 
 /* Add styles for the footer */
 footer {
-    flex-shrink: 0;
+    margin-top: auto;
     width: 100%;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding: 20px 0;
-    margin-top: auto;
+}
+
+.dashboard {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-content {
+    flex: 1;
+    margin-top: 100px;
+    padding: 20px;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.card-icon {
+    margin-right: 8px;
+    font-size: 1rem;
+    vertical-align: middle;
+    color: rgba(0, 0, 0, 0.7); /* Αλλαγή από #88d3ce σε μαύρο με διαφάνεια */
+}
+
+.card-header .card-icon {
+    font-size: 1.2rem;
+    color: rgba(0, 0, 0, 0.8); /* Λίγο πιο σκούρο για τα icons στην επικεφαλίδα */
+}
+
+.card-content p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 } 
