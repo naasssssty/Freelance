@@ -1,5 +1,6 @@
 import React from "react";
 import '../styles/client dashboard/clientProjectCard.css';
+import { FaIdCard, FaDollarSign, FaCalendarAlt, FaFileAlt } from 'react-icons/fa';
 
 const ClientProjectCard = ({ project }) => {
     const getStatusColor = (status) => {
@@ -27,9 +28,6 @@ const ClientProjectCard = ({ project }) => {
                 <div className="project-header">
                     <h3>{project.title}</h3>
                     <div className="header-badges">
-                        <span className="budget-badge">
-                            ${project.budget}
-                        </span>
                         <span className={`status-badge ${getStatusColor(project.projectStatus)}`}>
                             {project.projectStatus}
                         </span>
@@ -37,17 +35,32 @@ const ClientProjectCard = ({ project }) => {
                 </div>
                 
                 <div className="project-details">
-                    <p className="description">
-                        {project.description}
-                    </p>
+                    <div className="meta-item description-item">
+                        <span className="label">
+                            <FaFileAlt className="field-icon" /> Description:
+                        </span>
+                        <p className="description">
+                            {project.description}
+                        </p>
+                    </div>
                     
                     <div className="project-meta">
                         <div className="meta-item">
-                            <span className="label">Project ID:</span>
+                            <span className="label">
+                                <FaIdCard className="field-icon" /> Project ID:
+                            </span>
                             <span className="value">{project.id}</span>
                         </div>
                         <div className="meta-item">
-                            <span className="label">Deadline:</span>
+                            <span className="label">
+                                <FaDollarSign className="field-icon" /> Budget:
+                            </span>
+                            <span className="value">${project.budget}</span>
+                        </div>
+                        <div className="meta-item">
+                            <span className="label">
+                                <FaCalendarAlt className="field-icon" /> Deadline:
+                            </span>
                             <span className="value">
                                 {new Date(project.deadline).toLocaleDateString()}
                             </span>

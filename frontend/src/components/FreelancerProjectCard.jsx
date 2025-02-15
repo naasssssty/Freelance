@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import '../styles/freelancer dashboard/freelancerProjectCard.css';
 import { handleCompleteProject, createReport } from "../services/FreelancerServices";
 import Chat from "./Chat";
-import { FaUser, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
+import { FaUser, FaDollarSign, FaCalendarAlt,FaFileAlt } from 'react-icons/fa';
 
 const FreelancerProjectCard = ({ project, onComplete }) => {
     const [isProcessing, setIsProcessing] = useState(false);
@@ -107,14 +107,19 @@ const FreelancerProjectCard = ({ project, onComplete }) => {
                 </div>
 
                 <div className="project-details">
-                    <p className="description">
-                        {project.description}
-                    </p>
+                    <div className="meta-item description-item">
+                        <span className="label">
+                            <FaFileAlt className="field-icon"/> Description:
+                        </span>
+                        <p className="description">
+                            {project.description}
+                        </p>
+                    </div>
 
                     <div className="project-meta">
                         <div className="meta-item">
                             <span className="label">
-                                <FaUser className="meta-icon" /> Client:
+                                <FaUser className="meta-icon"/> Client:
                             </span>
                             <span className="value">{project.client_username}</span>
                         </div>
