@@ -17,6 +17,7 @@ import ClientProjectCard from '../components/ClientProjectCard';
 import ClientApplicationCard from '../components/ClientApplicationCard';
 import Footer from '../components/Footer';
 import { jwtDecode } from "jwt-decode";
+import ClientWelcome from '../components/ClientWelcome';
 
 const ClientDashboard = () => {
     const navigate = useNavigate();
@@ -30,20 +31,24 @@ const ClientDashboard = () => {
     const { myApplications, loading: myApplicationsLoading, error: myApplicationsError  } = useSelector((state) => state.applications);
     const { myProjects, loading: myProjectsLoading, error: myProjectsError  } = useSelector((state) => state.projects);
 
+    // Προσθήκη νέου state για το welcome screen
+    const [showWelcome, setShowWelcome] = useState(true);
+
     const handleLoadProjectForm = () => {
         setShowProjectForm(true);
         setShowMyProjects(false);
         setShowMyApplications(false);
+        setShowWelcome(false);  // Κρύβουμε το welcome screen
     };
 
     const handleLoadMyApplications = async () => {
         try {
             const applications = await loadMyApplications();
-            console.log('Loaded applications:', applications); // Προσθήκη για debugging
             dispatch({ type: "SET_MY_APPLICATIONS", payload: applications });
             setShowProjectForm(false);
             setShowMyApplications(true);
             setShowMyProjects(false);
+            setShowWelcome(false);  // Κρύβουμε το welcome screen
         } catch (error) {
             console.error("Error loading your applications:", error);
         }
@@ -56,6 +61,7 @@ const ClientDashboard = () => {
             setShowProjectForm(false);
             setShowMyProjects(true);
             setShowMyApplications(false);
+            setShowWelcome(false);  // Κρύβουμε το welcome screen
         } catch (error) {
             console.error("Error loading your projects:", error);
         }
@@ -99,11 +105,12 @@ const ClientDashboard = () => {
     const username = getUsername();
     console.log('Username from token:', username);
 
-    // Προσθήκη του handleLogoClick
+    // Προσθήκη στο handleLogoClick
     const handleLogoClick = () => {
         setShowProjectForm(false);
         setShowMyProjects(false);
         setShowMyApplications(false);
+        setShowWelcome(true);  // Εμφανίζουμε το welcome screen
     };
 
     return (
@@ -115,6 +122,8 @@ const ClientDashboard = () => {
                 username={username}
             />
             <div className="dashboard-container">
+                {showWelcome && <ClientWelcome username={username} />}
+                
                 {showProjectForm && <ProjectForm handleFormClose={handleFormClose}/>}
 
                 {showMyProjects && myProjects.length > 0 && (
