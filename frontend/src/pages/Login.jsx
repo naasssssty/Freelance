@@ -6,6 +6,7 @@ import "../styles/auth.css";
 import { jwtDecode } from "jwt-decode";
 import {Link, useNavigate} from "react-router-dom";
 import { useDispatch } from 'react-redux';
+import Footer from '../components/Footer';
 
 export const Login = () => {
     const [formData, setFormData] = useState({ username: "", password: "" });
@@ -70,39 +71,42 @@ export const Login = () => {
     };
 
     return (
-        <div className="wrapper">
-            <form onSubmit={handleSubmit}>
-                <h1>Login</h1>
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                <div className="input-box">
-                    <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        placeholder="Username"
-                        required
-                    />
-                </div>
-                <div className="input-box">
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="Password"
-                        required
-                    />
-                </div>
-                <button type="submit" disabled={loading}>
-                    {loading ? "Loading..." : "Login"}
-                </button>
+        <div className="auth-container">
+            <div className="wrapper">
+                <form onSubmit={handleSubmit}>
+                    <h1>Login</h1>
+                    {error && <p style={{ color: "red" }}>{error}</p>}
+                    <div className="input-box">
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="Username"
+                            required
+                        />
+                    </div>
+                    <div className="input-box">
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Password"
+                            required
+                        />
+                    </div>
+                    <button type="submit" disabled={loading}>
+                        {loading ? "Loading..." : "Login"}
+                    </button>
 
-                {/* Login Link */}
-                <div className="register-link">
-                    <p>Don't have an account? <Link to="/register">Register here</Link></p>
-                </div>
-            </form>
+                    {/* Login Link */}
+                    <div className="register-link">
+                        <p>Don't have an account? <Link to="/register">Register here</Link></p>
+                    </div>
+                </form>
+            </div>
+            <Footer />
         </div>
     );
 };

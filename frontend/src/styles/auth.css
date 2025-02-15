@@ -1,6 +1,14 @@
+/* Προσθήκη container για σωστή διάταξη */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 
-
-.wrapper{
+/* Προσαρμογή του wrapper */
+.wrapper {
     width: 420px;
     background: transparent;
     border: 2px solid rgba(255, 255, 255, .2);
@@ -9,6 +17,8 @@
     color: #fff;
     border-radius: 10px;
     padding: 30px 40px;
+    margin: 0 auto;
+    position: relative;
 }
 
 .wrapper h1{
@@ -113,4 +123,45 @@
 
 .register-link p a:hover{
     text-decoration: underline;
+}
+
+/* Αφαίρεση του body styling που επηρεάζει τη διάταξη */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Προσθήκη media query για μικρότερες οθόνες */
+@media screen and (max-height: 800px) {
+    .wrapper {
+        width: 90%;
+        max-width: 420px;
+        padding: 20px;
+    }
+
+    .input-box {
+        margin: 20px 0;    /* Μικρότερα margins */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .wrapper {
+        width: 95%;
+        padding: 15px;
+    }
+
+    .wrapper h1 {
+        font-size: 28px;   /* Μικρότερο μέγεθος γραμματοσειράς */
+    }
+
+    .input-box {
+        height: 45px;      /* Μικρότερο ύψος για τα inputs */
+        margin: 15px 0;    /* Μικρότερα margins */
+    }
+}
+
+/* Προσθήκη για οριζόντιο κεντράρισμα */
+.footer-content {
+    margin-top: auto;
+    width: 100%;
 }
