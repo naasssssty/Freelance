@@ -27,14 +27,6 @@
     font-weight: 600;
 }
 
-.budget-badge {
-    background: #4caf50;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
 
 .project-details {
     margin: 15px 0;
@@ -256,9 +248,42 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    color: #28a745;
-    background-color: rgba(40, 167, 69, 0.1);
-    border: 1px solid #28a745;
+}
+
+.status-badge.pending {
+    color: #a76c00;
+    background-color: rgba(255, 171, 0, 0.13);
+    border: 1px solid #ffab00;
+}
+
+.status-badge.in_progress {
+    color: #2839a7;
+    background-color: rgba(40, 57, 167, 0.13);
+    border: 1px solid #2839a7;
+}
+
+.status-badge.completed {
+    color: rgba(23, 99, 3, 0.99);
+    background-color: rgba(3, 214, 14, 0.13);
+    border: 1px solid rgba(23, 99, 3, 0.99);
+}
+
+.status-badge.expired {
+    color: #a72828;
+    background-color: rgba(167, 40, 40, 0.13);
+    border: 1px solid #a72828;
+}
+
+.status-badge.approved {
+    color: rgba(23, 99, 3, 0.99);
+    background-color: rgba(3, 214, 14, 0.13);
+    border: 1px solid rgba(23, 99, 3, 0.99);
+}
+
+.status-badge.denied {
+    color: #a72828;
+    background-color: rgba(167, 40, 40, 0.13);
+    border: 1px solid #a72828;
 }
 
 .status-badge .field-icon {

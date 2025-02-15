@@ -1,70 +1,108 @@
-# Getting Started with Create React App
+# 📌 FreelanceProject
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 👥 Ομάδα Ανάπτυξης
+-[Ομάδα 3]
+- [ANASTASIIA ZERVAS] - [ΑΜ: 2022119]
+- [Κωνσταντίνος Παπαδόγιαννης] - [ΑΜ: 2022141]
 
-## Available Scripts
 
-In the project directory, you can run:
+## 📖 Περιγραφή της Εφαρμογής
+Η εφαρμογή FreelancerProject είναι μια πλατφόρμα διαχείρισης έργων πληροφορικής για freelancers. Επιτρέπει στους πελάτες να δημοσιεύουν έργα, στους ελεύθερους επαγγελματίες να υποβάλλουν αιτήσεις και στον διαχειριστή να εγκρίνει έργα και προφίλ.
 
-### `npm start`
+## 👥 Ρόλοι Χρηστών
+1. Διαχειριστής (Admin)
+    - Επιβεβαιώνει νέες καταχωρίσεις έργων
+    - Επαληθεύει τα προφίλ των ελεύθερων επαγγελματιών
+    - Διαχειρίζεται αναφορές και διαφορές
+    - Έχει πρόσβαση σε όλα τα έργα μέσω του /projects/allProjects
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+2. Πελάτης (Client)
+    - Δημοσιεύει νέα έργα μέσω του /projects/{username}/post
+    - Εξετάζει τις αιτήσεις των freelancers
+    - Παρακολουθεί την εξέλιξη του έργου
+    - Μπορεί να υποβάλει αναφορές
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+3. Freelancer
+    - Αναζητά έργα με τίτλο μέσω του /projects/title/{title}
+    - Υποβάλλει αιτήσεις για έργα
+    - Επικοινωνεί με τους πελάτες μέσω του συστήματος μηνυμάτων
 
-### `npm test`
+## 🛠️ Τεχνική Τεκμηρίωση
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Αρχιτεκτονική
+- Backend: REST API με Spring Boot
+- Database: PostgreSQL, Render
+- Authentication: JWT (JSON Web Tokens)
+- API Documentation: Swagger UI
 
-### `npm run build`
+### Βασικά Endpoints
+- POST /auth/register: Εγγραφή νέου χρήστη
+- POST /auth/login: Σύνδεση χρήστη
+- GET /projects/allProjects: Λίστα όλων των έργων (Admin only)
+- POST /projects/{username}/post: Δημοσίευση νέου έργου (Client only)
+- GET /projects/title/{title}: Αναζήτηση έργων με τίτλο (Freelancer only)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🛠️ Τεχνολογίες που χρησιμοποιούνται
+- Backend: Spring Boot 3.4.1 (Spring MVC, Spring Security, Spring Data JPA)
+- Frontend: React.js, Redux, Axios
+- Γλώσσα Προγραμματισμού: Java 21
+- Dependency Management: Maven
+- Βάση Δεδομένων: PostgreSQL
+- Database Management Tool: pgAdmin 4, Render SQL
+- API Testing: Postman
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚀 Οδηγίες Εγκατάστασης και Εκτέλεσης
 
-### `npm run eject`
+### 1. Προαπαιτούμενα
+Πριν ξεκινήσετε, βεβαιωθείτε ότι έχετε εγκαταστήσει τα παρακάτω:
+- Java 21: [Download](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
+- Node.js & npm: [Download](https://nodejs.org/)
+- Maven: [Download](https://maven.apache.org/install.html)
+- PostgreSQL: [Download](https://www.postgresql.org/download/)
+- pgAdmin 4: [Download](https://www.pgadmin.org/download/)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### 2. Ρύθμιση Βάσης Δεδομένων
+1. Ανοίξτε το pgAdmin 4
+2. Δημιουργήστε νέα βάση δεδομένων με όνομα freelancer_db
+3. Ρυθμίστε το application.properties με τα στοιχεία σύνδεσης:
+   properties
+   spring.datasource.url=jdbc:postgresql://dpg-cun4aq23esus73amkca0-a.frankfurt-postgres.render.com:5432/dbfreelancer_ngy9
+   spring.datasource.username=your_username
+   spring.datasource.password=your_password
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### 3. Εγκατάσταση και Εκτέλεση Backend
+bash
+# Κλωνοποίηση του repository
+git clone https://github.com/naasssssty/Freelance.git
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+# Μετάβαση στον φάκελο του backend
+cd TestFreelancerProject/backend
 
-## Learn More
+# Εγκατάσταση dependencies και build
+mvn clean install
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Εκτέλεση της εφαρμογής
+mvn spring-boot:run
 
-To learn React, check out the [React documentation](https://reactjs.org/).
 
-### Code Splitting
+### 4. Εγκατάσταση και Εκτέλεση Frontend
+bash
+# Μετάβαση στον φάκελο του frontend
+cd ../frontend
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# Εγκατάσταση dependencies
+npm install
+# Εκτέλεση της εφαρμογής
+npm start
 
-### Analyzing the Bundle Size
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Η εφαρμογή θα είναι διαθέσιμη στη διεύθυνση: `http://localhost:3000`
 
-### Making a Progressive Web App
+## 🔒 Ασφάλεια και Authentication
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Η εφαρμογή χρησιμοποιεί JWT (JSON Web Tokens) για authentication. Κάθε request στο API πρέπει να περιλαμβάνει ένα έγκυρο JWT token στο header:
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Authorization: Bearer <token>
+`

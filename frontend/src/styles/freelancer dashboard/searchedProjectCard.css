@@ -47,25 +47,37 @@
 }
 
 .status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-weight: 600;
     font-size: 0.9rem;
-    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.status-badge.pending {
+    color: #a76c00;
+    background-color: rgba(255, 171, 0, 0.13);
+    border: 1px solid #ffab00;
 }
 
 .status-badge.in_progress {
-    background: #2196f3;
-    color: white;
+    color: #2839a7;
+    background-color: rgba(40, 57, 167, 0.13);
+    border: 1px solid #2839a7;
 }
 
 .status-badge.completed {
-    background: #4caf50;
-    color: white;
+    color: rgba(23, 99, 3, 0.99);
+    background-color: rgba(3, 214, 14, 0.13);
+    border: 1px solid rgba(23, 99, 3, 0.99);
 }
 
 .status-badge.expired {
-    background: #ff9800;
-    color: white;
+    color: #a72828;
+    background-color: rgba(167, 40, 40, 0.13);
+    border: 1px solid #a72828;
 }
 
 .project-details {

@@ -44,20 +44,25 @@
 }
 
 .status-badge {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .status-verified {
-    background: rgba(46, 213, 115, 0.2);
-    color: #2ed573;
+    color: rgba(18, 78, 2, 0.99);
+    background-color: rgba(3, 214, 14, 0.13);
+    border: 1px solid rgba(23, 99, 3, 0.99);
 }
 
 .status-pending {
-    background: rgba(255, 171, 0, 0.2);
-    color: #ffab00;
+    color: #a76c00;
+    background-color: rgba(255, 171, 0, 0.13);
+    border: 1px solid #ffab00;
 }
 
 .card-grid {
