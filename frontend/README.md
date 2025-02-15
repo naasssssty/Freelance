@@ -78,7 +78,7 @@ bash
 git clone https://github.com/naasssssty/Freelance.git
 
 # Μετάβαση στον φάκελο του backend
-cd TestFreelancerProject/backend
+cd Freelance/backend
 
 # Εγκατάσταση dependencies και build
 mvn clean install

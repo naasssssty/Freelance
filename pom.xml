@@ -11,8 +11,8 @@
     <groupId>dit.hua.gr</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>TestFreelancerProject</name>
-    <description>TestFreelancerProject</description>
+    <name>FreelanceProject</name>
+    <description>FreelanceProject</description>
     <url/>
     <licenses>
         <license/>

@@ -39,4 +39,4 @@
 ### 2. Κλωνοποίηση του Αποθετηρίου
 Αρχικά, κλωνοποιήστε το αποθετήριο στον τοπικό σας υπολογιστή:
 ```bash
-git clone https://github.com/naasssssty/TestFreelancerProject.git
+git clone https://github.com/naasssssty/Freelance.git
