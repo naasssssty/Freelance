@@ -297,7 +297,6 @@ const AdminDashboard = () => {
                                     </div>
                                     <div className="card-content">
                                         <p><FaUser className="card-icon" /> Client: {project.client_username}</p>
-                                        <p><FaUser className="card-icon" /> Freelancer: {project.client}</p>
                                         <p><FaDollarSign className="card-icon" /> ${project.budget}</p>
                                         <p><FaClock className="card-icon" /> {project.projectStatus}</p>
                                         <p><FaCalendarAlt className="card-icon" /> {project.deadline}</p>
