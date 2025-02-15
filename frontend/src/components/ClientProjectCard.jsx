@@ -47,36 +47,12 @@ const ClientProjectCard = ({ project }) => {
                             <span className="value">{project.id}</span>
                         </div>
                         <div className="meta-item">
-                            <span className="label">Posted on:</span>
-                            <span className="value">
-                                {new Date(project.created_at).toLocaleDateString()}
-                            </span>
-                        </div>
-                        <div className="meta-item">
                             <span className="label">Deadline:</span>
                             <span className="value">
                                 {new Date(project.deadline).toLocaleDateString()}
                             </span>
                         </div>
                     </div>
-
-                    {project.projectStatus === 'PENDING' && (
-                        <div className="applications-count">
-                            <span className="label">Applications:</span>
-                            <span className="value">{project.applications_count || 0}</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="project-actions">
-                    {project.projectStatus === 'PENDING' && (
-                        <button 
-                            className="view-applications-button"
-                            onClick={() => {/* Handle view applications */}}
-                        >
-                            View Applications
-                        </button>
-                    )}
                 </div>
             </div>
         </div>

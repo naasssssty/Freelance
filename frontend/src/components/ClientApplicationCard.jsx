@@ -4,6 +4,7 @@ import '../styles/client dashboard/clientApplicationCard.css';
 import Chat from "./Chat";
 
 const ClientApplicationCard = ({ application, onAccept, onReject }) => {
+    console.log('Application data:', application);
     const [showChat, setShowChat] = useState(false);
     const [showReportForm, setShowReportForm] = useState(false);
     const [reportDescription, setReportDescription] = useState('');
@@ -173,7 +174,7 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
                 <div className="application-meta">
                     <div className="meta-item">
                         <span className="label">Freelancer:</span>
-                        <span className="value">{application.freelancer_username}</span>
+                        <span className="value">{application.freelancer}</span>
                     </div>
                     <div className="meta-item">
                         <span className="label">Submitted:</span>

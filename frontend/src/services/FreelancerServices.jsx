@@ -135,3 +135,22 @@ export const handleCompleteProject = async (projectId) => {
         throw error.response ? error.response.data : error;
     }
 };
+
+export const createReport = async (projectId, description) => {
+    try {
+        const response = await axios.post(
+            `${API_BASE_URL}/api/reports`,
+            {
+                projectId,
+                description
+            },
+            {
+                headers: getAuthHeaders()
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error creating report:", error);
+        throw error.response ? error.response.data : error;
+    }
+};

@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import ReactDOM from 'react-dom';
 import '../styles/freelancer dashboard/freelancerProjectCard.css';
-import { handleCompleteProject } from "../services/FreelancerServices";
+import { handleCompleteProject, createReport } from "../services/FreelancerServices";
 import Chat from "./Chat";
+import { FaUser, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
 
 const FreelancerProjectCard = ({ project, onComplete }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [showChat, setShowChat] = useState(false);
+    const [showReportForm, setShowReportForm] = useState(false);
+    const [reportDescription, setReportDescription] = useState('');
 
     const handleComplete = async () => {
         try {
@@ -42,6 +45,57 @@ const FreelancerProjectCard = ({ project, onComplete }) => {
         );
     };
 
+    const renderReportForm = () => {
+        if (!showReportForm) return null;
+
+        return ReactDOM.createPortal(
+            <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                zIndex: 9999,
+                width: '300px',
+                background: 'white',
+                borderRadius: '8px',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+            }}>
+                <div className="report-form-content">
+                    <h3>Report Issue</h3>
+                    <textarea
+                        value={reportDescription}
+                        onChange={(e) => setReportDescription(e.target.value)}
+                        placeholder="Describe the issue..."
+                    />
+                    <div className="form-actions">
+                        <button 
+                            onClick={async () => {
+                                try {
+                                    await createReport(project.id, reportDescription);
+                                    alert('Report submitted successfully');
+                                    setShowReportForm(false);
+                                    setReportDescription('');
+                                } catch (error) {
+                                    alert('Failed to submit report');
+                                }
+                            }}
+                        >
+                            Submit Report
+                        </button>
+                        <button 
+                            onClick={() => {
+                                setShowReportForm(false);
+                                setReportDescription('');
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>,
+            document.body
+        );
+    };
+
     return (
         <div className="my-project-card">
             <div className="project-info">
@@ -59,23 +113,23 @@ const FreelancerProjectCard = ({ project, onComplete }) => {
 
                     <div className="project-meta">
                         <div className="meta-item">
-                            <span className="label">Client:</span>
+                            <span className="label">
+                                <FaUser className="meta-icon" /> Client:
+                            </span>
                             <span className="value">{project.client_username}</span>
                         </div>
                         <div className="meta-item">
-                            <span className="label">Budget:</span>
+                            <span className="label">
+                                <FaDollarSign className="meta-icon" /> Budget:
+                            </span>
                             <span className="value">${project.budget}</span>
                         </div>
                         <div className="meta-item">
-                            <span className="label">Deadline:</span>
+                            <span className="label">
+                                <FaCalendarAlt className="meta-icon" /> Deadline:
+                            </span>
                             <span className={`value ${isDeadlineNear(project.deadline) ? 'deadline-near' : ''}`}>
                                 {new Date(project.deadline).toLocaleDateString()}
-                            </span>
-                        </div>
-                        <div className="meta-item">
-                            <span className="label">Started:</span>
-                            <span className="value">
-                                {new Date(project.created_at).toLocaleDateString()}
                             </span>
                         </div>
                     </div>
@@ -93,6 +147,14 @@ const FreelancerProjectCard = ({ project, onComplete }) => {
                         }}>
                         {showChat ? 'Close Chat' : 'Open Chat'}
                     </button>
+                    {project.projectStatus === "IN_PROGRESS" && (
+                        <button 
+                            className="report-button"
+                            onClick={() => setShowReportForm(true)}
+                        >
+                            Report Issue
+                        </button>
+                    )}
                     <button
                         className={`complete-button ${isProcessing ? 'loading' : ''}`}
                         onClick={handleComplete}
@@ -103,6 +165,7 @@ const FreelancerProjectCard = ({ project, onComplete }) => {
             )}
 
             {renderChat()}
+            {renderReportForm()}
         </div>
     );
 };
