@@ -1,16 +1,13 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/api/notifications';
-
 export const getNotifications = async () => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(API_URL, {
+        const response = await axios.get('/api/notifications', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
-        console.log('API Response:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -21,7 +18,7 @@ export const getNotifications = async () => {
 export const getUnreadCount = async () => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/unread-count`, {
+        const response = await axios.get('/api/notifications/unread-count', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -36,7 +33,7 @@ export const getUnreadCount = async () => {
 export const markAsRead = async (notificationId) => {
     try {
         const token = localStorage.getItem('token');
-        await axios.put(`${API_URL}/${notificationId}/read`, null, {
+        await axios.put(`/api/notifications/${notificationId}/read`, null, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -50,7 +47,7 @@ export const markAsRead = async (notificationId) => {
 export const markAllAsRead = async () => {
     try {
         const token = localStorage.getItem('token');
-        await axios.put(`${API_URL}/mark-all-read`, null, {
+        await axios.put('/api/notifications/mark-all-read', null, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
