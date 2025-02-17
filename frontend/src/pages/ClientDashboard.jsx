@@ -1,11 +1,10 @@
 //ClientDashboard.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import '../styles/header.css';
 import { useNavigate } from "react-router-dom";
 import ProjectForm from '../components/ProjectForm';
-import {loadAvailableProjects} from "../services/FreelancerServices";
 import {useDispatch, useSelector} from "react-redux";
 import {
     handleAcceptApplication,
@@ -24,15 +23,43 @@ const ClientDashboard = () => {
     const dispatch = useDispatch();
 
     const [showProjectForm, setShowProjectForm] = useState(false);
-
+    const [projects, setProjects] = useState([]);
+    const [applications, setApplications] = useState([]);
+    const [username, setUsername] = useState('');
     const [showMyApplications, setShowMyApplications] = useState(false);
     const [showMyProjects, setShowMyProjects] = useState(false);
+    const [showWelcome, setShowWelcome] = useState(true);
 
     const { myApplications, loading: myApplicationsLoading, error: myApplicationsError  } = useSelector((state) => state.applications);
     const { myProjects, loading: myProjectsLoading, error: myProjectsError  } = useSelector((state) => state.projects);
 
-    // Προσθήκη νέου state για το welcome screen
-    const [showWelcome, setShowWelcome] = useState(true);
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = jwtDecode(token);
+            setUsername(decoded.sub);
+            fetchProjects(decoded.sub);
+            fetchApplications(decoded.sub);
+        }
+    }, []);
+
+    const fetchProjects = async (username) => {
+        try {
+            const projectsData = await loadMyProjects(username);
+            setProjects(projectsData);
+        } catch (error) {
+            console.error('Error fetching projects:', error);
+        }
+    };
+
+    const fetchApplications = async (username) => {
+        try {
+            const applicationsData = await loadMyApplications(username);
+            setApplications(applicationsData);
+        } catch (error) {
+            console.error('Error fetching applications:', error);
+        }
+    };
 
     const handleLoadProjectForm = () => {
         setShowProjectForm(true);
@@ -73,53 +100,63 @@ const ClientDashboard = () => {
     };
 
     const clientMenuOptions = [
-        {   label: "My Projects",
-            link: "#", onClick: handleLoadMyProjects
+        {   
+            label: "My Projects",
+            onClick: handleLoadMyProjects
         },
-        {   label: "Post a Project",
-            link: "#",
+        {   
+            label: "Post a Project",
             onClick: handleLoadProjectForm
         },
-        {   label: "My Applications",
-            link: "#", onClick: handleLoadMyApplications
+        {   
+            label: "My Applications",
+            onClick: handleLoadMyApplications
         },
-        {   label: "Logout",
-            link: "#",
-            onClick: handleLogout }
+        {   
+            label: "Logout",
+            onClick: handleLogout 
+        }
     ];
 
     const handleFormClose = () => {
         setShowProjectForm(false);
+        // Refresh projects after form is closed
+        const decoded = jwtDecode(localStorage.getItem('token'));
+        fetchProjects(decoded.sub);
     };
 
-    // Παίρνουμε το username από το token
-    const getUsername = () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decoded = jwtDecode(token);
-            return decoded.sub;
+    const handleAccept = async (applicationId) => {
+        try {
+            await handleAcceptApplication(applicationId);
+            await fetchApplications(username);
+        } catch (error) {
+            console.error('Error accepting application:', error);
         }
-        return '';
     };
 
-    const username = getUsername();
-    console.log('Username from token:', username);
+    const handleReject = async (applicationId) => {
+        try {
+            await handleRejectApplication(applicationId);
+            await fetchApplications(username);
+        } catch (error) {
+            console.error('Error rejecting application:', error);
+        }
+    };
 
-    // Προσθήκη στο handleLogoClick
     const handleLogoClick = () => {
         setShowProjectForm(false);
         setShowMyProjects(false);
         setShowMyApplications(false);
-        setShowWelcome(true);  // Εμφανίζουμε το welcome screen
+        setShowWelcome(true);
     };
 
     return (
         <div className="dashboard-layout">
             <Header
                 menuOptions={clientMenuOptions}
-                searchComponent={null}
                 onLogoClick={handleLogoClick}
                 username={username}
+                searchComponent={null}
             />
             <div className="dashboard-container">
                 {showWelcome && <ClientWelcome username={username} />}
@@ -148,24 +185,8 @@ const ClientDashboard = () => {
                                 <ClientApplicationCard
                                     key={application.id}
                                     application={application}
-                                    onAccept={async (id) => {
-                                        await handleAcceptApplication(id);
-                                        dispatch({
-                                            type: "SET_MY_APPLICATIONS",
-                                            payload: myApplications.map(a =>
-                                                a.id === id ? { ...a, applicationStatus: "ACCEPTED" } : a
-                                            )
-                                        });
-                                    }}
-                                    onReject={async (id) => {
-                                        await handleRejectApplication(id);
-                                        dispatch({
-                                            type: "SET_MY_APPLICATIONS",
-                                            payload: myApplications.map(a =>
-                                                a.id === id ? { ...a, applicationStatus: "REJECTED" } : a
-                                            )
-                                        });
-                                    }}
+                                    onAccept={handleAccept}
+                                    onReject={handleReject}
                                 />
                             ))}
                         </div>

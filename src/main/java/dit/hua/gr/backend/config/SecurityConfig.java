@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/application/{applicationId}/reject").hasAnyRole("ADMIN", "CLIENT")
                         .requestMatchers("/project/{projectId}/complete").hasAnyRole("ADMIN", "FREELANCER")
                         .requestMatchers("/chat/**").authenticated()
+                        .requestMatchers("/api/notifications/**").hasAnyRole("CLIENT", "FREELANCER", "ADMIN")
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsServiceImp)
                 .sessionManagement(session -> session

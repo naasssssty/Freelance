@@ -5,8 +5,10 @@ import dit.hua.gr.backend.dto.ProjectResponseDTO;
 import dit.hua.gr.backend.model.Project;
 import dit.hua.gr.backend.model.ProjectStatus;
 import dit.hua.gr.backend.model.User;
+import dit.hua.gr.backend.model.NotificationType;
 import dit.hua.gr.backend.service.ProjectService;
 import dit.hua.gr.backend.service.UserService;
+import dit.hua.gr.backend.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +24,13 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
-    public ProjectController(ProjectService projectService, UserService userService) {
+    public ProjectController(ProjectService projectService, UserService userService,
+            NotificationService notificationService) {
         this.projectService = projectService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     // Δημιουργία νέου έργου (μόνο για CLIENT)
@@ -59,14 +64,13 @@ public class ProjectController {
                 savedProject.getDeadline(),
                 savedProject.getClient().getUsername(),
                 savedProject.getProjectStatus(),
-                savedProject.getCreated_at().toString().substring(0,10)
-        );
+                savedProject.getCreated_at().toString().substring(0, 10));
 
         return ResponseEntity.ok(responseDTO);
     }
 
-
-    // Εύρεση έργου με βάση το ID (για ADMIN, CLIENT και FREELANCER αν είναι ανατεθειμένο σε αυτούς)
+    // Εύρεση έργου με βάση το ID (για ADMIN, CLIENT και FREELANCER αν είναι
+    // ανατεθειμένο σε αυτούς)
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT') or hasRole('FREELANCER')")
     @GetMapping("/id/{id}")
     public ResponseEntity<Project> getProjectById(@PathVariable Integer id) {
@@ -89,14 +93,12 @@ public class ProjectController {
                         project.getDeadline(),
                         project.getClient().getUsername(),
                         project.getProjectStatus(),
-                        project.getCreated_at().toString().substring(0,10)
-                ))
+                        project.getCreated_at().toString().substring(0, 10)))
                 .toList();
 
         // Use the correct variable name
         return ResponseEntity.ok(projectDTOs);
     }
-
 
     // Εύρεση όλων των έργων (μόνο για ADMIN)
     @GetMapping("/allProjects")
@@ -113,8 +115,7 @@ public class ProjectController {
                         project.getDeadline(),
                         project.getClient().getUsername(),
                         project.getProjectStatus(),
-                        project.getCreated_at().toString().substring(0,10)
-                ))
+                        project.getCreated_at().toString().substring(0, 10)))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(projectResponseDTOs);
@@ -134,8 +135,7 @@ public class ProjectController {
                         project.getBudget(),
                         project.getDeadline(),
                         project.getClient().getUsername(),
-                        project.getProjectStatus()
-                ))
+                        project.getProjectStatus()))
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(projectDTOs);
@@ -144,7 +144,8 @@ public class ProjectController {
     @GetMapping("/{username}/my-projects")
     @PreAuthorize("hasRole('CLIENT') or hasRole('ADMIN')")
     public ResponseEntity<List<ProjectResponseDTO>> getProjectsByClient(@PathVariable String username) {
-        User client = userService.findUserByUsername(username).orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
+        User client = userService.findUserByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
         List<Project> projects = projectService.findProjectsByClient(client);
         List<ProjectResponseDTO> dto = projects.stream()
                 .map(project -> new ProjectResponseDTO(
@@ -155,8 +156,8 @@ public class ProjectController {
                         project.getDeadline(),
                         project.getClient().getUsername(),
                         project.getProjectStatus(),
-                        project.getCreated_at().toString().substring(0,10)
-                )).toList();
+                        project.getCreated_at().toString().substring(0, 10)))
+                .toList();
         return ResponseEntity.ok(dto);
     }
 
@@ -173,8 +174,8 @@ public class ProjectController {
                         project.getDeadline(),
                         project.getClient().getUsername(),
                         project.getProjectStatus(),
-                        project.getCreated_at().toString().substring(0,10)
-                )).toList();
+                        project.getCreated_at().toString().substring(0, 10)))
+                .toList();
         return ResponseEntity.ok(dto);
     }
 
@@ -183,6 +184,13 @@ public class ProjectController {
     public ResponseEntity<ProjectResponseDTO> markProjectAsCompleted(@PathVariable Integer id) {
         try {
             Project project = projectService.updateProjectStatus(id, ProjectStatus.COMPLETED);
+
+            // Create notification for the client
+            notificationService.createNotification(
+                    project.getClient(),
+                    "Project '" + project.getTitle() + "' has been marked as completed",
+                    NotificationType.PROJECT_COMPLETED);
+
             ProjectResponseDTO projectDTO = new ProjectResponseDTO(
                     project.getId(),
                     project.getTitle(),
@@ -191,8 +199,7 @@ public class ProjectController {
                     project.getDeadline(),
                     project.getClient().getUsername(),
                     project.getProjectStatus(),
-                    project.getCreated_at().toString().substring(0,10)
-            );
+                    project.getCreated_at().toString().substring(0, 10));
             return ResponseEntity.ok(projectDTO);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
@@ -205,9 +212,10 @@ public class ProjectController {
         Project project = projectService.approveProject(id);
         return ResponseEntity.ok(project);
     }
+
     @PutMapping("/{id}/deny")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Project> rejectProject(@PathVariable Integer id){
+    public ResponseEntity<Project> rejectProject(@PathVariable Integer id) {
         Project project = projectService.rejectProject(id);
         return ResponseEntity.ok(project);
     }
@@ -235,6 +243,5 @@ public class ProjectController {
             return ResponseEntity.notFound().build();
         }
     }
-
 
 }

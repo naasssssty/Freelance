@@ -7,13 +7,13 @@ import dit.hua.gr.backend.model.*;
 import dit.hua.gr.backend.service.ApplicationService;
 import dit.hua.gr.backend.service.ProjectService;
 import dit.hua.gr.backend.service.UserService;
+import dit.hua.gr.backend.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -22,17 +22,28 @@ public class ApplicationController {
     private final ApplicationService applicationService;
     private final ProjectService projectService;
     private final UserService userService;
+    private final NotificationService notificationService;
 
-    public ApplicationController(ApplicationService applicationService, ProjectService projectService, UserService userService) {
+    public ApplicationController(ApplicationService applicationService, ProjectService projectService,
+            UserService userService, NotificationService notificationService) {
         this.applicationService = applicationService;
         this.projectService = projectService;
         this.userService = userService;
+        this.notificationService = notificationService;
     }
 
     @PostMapping("/project/{projectId}/apply/{username}")
     @PreAuthorize("hasRole('FREELANCER')")
-    public ResponseEntity<ApplicationDTO> applyForProject(@PathVariable Integer projectId, @PathVariable String username, @RequestBody String cover_letter) {
+    public ResponseEntity<ApplicationDTO> applyForProject(@PathVariable Integer projectId,
+            @PathVariable String username, @RequestBody String cover_letter) {
         Application application = applicationService.createApplication(projectId, username, cover_letter);
+
+        // Create notification for project owner
+        notificationService.createNotification(
+                application.getProject().getClient(),
+                "New application received for project: " + application.getProject().getTitle(),
+                NotificationType.APPLICATION_RECEIVED);
+
         ApplicationDTO applicationDTO = new ApplicationDTO();
         applicationDTO.setProjectTitle(application.getProject().toString());
         applicationDTO.setCover_letter(application.getCover_letter());
@@ -46,7 +57,8 @@ public class ApplicationController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT')")
     @GetMapping("/client/{username}/my-applications")
     public ResponseEntity<List<ApplicationDTO>> getApplicationsByClient(@PathVariable String username) {
-        User client = userService.findUserByUsername(username).orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
+        User client = userService.findUserByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
         List<Application> applications = applicationService.getApplicationsByClient(client);
         List<ApplicationDTO> dto = applications.stream().map(this::convertToDTO).toList();
         return ResponseEntity.ok(dto);
@@ -54,21 +66,21 @@ public class ApplicationController {
 
     private ApplicationDTO convertToDTO(Application application) {
         return new ApplicationDTO(
-            application.getId(),
-            application.getProject().getTitle(),
-            application.getProject().getId(),
-            application.getCover_letter(),
-            application.getApplicationStatus(),
-            application.getFreelancer().getUsername(),
-            application.getCreated_at().toString().substring(0,10)
-        );
+                application.getId(),
+                application.getProject().getTitle(),
+                application.getProject().getId(),
+                application.getCover_letter(),
+                application.getApplicationStatus(),
+                application.getFreelancer().getUsername(),
+                application.getCreated_at().toString().substring(0, 10));
     }
 
     // Εύρεση αιτήσεων από έναν freelancer (μόνο για τον FREELANCER ή ADMIN)
     @PreAuthorize("hasRole('FREELANCER') or hasRole('ADMIN')")
     @GetMapping("/freelancer/{username}/my-applications")
     public ResponseEntity<List<ApplicationDTO>> getApplicationsByFreelancer(@PathVariable String username) {
-        User freelancer = userService.findUserByUsername(username).orElseThrow(() -> new IllegalArgumentException("Freelancer not found with username: " + username));
+        User freelancer = userService.findUserByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Freelancer not found with username: " + username));
         List<Application> applications = applicationService.getApplicationsByFreelancer(freelancer);
         List<ApplicationDTO> dto = applications.stream().map(this::convertToDTO).toList();
         return ResponseEntity.ok(dto);
@@ -105,7 +117,8 @@ public class ApplicationController {
         User freelancer = new User();
         freelancer.setId(freelancerId);
 
-        Optional<Application> application = applicationService.getApplicationByProjectAndFreelancer(project, freelancer);
+        Optional<Application> application = applicationService.getApplicationByProjectAndFreelancer(project,
+                freelancer);
 
         return application.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -118,6 +131,13 @@ public class ApplicationController {
             @PathVariable Integer applicationId) {
         Application updatedApplication = applicationService.acceptApplication(applicationId);
         projectService.updateProjectStatus(updatedApplication.getProject().getId(), ProjectStatus.IN_PROGRESS);
+
+        // Create notification for freelancer
+        notificationService.createNotification(
+                updatedApplication.getFreelancer(),
+                "Your application for project '" + updatedApplication.getProject().getTitle() + "' has been accepted!",
+                NotificationType.APPLICATION_ACCEPTED);
+
         ApplicationDTO dto = new ApplicationDTO();
         dto.setId(updatedApplication.getId());
         dto.setApplicationStatus(updatedApplication.getApplicationStatus());
@@ -132,8 +152,16 @@ public class ApplicationController {
 
     @PreAuthorize("hasRole('CLIENT') or hasRole('ADMIN')")
     @PutMapping("/application/{applicationId}/reject")
-    public ResponseEntity<ApplicationDTO> rejectApplication(@PathVariable Integer applicationId){
-        Application updatedApplication = applicationService.updateApplicationStatus(applicationId, ApplicationStatus.REJECTED);
+    public ResponseEntity<ApplicationDTO> rejectApplication(@PathVariable Integer applicationId) {
+        Application updatedApplication = applicationService.updateApplicationStatus(applicationId,
+                ApplicationStatus.REJECTED);
+
+        // Create notification for freelancer
+        notificationService.createNotification(
+                updatedApplication.getFreelancer(),
+                "Your application for project '" + updatedApplication.getProject().getTitle() + "' has been rejected",
+                NotificationType.APPLICATION_REJECTED);
+
         ApplicationDTO dto = new ApplicationDTO();
         dto.setId(updatedApplication.getId());
         dto.setApplicationStatus(updatedApplication.getApplicationStatus());
@@ -146,7 +174,6 @@ public class ApplicationController {
         return ResponseEntity.ok(dto);
     }
 
-
     // Διαγραφή αίτησης (μόνο για ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{applicationId}")
@@ -155,4 +182,3 @@ public class ApplicationController {
         return ResponseEntity.noContent().build();
     }
 }
-
