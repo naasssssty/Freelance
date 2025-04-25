@@ -17,7 +17,7 @@ export const handlePostProject = async (project) => {
     try {
         const { token, username } = getTokenAndDecode();
         const response = await axios.post(
-            `http://localhost:8080/project/${username}/post`,
+            `http://localhost:8080/project/post`,
             project,
             {
                 headers: {
@@ -59,12 +59,12 @@ export const loadMyProjects = async () => {
         const { token, username } = getTokenAndDecode();
         console.log('Token:', token);
         console.log('Username:', username);
-        console.log('URL:', `http://localhost:8080/project/${username}/my-projects`);
+        console.log('URL:', `http://localhost:8080/project/my-projects`);
         const decoded = jwtDecode(token);
         console.log('Decoded token:', decoded);
 
         const response = await axios.get(
-            `http://localhost:8080/project/${username}/my-projects`,
+            `http://localhost:8080/project/my-projects`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,

@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import '../styles/notifications/notificationPanel.css';
 
 const NotificationPanel = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
-    console.log('NotificationPanel received notifications:', notifications);
+    // Add useEffect to scroll to bottom when new notifications arrive
+    useEffect(() => {
+        const panel = document.querySelector('.notification-list');
+        if (panel) {
+            panel.scrollTop = panel.scrollHeight;
+        }
+    }, [notifications]);
 
     const getNotificationIcon = (type) => {
         switch (type) {
@@ -43,7 +49,9 @@ const NotificationPanel = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClo
             <div className="notification-header">
                 <h3>Notifications</h3>
                 <div className="notification-actions">
-                    <button onClick={onMarkAllAsRead}>Mark all as read</button>
+                    {notifications.length > 0 && (
+                        <button onClick={onMarkAllAsRead}>Mark all as read</button>
+                    )}
                     <button onClick={onClose}>Close</button>
                 </div>
             </div>

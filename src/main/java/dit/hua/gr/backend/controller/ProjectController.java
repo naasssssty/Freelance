@@ -11,6 +11,7 @@ import dit.hua.gr.backend.service.UserService;
 import dit.hua.gr.backend.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,12 +36,13 @@ public class ProjectController {
 
     // Δημιουργία νέου έργου (μόνο για CLIENT)
     @PreAuthorize("hasRole('CLIENT')")
-    @PostMapping("/{username}/post")
+    @PostMapping("/post")
     public ResponseEntity<ProjectResponseDTO> postProject(
-            @PathVariable String username,
+            Authentication authentication,
             @RequestBody PostProjectDTO projectDTO) {
 
         Project newProject = new Project();
+        String username = authentication.getName();
         Optional<User> client = userService.findUserByUsername(username);
 
         if (client.isEmpty()) {
@@ -141,9 +143,10 @@ public class ProjectController {
         return ResponseEntity.ok(projectDTOs);
     }
 
-    @GetMapping("/{username}/my-projects")
+    @GetMapping("/my-projects")
     @PreAuthorize("hasRole('CLIENT') or hasRole('ADMIN')")
-    public ResponseEntity<List<ProjectResponseDTO>> getProjectsByClient(@PathVariable String username) {
+    public ResponseEntity<List<ProjectResponseDTO>> getProjectsByClient(Authentication authentication) {
+        String username = authentication.getName();
         User client = userService.findUserByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
         List<Project> projects = projectService.findProjectsByClient(client);
@@ -161,9 +164,10 @@ public class ProjectController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/freelancer/{username}/my-projects")
+    @GetMapping("/freelancer/my-projects")
     @PreAuthorize("hasRole('FREELANCER') or hasRole('ADMIN')")
-    public ResponseEntity<List<ProjectResponseDTO>> getProjectsByFreelancer(@PathVariable String username) {
+    public ResponseEntity<List<ProjectResponseDTO>> getProjectsByFreelancer(Authentication authentication) {
+        String username = authentication.getName();
         List<Project> projects = projectService.findProjectsByFreelancer(username);
         List<ProjectResponseDTO> dto = projects.stream().map(
                 project -> new ProjectResponseDTO(

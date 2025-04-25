@@ -44,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/register").permitAll()
                         .requestMatchers("/user/**").hasRole("ADMIN")
                         .requestMatchers("/project/allProjects").hasRole("ADMIN")
-                        .requestMatchers("/project/{username}/post").hasAnyRole("ADMIN", "CLIENT")
+                        .requestMatchers("/project/post").hasAnyRole("ADMIN", "CLIENT")
                         .requestMatchers("/project/available").hasRole("FREELANCER")
                         .requestMatchers("/project/{projectId}/apply/{username}").hasRole("FREELANCER")
                         .requestMatchers("/client/*/my-applications").hasAnyRole("ADMIN", "CLIENT")
@@ -56,7 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/application/{applicationId}/reject").hasAnyRole("ADMIN", "CLIENT")
                         .requestMatchers("/project/{projectId}/complete").hasAnyRole("ADMIN", "FREELANCER")
                         .requestMatchers("/chat/**").authenticated()
-                        .requestMatchers("/api/notifications/**").hasAnyRole("CLIENT", "FREELANCER", "ADMIN")
+                        .requestMatchers("/notifications/**").hasAnyRole("CLIENT", "FREELANCER", "ADMIN")
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsServiceImp)
                 .sessionManagement(session -> session

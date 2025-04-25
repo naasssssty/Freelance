@@ -13,16 +13,19 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
 
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
+        // Set up polling for both notifications and unread count
+        const interval = setInterval(() => {
+            fetchNotifications();
+            fetchUnreadCount();
+        }, 5000); // Poll every 5 seconds
+        
         return () => clearInterval(interval);
     }, []);
 
     const fetchNotifications = async () => {
         try {
             const data = await getNotifications();
-            console.log('Fetched notifications:', data);
             setNotifications(data);
-            await fetchUnreadCount();
         } catch (error) {
             console.error('Error fetching notifications:', error);
         }
@@ -40,7 +43,9 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
     const handleMarkAsRead = async (notificationId) => {
         try {
             await markAsRead(notificationId);
+            // Refresh both notifications and unread count
             await fetchNotifications();
+            await fetchUnreadCount();
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
@@ -49,7 +54,9 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
     const handleMarkAllAsRead = async () => {
         try {
             await markAllAsRead();
+            // Refresh both notifications and unread count
             await fetchNotifications();
+            await fetchUnreadCount();
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
         }

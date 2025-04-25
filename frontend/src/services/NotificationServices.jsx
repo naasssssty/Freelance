@@ -3,7 +3,7 @@ import axios from 'axios';
 export const getNotifications = async () => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/notifications', {
+        const response = await axios.get('/notifications', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -18,7 +18,7 @@ export const getNotifications = async () => {
 export const getUnreadCount = async () => {
     try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('/api/notifications/unread-count', {
+        const response = await axios.get('/notifications/unread-count', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

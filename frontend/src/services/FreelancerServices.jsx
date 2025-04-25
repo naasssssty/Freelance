@@ -88,7 +88,7 @@ export const getAssignedProjects = async () => {
 export const loadMyProjects = async () => {
     try {
         const { username } = getTokenAndDecode();
-        const response = await axios.get(`${API_BASE_URL}/project/freelancer/${username}/my-projects`, {
+        const response = await axios.get(`${API_BASE_URL}/project/freelancer/my-projects`, {
             headers: getAuthHeaders(),
         });
         return response.data;
