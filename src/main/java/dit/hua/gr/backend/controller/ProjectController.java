@@ -48,7 +48,6 @@ public class ProjectController {
         if (client.isEmpty()) {
             throw new IllegalArgumentException("Client not found with username: " + username);
         }
-
         newProject.setClient(client.get());
         newProject.setTitle(projectDTO.getTitle());
         newProject.setDescription(projectDTO.getDescription());
