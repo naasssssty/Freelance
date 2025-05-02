@@ -31,6 +31,9 @@ public class Application {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
+    @Column(name = "cv_file_path")
+    private String cvFilePath;
+
     // Getters and Setters
     public Integer getId() {
         return id;
@@ -78,6 +81,14 @@ public class Application {
 
     public void setProject(Project project) {
         this.project = project;
+    }
+
+    public String getCvFilePath() {
+        return cvFilePath;
+    }
+
+    public void setCvFilePath(String cvFilePath) {
+        this.cvFilePath = cvFilePath;
     }
 
 }

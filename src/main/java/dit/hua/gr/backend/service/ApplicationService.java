@@ -22,7 +22,8 @@ public class ApplicationService {
     private final ProjectService projectService;
 
     @Autowired
-    public ApplicationService(ApplicationRepository applicationRepository, ProjectRepository projectRepository, UserService userService, ProjectService projectService) {
+    public ApplicationService(ApplicationRepository applicationRepository, ProjectRepository projectRepository,
+            UserService userService, ProjectService projectService) {
         this.applicationRepository = applicationRepository;
         this.projectRepository = projectRepository;
         this.userService = userService;
@@ -34,7 +35,8 @@ public class ApplicationService {
         Optional<Project> projectOpt = projectService.findProjectById(projectId);
         Project project = projectOpt.orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
         Optional<User> freelancerOpt = userService.findUserByUsername(freelancerUsername);
-        User freelancer = freelancerOpt.orElseThrow(() -> new RuntimeException("Freelancer not found with username: " + freelancerUsername));
+        User freelancer = freelancerOpt
+                .orElseThrow(() -> new RuntimeException("Freelancer not found with username: " + freelancerUsername));
         Application application = new Application();
         application.setProject(project);
         application.setFreelancer(freelancer);
@@ -44,9 +46,29 @@ public class ApplicationService {
         return applicationRepository.save(application);
     }
 
+    // Δημιουργία νέας αίτησης με CV
+    public Application createApplicationWithCV(Integer projectId, String freelancerUsername, String coverLetter,
+            String cvFilePath) {
+        Optional<Project> projectOpt = projectService.findProjectById(projectId);
+        Project project = projectOpt.orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
+        Optional<User> freelancerOpt = userService.findUserByUsername(freelancerUsername);
+        User freelancer = freelancerOpt
+                .orElseThrow(() -> new RuntimeException("Freelancer not found with username: " + freelancerUsername));
+
+        Application application = new Application();
+        application.setProject(project);
+        application.setFreelancer(freelancer);
+        application.setApplicationStatus(ApplicationStatus.WAITING);
+        application.setCover_letter(coverLetter);
+        application.setCreated_at(LocalDateTime.now());
+        application.setCvFilePath(cvFilePath);
+
+        return applicationRepository.save(application);
+    }
 
     public List<Application> getApplicationsByClient(User client) {
-        User user = userService.findUserByUsername(client.getUsername()).orElseThrow(() -> new RuntimeException("Client not found with username: " + client.getUsername()));
+        User user = userService.findUserByUsername(client.getUsername())
+                .orElseThrow(() -> new RuntimeException("Client not found with username: " + client.getUsername()));
         Integer clientId = user.getId();
 
         return applicationRepository.findByClient(clientId);
@@ -57,15 +79,16 @@ public class ApplicationService {
         return applicationRepository.findByFreelancer(freelancer);
     }
 
-//    public List<Application> getProjectsByFreelancer(User freelancer){
-//        List<ProjectStatus> statuses = new ArrayList<>();
-//        statuses.add(ProjectStatus.IN_PROGRESS);
-//        statuses.add(ProjectStatus.EXPIRED);
-//        statuses.add(ProjectStatus.COMPLETED);
-//        return applicationRepository.findAcceptedApplicationsByFreelancer(freelancer, statuses);
-//
-//
-//    }
+    // public List<Application> getProjectsByFreelancer(User freelancer){
+    // List<ProjectStatus> statuses = new ArrayList<>();
+    // statuses.add(ProjectStatus.IN_PROGRESS);
+    // statuses.add(ProjectStatus.EXPIRED);
+    // statuses.add(ProjectStatus.COMPLETED);
+    // return applicationRepository.findAcceptedApplicationsByFreelancer(freelancer,
+    // statuses);
+    //
+    //
+    // }
 
     // Εύρεση αιτήσεων για συγκεκριμένο project
     public List<Application> getApplicationsByProject(Project project) {
@@ -84,27 +107,28 @@ public class ApplicationService {
 
     public Application updateApplicationStatus(Integer applicationId, ApplicationStatus status) {
         Optional<Application> applicationOpt = applicationRepository.findById(applicationId);
-        Application application = applicationOpt.orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
+        Application application = applicationOpt
+                .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
         application.setApplicationStatus(status);
         return applicationRepository.save(application);
     }
 
-
     public Application acceptApplication(Integer applicationId) {
         // Find the application to approve
         Optional<Application> applicationOpt = applicationRepository.findById(applicationId);
-        Application application = applicationOpt.orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
+        Application application = applicationOpt
+                .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
 
         // Get the project related to this application
         Project project = application.getProject();
 
         // Update the application status to approved
         application.setApplicationStatus(ApplicationStatus.APPROVED);
-        applicationRepository.save(application);  // Save the approved application
+        applicationRepository.save(application); // Save the approved application
 
-        Project updated = application.getProject();  // Update the project with the approved application's freelancer
+        Project updated = application.getProject(); // Update the project with the approved application's freelancer
         updated.setFreelancer(application.getFreelancer());
-        projectRepository.save(updated);  // Save the updated project
+        projectRepository.save(updated); // Save the updated project
 
         // Fetch all other applications for the same project
         List<Application> allApplications = applicationRepository.findByProject(project);
@@ -117,9 +141,8 @@ public class ApplicationService {
             }
         }
 
-        return application;  // Return the approved application
+        return application; // Return the approved application
     }
-
 
     // Διαγραφή αίτησης
     public void deleteApplication(Integer applicationId) {
@@ -128,5 +151,10 @@ public class ApplicationService {
         } else {
             throw new RuntimeException("Application not found with ID: " + applicationId);
         }
+    }
+
+    // Εύρεση αίτησης με βάση το ID
+    public Optional<Application> getApplicationById(Integer id) {
+        return applicationRepository.findById(id);
     }
 }

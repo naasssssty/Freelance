@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import '../styles/client dashboard/clientApplicationCard.css';
 import Chat from "./Chat";
+import { FaDownload } from 'react-icons/fa';
 
 const ClientApplicationCard = ({ application, onAccept, onReject }) => {
     console.log('Application data:', application);
@@ -156,6 +157,13 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
         );
     };
 
+    const handleDownloadCV = (applicationId) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        window.open(`http://localhost:8080/application/${applicationId}/download-cv`, '_blank');
+    };
+
     return (
         <div className="client-application-card">
             <div className="application-header">
@@ -181,6 +189,17 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
                         <span className="value">{application.created_at}</span>
                     </div>
                 </div>
+
+                {application.cvFilePath && (
+                    <div className="cv-download">
+                        <button 
+                            className="download-cv-button"
+                            onClick={() => handleDownloadCV(application.id)}
+                        >
+                            <FaDownload /> Download CV
+                        </button>
+                    </div>
+                )}
             </div>
 
             <div className="application-actions">

@@ -8,12 +8,19 @@ import dit.hua.gr.backend.service.ApplicationService;
 import dit.hua.gr.backend.service.ProjectService;
 import dit.hua.gr.backend.service.UserService;
 import dit.hua.gr.backend.service.NotificationService;
+import dit.hua.gr.backend.service.MinioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
+import java.io.InputStream;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -23,20 +30,32 @@ public class ApplicationController {
     private final ProjectService projectService;
     private final UserService userService;
     private final NotificationService notificationService;
+    private final MinioService minioService;
 
     public ApplicationController(ApplicationService applicationService, ProjectService projectService,
-            UserService userService, NotificationService notificationService) {
+            UserService userService, NotificationService notificationService, MinioService minioService) {
         this.applicationService = applicationService;
         this.projectService = projectService;
         this.userService = userService;
         this.notificationService = notificationService;
+        this.minioService = minioService;
     }
 
-    @PostMapping("/project/{projectId}/apply/{username}")
+    @PostMapping("/project/{projectId}/apply/{username}/with-cv")
     @PreAuthorize("hasRole('FREELANCER')")
-    public ResponseEntity<ApplicationDTO> applyForProject(@PathVariable Integer projectId,
-            @PathVariable String username, @RequestBody String cover_letter) {
-        Application application = applicationService.createApplication(projectId, username, cover_letter);
+    public ResponseEntity<ApplicationDTO> applyForProjectWithCV(
+            @PathVariable Integer projectId,
+            @PathVariable String username,
+            @RequestParam("coverLetter") String coverLetter,
+            @RequestParam(value = "cvFile", required = false) MultipartFile cvFile) {
+
+        String cvFilePath = null;
+        if (cvFile != null && !cvFile.isEmpty()) {
+            cvFilePath = minioService.uploadFile(cvFile, username, projectId);
+        }
+
+        Application application = applicationService.createApplicationWithCV(projectId, username, coverLetter,
+                cvFilePath);
 
         // Create notification for project owner
         notificationService.createNotification(
@@ -44,13 +63,23 @@ public class ApplicationController {
                 "New application received for project: " + application.getProject().getTitle(),
                 NotificationType.APPLICATION_RECEIVED);
 
-        ApplicationDTO applicationDTO = new ApplicationDTO();
-        applicationDTO.setProjectTitle(application.getProject().toString());
-        applicationDTO.setCover_letter(application.getCover_letter());
-        applicationDTO.setApplicationStatus(application.getApplicationStatus());
-        applicationDTO.setFreelancer(username);
-        applicationDTO.setId(application.getId());
-        applicationDTO.setCreated_at(application.getCreated_at().toString());
+        ApplicationDTO applicationDTO = convertToDTO(application);
+        return ResponseEntity.ok(applicationDTO);
+    }
+
+    @PostMapping("/project/{projectId}/apply/{username}")
+    @PreAuthorize("hasRole('FREELANCER')")
+    public ResponseEntity<ApplicationDTO> applyForProject(@PathVariable Integer projectId,
+            @PathVariable String username, @RequestBody String coverLetter) {
+        Application application = applicationService.createApplication(projectId, username, coverLetter);
+
+        // Create notification for project owner
+        notificationService.createNotification(
+                application.getProject().getClient(),
+                "New application received for project: " + application.getProject().getTitle(),
+                NotificationType.APPLICATION_RECEIVED);
+
+        ApplicationDTO applicationDTO = convertToDTO(application);
         return ResponseEntity.ok(applicationDTO);
     }
 
@@ -65,7 +94,7 @@ public class ApplicationController {
     }
 
     private ApplicationDTO convertToDTO(Application application) {
-        return new ApplicationDTO(
+        ApplicationDTO dto = new ApplicationDTO(
                 application.getId(),
                 application.getProject().getTitle(),
                 application.getProject().getId(),
@@ -73,6 +102,9 @@ public class ApplicationController {
                 application.getApplicationStatus(),
                 application.getFreelancer().getUsername(),
                 application.getCreated_at().toString().substring(0, 10));
+
+        dto.setCvFilePath(application.getCvFilePath());
+        return dto;
     }
 
     // Εύρεση αιτήσεων από έναν freelancer (μόνο για τον FREELANCER ή ADMIN)
@@ -180,5 +212,29 @@ public class ApplicationController {
     public ResponseEntity<Void> deleteApplication(@PathVariable Integer applicationId) {
         applicationService.deleteApplication(applicationId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/application/{applicationId}/download-cv")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT')")
+    public ResponseEntity<Resource> downloadCV(@PathVariable Integer applicationId) {
+        Application application = applicationService.getApplicationById(applicationId)
+                .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
+
+        if (application.getCvFilePath() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            InputStream inputStream = minioService.getFile(application.getCvFilePath());
+            InputStreamResource resource = new InputStreamResource(inputStream);
+
+            String filename = application.getCvFilePath().substring(application.getCvFilePath().lastIndexOf("/") + 1);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

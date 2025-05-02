@@ -153,3 +153,34 @@ export const createReport = async (projectId, description) => {
         throw error.response ? error.response.data : error;
     }
 };
+
+// Update the applyForProject function to handle CV uploads
+export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
+    try {
+        const { username } = getTokenAndDecode();
+        if (!coverLetter || coverLetter.trim() === "") {
+            throw new Error("Cover Letter cannot be empty.");
+        }
+
+        const formData = new FormData();
+        formData.append("coverLetter", coverLetter);
+        if (cvFile) {
+            formData.append("cvFile", cvFile);
+        }
+
+        const response = await axios.post(
+            `${API_BASE_URL}/project/${projectId}/apply/${username}/with-cv`,
+            formData,
+            { 
+                headers: {
+                    'Authorization': `Bearer ${getTokenAndDecode().token}`,
+                    'Content-Type': 'multipart/form-data'
+                } 
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error applying for project:", error);
+        throw error.response ? error.response.data : error;
+    }
+};

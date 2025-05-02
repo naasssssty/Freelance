@@ -10,11 +10,13 @@ public class ApplicationDTO {
     private ApplicationStatus applicationStatus;
     private String freelancer;
     private String created_at;
+    private String cvFilePath;
 
     public ApplicationDTO() {
     }
 
-    public ApplicationDTO(Integer id, String projectTitle, Integer project_id, String cover_letter, ApplicationStatus applicationStatus, String freelancer, String created_at) {
+    public ApplicationDTO(Integer id, String projectTitle, Integer project_id, String cover_letter,
+            ApplicationStatus applicationStatus, String freelancer, String created_at) {
         this.id = id;
         this.projectTitle = projectTitle;
         this.project_id = project_id;
@@ -78,5 +80,13 @@ public class ApplicationDTO {
 
     public void setCreated_at(String created_at) {
         this.created_at = created_at.substring(0, 10);
+    }
+
+    public String getCvFilePath() {
+        return cvFilePath;
+    }
+
+    public void setCvFilePath(String cvFilePath) {
+        this.cvFilePath = cvFilePath;
     }
 }
