@@ -3,6 +3,7 @@ package dit.hua.gr.backend.service;
 import dit.hua.gr.backend.dto.UserDTO;
 import dit.hua.gr.backend.model.User;
 import dit.hua.gr.backend.repository.UserRepository;
+import dit.hua.gr.backend.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +15,12 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, EmailService emailService) {
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
 
     // Δημιουργία ή αποθήκευση χρήστη
@@ -25,11 +28,18 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User verifyFreelancer(String username, Boolean verify){
-            return userRepository.findByUsername(username).map(existingUser ->{
-                existingUser.setVerified(verify);
-                return userRepository.save(existingUser);
-            }).orElseThrow(() -> new IllegalArgumentException("User with username " + username + " not found"));
+    public User verifyFreelancer(String username, Boolean verify) {
+        return userRepository.findByUsername(username).map(existingUser -> {
+            existingUser.setVerified(verify);
+            User savedUser = userRepository.save(existingUser);
+            
+            // Send verification email if user is being verified
+            if (verify) {
+                emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getUsername());
+            }
+            
+            return savedUser;
+        }).orElseThrow(() -> new IllegalArgumentException("User with username " + username + " not found"));
     }
 
     //APIs
