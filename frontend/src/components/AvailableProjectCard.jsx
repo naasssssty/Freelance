@@ -4,9 +4,13 @@ import {
     FaFileAlt, 
     FaDollarSign, 
     FaCalendarAlt,
+    // eslint-disable-next-line
     FaClock,
+    // eslint-disable-next-line
     FaTags,
+    // eslint-disable-next-line
     FaTools,
+    // eslint-disable-next-line
     FaInfoCircle,
     FaUpload,
     FaFilePdf,
@@ -110,53 +114,44 @@ const AvailableProjectCard = ({ project }) => {
         }
     };
 
+    // Μετατροπή ημερομηνιών σε αναγνώσιμη μορφή
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "N/A";
+        if (typeof dateStr === 'string') {
+            return new Date(dateStr).toLocaleDateString();
+        }
+        return dateStr.toLocaleDateString();
+    };
+
     return (
         <div className="project-card">
             <div className="project-card-content">
                 <div className="project-header">
-                    <h3 className="project-title">{project.title}</h3>
+                    <h3 className="project-title">{project.title || "Untitled Project"}</h3>
                     <span className={`project-status ${getStatusColor(project.projectStatus)}`}>
-                        {project.projectStatus}
+                        {project.projectStatus || "N/A"}
                     </span>
                 </div>
                 
                 <div className="project-description">
-                    <p>{project.description}</p>
+                    <p>{project.description || "No description available"}</p>
                 </div>
                 
                 <div className="project-meta">
-                    <div className="meta-item">
-                        <FaUser className="meta-icon" />
-                        <span className="label">Client:</span>
-                        <span className="value">{project.client}</span>
+                    <div className="meta-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <FaUser className="meta-icon" style={{ marginRight: '5px' }} />
+                        <span className="label" style={{ marginRight: '5px' }}>Client:</span>
+                        <span className="value">{project.clientUsername || "N/A"}</span>
                     </div>
-                    <div className="meta-item">
-                        <FaDollarSign className="meta-icon" />
-                        <span className="label">Budget:</span>
-                        <span className="value">${project.budget}</span>
+                    <div className="meta-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <FaDollarSign className="meta-icon" style={{ marginRight: '5px' }} />
+                        <span className="label" style={{ marginRight: '5px' }}>Budget:</span>
+                        <span className="value">${project.budget || "0"}</span>
                     </div>
-                    <div className="meta-item">
-                        <FaCalendarAlt className="meta-icon" />
-                        <span className="label">Deadline:</span>
-                        <span className="value">{project.deadline}</span>
-                    </div>
-                    <div className="meta-item">
-                        <FaClock className="meta-icon" />
-                        <span className="label">Posted:</span>
-                        <span className="value">{project.posted_at}</span>
-                    </div>
-                </div>
-                
-                <div className="project-tags">
-                    <div className="meta-item">
-                        <FaTags className="meta-icon" />
-                        <span className="label">Category:</span>
-                        <span className="value">{project.category}</span>
-                    </div>
-                    <div className="meta-item">
-                        <FaTools className="meta-icon" />
-                        <span className="label">Skills:</span>
-                        <span className="value">{project.skills}</span>
+                    <div className="meta-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <FaCalendarAlt className="meta-icon" style={{ marginRight: '5px' }} />
+                        <span className="label" style={{ marginRight: '5px' }}>Deadline:</span>
+                        <span className="value">{formatDate(project.deadline)}</span>
                     </div>
                 </div>
                 

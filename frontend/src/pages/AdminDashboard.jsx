@@ -13,13 +13,16 @@ import Header from '../components/Header';
 import AdminSearchComponent from '../components/AdminSearchComponent';
 import '../styles/header.css';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line
 import UserCard from '../components/UserCard';
+// eslint-disable-next-line
 import ProjectCard from '../components/ProjectCard';
 import Footer from '../components/Footer';
 import '../styles/admin dashboard/cards.css';
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaClock, FaUser, FaEnvelope, FaUserTag, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
 import ReportManagement from '../components/ReportManagement';
 import { jwtDecode } from "jwt-decode";
+import axios from 'axios';
 
 const AdminDashboard = () => {
 
@@ -29,8 +32,12 @@ const AdminDashboard = () => {
     const [showUsersList, setShowUsersList] = useState(false);
     const [showProjectsList, setShowProjectsList] = useState(false);
     const [searchedUser, setSearchedUser] = useState(null);
-    const [isLoadingUsers, setIsLoadingUsers] = useState(false);
-    const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+    // eslint-disable-next-line
+    const [users, setUsers] = useState([]);
+    // eslint-disable-next-line
+    const [projects, setProjects] = useState([]);
+    // eslint-disable-next-line
+    const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
 
@@ -82,28 +89,29 @@ const AdminDashboard = () => {
         setSearchedUser(result);
         setShowUsersList(false);
         setShowProjectsList(false);
+        setShowReports(false);
+        setShowDashboard(false);
     };
 
     const handleLoadUsers = async () => {
         try {
-            setIsLoadingUsers(true);
-            const users = await loadUsersList();
-            dispatch({ type: "SET_USERS_LIST", payload: users });
+            const usersData = await loadUsersList();
+            setUsers(usersData);
+            dispatch({ type: "SET_USERS_LIST", payload: usersData });
             setShowUsersList(true);
             setShowProjectsList(false);
             setShowReports(false);
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading users:", error);
-        } finally {
-            setIsLoadingUsers(false);
         }
     };
 
     const handleLoadProjects = async () => {
         try {
-            const projects = await loadProjectsList();
-            dispatch({ type: "SET_PROJECTS_LIST", payload: projects });
+            const projectsData = await loadProjectsList();
+            setProjects(projectsData);
+            dispatch({ type: "SET_PROJECTS_LIST", payload: projectsData });
             setShowProjectsList(true);
             setShowUsersList(false);
             setShowReports(false);
@@ -121,6 +129,16 @@ const AdminDashboard = () => {
     const handleUserVerify = async (username) => {
         try {
             await handleVerify(username, JSON.stringify(true), dispatch, usersList);
+            // Ενημερώνουμε τη λίστα των χρηστών δυναμικά
+            setUsers(users.map(user => 
+                user.username === username ? { ...user, isVerified: true } : user
+            ));
+            dispatch({
+                type: "SET_USERS_LIST",
+                payload: usersList.map(user => 
+                    user.username === username ? { ...user, verified: true } : user
+                )
+            });
         } catch (error) {
             console.error("Error verifying user:", error);
         }
@@ -204,6 +222,27 @@ const AdminDashboard = () => {
                 </div>
             </div>
         );
+    };
+
+    const handleVerifyUser = async (userId, verify) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.put(`/user/${userId}/verify`, { verify }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            // Ενημερώνουμε τη λίστα των χρηστών δυναμικά
+            setUsers(users.map(user => 
+                user.id === userId ? { ...user, isVerified: verify } : user
+            ));
+            
+            alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
+        } catch (error) {
+            console.error('Error verifying user:', error);
+            alert('Failed to verify user');
+        }
     };
 
     return (
