@@ -25,6 +25,9 @@ public class MinioService {
     @Value("${minio.bucketName}")
     private String bucketName;
 
+    /**
+     * Αρχικοποίηση του bucket αν δεν υπάρχει
+     */
     public void init() {
         try {
             boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
@@ -36,6 +39,9 @@ public class MinioService {
         }
     }
 
+    /**
+     * Ανέβασμα αρχείου στο MinIO
+     */
     public String uploadFile(MultipartFile file, String username, Integer projectId) {
         try {
             // Create a unique file name
@@ -58,6 +64,9 @@ public class MinioService {
         }
     }
 
+    /**
+     * Κατέβασμα αρχείου από το MinIO
+     */
     public InputStream getFile(String objectName) {
         try {
             return minioClient.getObject(
@@ -70,6 +79,9 @@ public class MinioService {
         }
     }
 
+    /**
+     * Διαγραφή αρχείου από το MinIO
+     */
     public void deleteFile(String objectName) {
         try {
             minioClient.removeObject(

@@ -2,6 +2,7 @@
 
 package dit.hua.gr.backend.service;
 
+import dit.hua.gr.backend.dto.ApplicationDTO;
 import dit.hua.gr.backend.model.*;
 import dit.hua.gr.backend.repository.ApplicationRepository;
 import dit.hua.gr.backend.repository.ProjectRepository;
@@ -9,9 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ApplicationService {
@@ -47,8 +50,7 @@ public class ApplicationService {
     }
 
     // Δημιουργία νέας αίτησης με CV
-    public Application createApplicationWithCV(Integer projectId, String freelancerUsername, String coverLetter,
-            String cvFilePath) {
+    public Application createApplicationWithCV(Integer projectId, String freelancerUsername, String coverLetter, String cvFilePath) {
         Optional<Project> projectOpt = projectService.findProjectById(projectId);
         Project project = projectOpt.orElseThrow(() -> new RuntimeException("Project not found with ID: " + projectId));
         Optional<User> freelancerOpt = userService.findUserByUsername(freelancerUsername);
@@ -156,5 +158,19 @@ public class ApplicationService {
     // Εύρεση αίτησης με βάση το ID
     public Optional<Application> getApplicationById(Integer id) {
         return applicationRepository.findById(id);
+    }
+
+    // Μετατροπή Application σε ApplicationDTO
+    public ApplicationDTO convertToDTO(Application application) {
+        ApplicationDTO dto = new ApplicationDTO();
+        dto.setId(application.getId());
+        dto.setProjectTitle(application.getProject().getTitle());
+        dto.setProject_id(application.getProject().getId());
+        dto.setCover_letter(application.getCover_letter());
+        dto.setApplicationStatus(application.getApplicationStatus());
+        dto.setFreelancer(application.getFreelancer().getUsername());
+        dto.setCreated_at(application.getCreated_at().format(DateTimeFormatter.ISO_DATE_TIME));
+        dto.setCvFilePath(application.getCvFilePath());
+        return dto;
     }
 }

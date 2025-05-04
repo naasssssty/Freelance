@@ -1,6 +1,8 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
+const API_BASE_URL = "http://localhost:8080";
+
 // Utility function to handle token and decoding
 const getTokenAndDecode = () => {
     const token = localStorage.getItem('token');
@@ -115,6 +117,19 @@ export const handleRejectApplication = async (applicationId) => {
         return response.data;
     } catch (error) {
         alert(`Failed to reject application: ${error.response?.data?.message || error.message}`);
+        throw error;
+    }
+};
+
+// Download CV from an application
+export const downloadCV = async (applicationId) => {
+    try {
+        // Απλά ανοίγουμε το URL σε νέο tab
+        window.open(`${API_BASE_URL}/application/${applicationId}/download-cv`, '_blank');
+        return true;
+    } catch (error) {
+        console.error("Error downloading CV:", error);
+        alert("Failed to download CV. Please try again.");
         throw error;
     }
 };
