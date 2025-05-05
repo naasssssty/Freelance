@@ -128,7 +128,7 @@ const AdminDashboard = () => {
 
     const handleUserVerify = async (username) => {
         try {
-            await handleVerify(username, JSON.stringify(true), dispatch, usersList);
+            await handleVerify(username, true);
             // Ενημερώνουμε τη λίστα των χρηστών δυναμικά
             setUsers(users.map(user => 
                 user.username === username ? { ...user, isVerified: true } : user
