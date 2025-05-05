@@ -257,6 +257,66 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleProjectApprove = async (id) => {
+        try {
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'APPROVED' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'APPROVED' } : project
+                )
+            });
+
+            // Εκτελούμε το API call στο παρασκήνιο
+            await handleApproveProject(id);
+        } catch (error) {
+            console.error("Error approving project:", error);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+                )
+            });
+        }
+    };
+
+    const handleProjectDeny = async (id) => {
+        try {
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'DENIED' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'DENIED' } : project
+                )
+            });
+
+            // Εκτελούμε το API call στο παρασκήνιο
+            await handleDenyProject(id);
+        } catch (error) {
+            console.error("Error denying project:", error);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+                )
+            });
+        }
+    };
+
     return (
         <div className="dashboard">
             <Header
@@ -357,13 +417,13 @@ const AdminDashboard = () => {
                                             <>
                                                 <button 
                                                     className="card-button verify-button"
-                                                    onClick={() => handleApproveProject(project.id, dispatch, projectsList)}
+                                                    onClick={() => handleProjectApprove(project.id)}
                                                 >
                                                     Approve
                                                 </button>
                                                 <button 
                                                     className="card-button deny-button"
-                                                    onClick={() => handleDenyProject(project.id, dispatch, projectsList)}
+                                                    onClick={() => handleProjectDeny(project.id)}
                                                 >
                                                     Deny
                                                 </button>
