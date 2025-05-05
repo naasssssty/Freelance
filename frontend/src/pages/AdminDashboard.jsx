@@ -128,8 +128,7 @@ const AdminDashboard = () => {
 
     const handleUserVerify = async (username) => {
         try {
-            await handleVerify(username, true);
-            // Ενημερώνουμε τη λίστα των χρηστών δυναμικά
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
             setUsers(users.map(user => 
                 user.username === username ? { ...user, isVerified: true } : user
             ));
@@ -139,8 +138,21 @@ const AdminDashboard = () => {
                     user.username === username ? { ...user, verified: true } : user
                 )
             });
+
+            // Εκτελούμε το API call στο παρασκήνιο
+            await handleVerify(username, true);
         } catch (error) {
             console.error("Error verifying user:", error);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setUsers(users.map(user => 
+                user.username === username ? { ...user, isVerified: false } : user
+            ));
+            dispatch({
+                type: "SET_USERS_LIST",
+                payload: usersList.map(user => 
+                    user.username === username ? { ...user, verified: false } : user
+                )
+            });
         }
     };
 
