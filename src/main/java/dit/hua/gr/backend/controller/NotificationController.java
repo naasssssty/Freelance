@@ -4,6 +4,7 @@ import dit.hua.gr.backend.dto.NotificationDTO;
 import dit.hua.gr.backend.model.User;
 import dit.hua.gr.backend.service.NotificationService;
 import dit.hua.gr.backend.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,10 +53,14 @@ public class NotificationController {
     @PutMapping("/mark-all-read")
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER', 'ADMIN')")
     public ResponseEntity<Void> markAllAsRead(Authentication authentication) {
-        User user = userService.findUserByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            User user = userService.findUserByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        notificationService.markAllAsRead(user);
-        return ResponseEntity.ok().build();
+            notificationService.markAllAsRead(user);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

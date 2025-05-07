@@ -128,9 +128,7 @@ const AvailableProjectCard = ({ project }) => {
             <div className="project-card-content">
                 <div className="project-header">
                     <h3 className="project-title">{project.title || "Untitled Project"}</h3>
-                    <span className={`project-status ${getStatusColor(project.projectStatus)}`}>
-                        {project.projectStatus || "N/A"}
-                    </span>
+                    
                 </div>
                 
                 <div className="project-description">
@@ -138,19 +136,19 @@ const AvailableProjectCard = ({ project }) => {
                 </div>
                 
                 <div className="project-meta">
-                    <div className="meta-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                        <FaUser className="meta-icon" style={{ marginRight: '5px' }} />
-                        <span className="label" style={{ marginRight: '5px' }}>Client:</span>
+                    <div className="meta-item" >
+                        <FaUser className="meta-icon"  />
+                        <span className="label" >Client:</span>
                         <span className="value">{project.clientUsername || "N/A"}</span>
                     </div>
-                    <div className="meta-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                        <FaDollarSign className="meta-icon" style={{ marginRight: '5px' }} />
-                        <span className="label" style={{ marginRight: '5px' }}>Budget:</span>
+                    <div className="meta-item" >
+                        <FaDollarSign className="meta-icon" />
+                        <span className="label" >Budget:</span>
                         <span className="value">${project.budget || "0"}</span>
                     </div>
-                    <div className="meta-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                        <FaCalendarAlt className="meta-icon" style={{ marginRight: '5px' }} />
-                        <span className="label" style={{ marginRight: '5px' }}>Deadline:</span>
+                    <div className="meta-item" >
+                        <FaCalendarAlt className="meta-icon" />
+                        <span className="label" >Deadline:</span>
                         <span className="value">{formatDate(project.deadline)}</span>
                     </div>
                 </div>
@@ -166,11 +164,11 @@ const AvailableProjectCard = ({ project }) => {
                 
                 {showApplyForm && (
                     <div className="apply-form-container">
-                        <h4>Apply for this Project</h4>
+                        <h4 style={{color: 'black'}}>Apply for this Project</h4>
                         {error && <div className="error-message">{error}</div>}
                         <form onSubmit={handleApply}>
                             <div className="form-group">
-                                <label htmlFor="coverLetter">
+                                <label htmlFor="coverLetter" style={{color: 'black'}}>
                                     <FaFileAlt /> Cover Letter
                                 </label>
                                 <textarea
@@ -183,7 +181,7 @@ const AvailableProjectCard = ({ project }) => {
                             </div>
                             
                             <div className="form-group">
-                                <label htmlFor="cvFile">
+                                <label htmlFor="cvFile" style={{color: 'black'}}>
                                     <FaUpload /> Upload CV (PDF, DOCX, or Image)
                                 </label>
                                 <div className="file-upload-container">
@@ -195,7 +193,7 @@ const AvailableProjectCard = ({ project }) => {
                                         className="file-input"
                                     />
                                     <div className="file-upload-button">
-                                        <FaUpload /> Choose File
+                                        Choose File
                                     </div>
                                     {fileName && (
                                         <div className="file-name">
@@ -204,7 +202,7 @@ const AvailableProjectCard = ({ project }) => {
                                         </div>
                                     )}
                                 </div>
-                                <small>Optional: Upload your CV to increase your chances</small>
+                                <small style={{color: 'black'}}>Optional: Upload your CV to increase your chances</small>
                             </div>
                             
                             <div className="form-actions">

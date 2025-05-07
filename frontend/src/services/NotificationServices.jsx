@@ -47,7 +47,7 @@ export const markAsRead = async (notificationId) => {
 export const markAllAsRead = async () => {
     try {
         const token = localStorage.getItem('token');
-        await axios.put('/api/notifications/mark-all-read', null, {
+        await axios.put('/notifications/mark-all-read', null, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

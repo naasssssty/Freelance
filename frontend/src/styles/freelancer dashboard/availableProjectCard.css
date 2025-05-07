@@ -1,10 +1,12 @@
+
+
 .available-project-card {
     background: transparent;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 20px;
-    margin: 10px;
+    margin: 100px;
     transition: transform 0.2s, box-shadow 0.2s;
     color: black;
 }
@@ -46,6 +48,10 @@
     margin-top: 15px;
 }
 
+.project-meta .label{
+    justify-content: center;
+}
+
 .meta-item {
     display: flex;
     flex-direction: column;
@@ -84,11 +90,9 @@
     color: white;
 }
 
-.apply-form {
-    width: 100%;
-}
 
-.apply-form textarea {
+
+.apply-form-container textarea {
     width: 100%;
     min-height: 120px;
     padding: 12px;
@@ -101,16 +105,11 @@
     margin-bottom: 15px;
 }
 
-.apply-form textarea:focus {
+.apply-form-container textarea:focus {
     outline: none;
     border-color: #2196f3;
 }
 
-.form-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
 
 .submit-button, .cancel-button {
     padding: 8px 16px;
@@ -123,7 +122,7 @@
 .submit-button {
     background: #2196f3;
     border: none;
-    color: white;
+    color: white; 
 }
 
 .submit-button:disabled {
@@ -131,9 +130,17 @@
     cursor: not-allowed;
 }
 
+.apply-form-container {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
 .cancel-button {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(20, 99, 225, 0.958);
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -345,6 +352,7 @@
 
 .file-upload-container {
     position: relative;
+    color: rgb(0, 0, 0);
     margin-top: 8px;
     display: flex;
     flex-direction: column;
@@ -364,19 +372,19 @@
 
 .file-upload-button {
     display: flex;
-    align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 8px 16px;
-    background-color: #f0f0f0;
-    border: 1px dashed #ccc;
+    padding: 8px 16px;                     
+    background-color: transparent;
+    border: 1px dashed #000000;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .file-upload-button:hover {
-    background-color: #e0e0e0;
-    border-color: #aaa;
+    background-color: #000000;
+    border-color: #000000;
 }
 
 .file-name {
