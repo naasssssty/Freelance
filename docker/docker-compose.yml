@@ -29,9 +29,18 @@ services:
       MINIO_ACCESS_KEY: iRb4jDOLKvmbfkQ
       MINIO_SECRET_KEY: OskbMSsFLoKw41d
       MINIO_BUCKET_NAME: freelancer-cvs
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: ""
+      SPRING_MAIL_PASSWORD: ""
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_DEBUG: "true"
     depends_on:
       - postgres
       - minio
+      - mailhog
     networks:
       - freelancer_network
 
@@ -45,6 +54,8 @@ services:
       - backend
     networks:
       - freelancer_network
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
 
   minio:
     image: minio/minio
@@ -60,8 +71,7 @@ services:
     networks:
       - freelancer_network
 
-
-  Mailhog:
+  mailhog:
     image: mailhog/mailhog
     ports:
       - "8025:8025"
