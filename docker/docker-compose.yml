@@ -60,6 +60,15 @@ services:
     networks:
       - freelancer_network
 
+
+  Mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - freelancer_network
+
 volumes:
   postgres_data:
   minio_data:
