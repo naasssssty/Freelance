@@ -1,7 +1,9 @@
 // AdminDashboard.jsx
 
 import {
-    handleVerify,
+    // eslint-disable-next-line
+    // handleVerify δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // handleVerify,
     handleDenyProject,
     handleApproveProject,
     loadUsersList,
@@ -29,8 +31,8 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    const [showUsersList, setShowUsersList] = useState(false);
-    const [showProjectsList, setShowProjectsList] = useState(false);
+    const [showUsersList, setShowUsersList] = useState(true);
+    const [showProjectsList, setShowProjectsList] = useState(true);
     const [searchedUser, setSearchedUser] = useState(null);
     // eslint-disable-next-line
     const [users, setUsers] = useState([]);

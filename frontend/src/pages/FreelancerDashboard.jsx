@@ -4,7 +4,12 @@ import FreelancerSearchComponent from '../components/FreelancerSearchComponent';
 import "../styles/header.css";
 import { useNavigate } from "react-router-dom";
 import {
-    applyForProject, handleCompleteProject,
+    // eslint-disable-next-line
+    // applyForProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // applyForProject,
+    // eslint-disable-next-line
+    // handleCompleteProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // handleCompleteProject,
     loadAvailableProjects,
     loadMyApplications,
     loadMyProjects
@@ -98,17 +103,23 @@ const FreelancerDashboard = () => {
         navigate("/login");
     };
 
-    const handleApplyForProject = async (projectId) => {
-        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
-        // try {
-        //     const coverLetter = coverLetters[projectId] || '';
-        //     await applyForProject(projectId, coverLetter);
-        //     // Refresh applications
-        //     loadMyApplications();
-        // } catch (error) {
-        //     console.error('Error applying for project:', error);
-        // }
-    };
+    // eslint-disable-next-line
+    // handleApplyForProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const handleApplyForProject = async (projectId) => {
+    //     const coverLetter = coverLetters[projectId] || '';
+    //     try {
+    //         setLoading(true);
+    //         await applyForProject(projectId, coverLetter);
+    //         dispatch(loadMyApplications());
+    //         dispatch(loadAvailableProjects());
+    //         alert('Application submitted successfully!');
+    //     } catch (error) {
+    //         console.error('Error applying for project:', error);
+    //         alert('Failed to apply for project. Please try again.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const handleLoadMyApplications = async () => {
         try {
