@@ -31,7 +31,9 @@ const FreelancerDashboard = () => {
     const dispatch = useDispatch();
 
     const [showAvailableProjects, setShowAvailableProjects] = useState(false);
+    // eslint-disable-next-line no-unused-vars
     const [loading, setLoading] = useState(false);
+    // eslint-disable-next-line no-unused-vars
     const [coverLetters, setCoverLetters] = useState({});
     const [searchedProject, setSearchedProject] = useState(null);
     const [showMyApplications, setShowMyApplications] = useState(false);

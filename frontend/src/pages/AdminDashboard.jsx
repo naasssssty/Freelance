@@ -23,8 +23,8 @@ import Footer from '../components/Footer';
 import '../styles/admin dashboard/cards.css';
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaClock, FaUser, FaEnvelope, FaUserTag, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
 import ReportManagement from '../components/ReportManagement';
-import { jwtDecode } from "jwt-decode";
-import axios from 'axios';
+// eslint-disable-next-line no-unused-vars
+import jwtDecode from 'jwt-decode';
 
 const AdminDashboard = () => {
 
