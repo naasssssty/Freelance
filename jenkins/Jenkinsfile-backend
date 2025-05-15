@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
         maven 'Maven 3'
-        jdk 'JDK 21'
+        jdk 'JDK 17'
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
@@ -56,8 +56,9 @@ pipeline {
     }
     post {
         always {
-            // Clean up workspace after build
-            cleanWs()
+            // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
+            // cleanWs()
+            echo 'Backend pipeline completed.'
         }
         success {
             echo 'Backend pipeline completed successfully!'
