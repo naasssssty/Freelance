@@ -375,7 +375,7 @@ const AdminDashboard = () => {
                                         {!user.verified && user.role !== 'ADMIN' && (
                                             <button 
                                                 className="card-button verify-button"
-                                                onClick={() => handleUserVerify(user.username)}
+                                                onClick={() => handleVerifyUser(user.id, true)}
                                             >
                                                 Verify
                                             </button>
