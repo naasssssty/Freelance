@@ -127,7 +127,7 @@ const AdminDashboard = () => {
     };
 
     // eslint-disable-next-line
-    const handleVerifyUser = async (username) => {
+    const handleVerifyUserOld = async (username) => {
         // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
         // try {
         //     const response = await handleVerify(username);
@@ -224,19 +224,26 @@ const AdminDashboard = () => {
             const token = localStorage.getItem('token');
             const response = await axios.put(`/user/${userId}/verify`, { verify }, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
-            
-            // Ενημερώνουμε τη λίστα των χρηστών δυναμικά
-            setUsers(users.map(user => 
-                user.id === userId ? { ...user, isVerified: verify } : user
-            ));
-            
-            alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
+            if (response.status === 200) {
+                alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
+                // Ενημερώνουμε το state για να αντικατοπτρίζει την αλλαγή
+                setUsers(users.map(user => 
+                    user.id === userId ? { ...user, verified: verify } : user
+                ));
+                dispatch({
+                    type: "SET_USERS_LIST",
+                    payload: usersList.map(user => 
+                        user.id === userId ? { ...user, verified: verify } : user
+                    )
+                });
+            }
         } catch (error) {
-            console.error('Error verifying user:', error);
-            alert('Failed to verify user');
+            console.error(`Error ${verify ? 'verifying' : 'unverifying'} user:`, error);
+            alert(`Failed to ${verify ? 'verify' : 'unverify'} user`);
         }
     };
 
