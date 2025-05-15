@@ -30,22 +30,26 @@ const AdminDashboard = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
+    const username = localStorage.getItem('username');
+    const { usersList, projectsList } = useSelector((state) => state.admin);
+    const [users, setUsers] = useState([]);
+    const [projects, setProjects] = useState([]);
+    // eslint-disable-next-line
+    // usersLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const usersLoading = useSelector((state) => state.admin.usersLoading);
+    const usersError = useSelector((state) => state.admin.usersError);
+    // eslint-disable-next-line
+    // projectsLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const projectsLoading = useSelector((state) => state.admin.projectsLoading);
+    const projectsError = useSelector((state) => state.admin.projectsError);
     const [showUsersList, setShowUsersList] = useState(true);
     const [showProjectsList, setShowProjectsList] = useState(true);
     const [searchedUser, setSearchedUser] = useState(null);
-    // eslint-disable-next-line
-    const [users, setUsers] = useState([]);
-    // eslint-disable-next-line
-    const [projects, setProjects] = useState([]);
     // eslint-disable-next-line
     const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
 
-    const { usersList, loading: usersLoading, error: usersError } = useSelector((state) => state.users);
-    const { projectsList, loading: projectsLoading, error: projectsError } = useSelector((state) => state.projects);
-    
     // Παίρνουμε το username απευθείας από το token
     const getUsername = () => {
         const token = localStorage.getItem('token');
@@ -56,7 +60,6 @@ const AdminDashboard = () => {
         return '';
     };
 
-    const username = getUsername();
     console.log('Username from token:', username);
 
     // Add new state for statistics
