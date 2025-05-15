@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
-import React, { useState, useEffect } from "react";
 import logo from '../assets/logo.png';
 import NotificationIcon from './NotificationIcon';
 import NotificationPanel from './NotificationPanel';
