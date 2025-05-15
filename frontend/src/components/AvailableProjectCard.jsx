@@ -105,15 +105,6 @@ const AvailableProjectCard = ({ project }) => {
         return <FaFileAlt className="file-icon" />;
     };
 
-    const getStatusColor = (status) => {
-        switch(status) {
-            case 'APPROVED':
-                return 'approved';
-            default:
-                return '';
-        }
-    };
-
     // Μετατροπή ημερομηνιών σε αναγνώσιμη μορφή
     const formatDate = (dateStr) => {
         if (!dateStr) return "N/A";

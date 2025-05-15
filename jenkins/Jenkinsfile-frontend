@@ -63,8 +63,9 @@ pipeline {
     }
     post {
         always {
-            // Clean up workspace after build
-            cleanWs()
+            // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
+            // cleanWs()
+            echo 'Frontend pipeline completed.'
         }
         success {
             echo 'Frontend pipeline completed successfully!'

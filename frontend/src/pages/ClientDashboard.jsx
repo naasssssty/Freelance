@@ -23,14 +23,18 @@ const ClientDashboard = () => {
     const dispatch = useDispatch();
 
     const [showProjectForm, setShowProjectForm] = useState(false);
+    // eslint-disable-next-line
     const [projects, setProjects] = useState([]);
+    // eslint-disable-next-line
     const [applications, setApplications] = useState([]);
     const [username, setUsername] = useState('');
     const [showMyApplications, setShowMyApplications] = useState(false);
     const [showMyProjects, setShowMyProjects] = useState(false);
     const [showWelcome, setShowWelcome] = useState(true);
 
+    // eslint-disable-next-line
     const { myApplications, loading: myApplicationsLoading, error: myApplicationsError  } = useSelector((state) => state.applications);
+    // eslint-disable-next-line
     const { myProjects, loading: myProjectsLoading, error: myProjectsError  } = useSelector((state) => state.projects);
 
     useEffect(() => {

@@ -4,17 +4,10 @@ import { FaUser, FaCalendarAlt, FaIdCard, FaFileAlt, FaDownload } from 'react-ic
 import { downloadCV } from '../services/ClientServices';
 
 const ApplicationCard = ({ application, onAccept, onReject }) => {
+    // eslint-disable-next-line
     const getStatusColor = (status) => {
-        switch(status) {
-            case 'PENDING':
-                return 'pending';
-            case 'APPROVED':
-                return 'approved';
-            case 'REJECTED':
-                return 'rejected';
-            default:
-                return '';
-        }
+        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
+        // return status === 'ACCEPTED' ? '#4CAF50' : status === 'REJECTED' ? '#F44336' : '#FFC107';
     };
 
     const handleDownloadCV = async () => {

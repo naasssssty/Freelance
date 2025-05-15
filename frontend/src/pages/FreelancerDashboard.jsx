@@ -99,16 +99,15 @@ const FreelancerDashboard = () => {
     };
 
     const handleApplyForProject = async (projectId) => {
-        try {
-            setLoading(true);
-            const cover_letter = coverLetters[projectId] || "";
-            await applyForProject(projectId, cover_letter);
-            alert("Application submitted successfully!");
-        } catch (error) {
-            alert(`Failed to apply: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
+        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
+        // try {
+        //     const coverLetter = coverLetters[projectId] || '';
+        //     await applyForProject(projectId, coverLetter);
+        //     // Refresh applications
+        //     loadMyApplications();
+        // } catch (error) {
+        //     console.error('Error applying for project:', error);
+        // }
     };
 
     const handleLoadMyApplications = async () => {

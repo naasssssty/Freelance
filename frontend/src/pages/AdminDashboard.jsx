@@ -126,34 +126,17 @@ const AdminDashboard = () => {
         navigate('/login');
     };
 
-    const handleUserVerify = async (username) => {
-        try {
-            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
-            setUsers(users.map(user => 
-                user.username === username ? { ...user, isVerified: true } : user
-            ));
-            dispatch({
-                type: "SET_USERS_LIST",
-                payload: usersList.map(user => 
-                    user.username === username ? { ...user, verified: true } : user
-                )
-            });
-
-            // Εκτελούμε το API call στο παρασκήνιο
-            await handleVerify(username, true);
-        } catch (error) {
-            console.error("Error verifying user:", error);
-            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
-            setUsers(users.map(user => 
-                user.username === username ? { ...user, isVerified: false } : user
-            ));
-            dispatch({
-                type: "SET_USERS_LIST",
-                payload: usersList.map(user => 
-                    user.username === username ? { ...user, verified: false } : user
-                )
-            });
-        }
+    // eslint-disable-next-line
+    const handleVerifyUser = async (username) => {
+        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
+        // try {
+        //     const response = await handleVerify(username);
+        //     console.log(`User ${username} verified:`, response);
+        //     // Refresh users list
+        //     loadUsers();
+        // } catch (error) {
+        //     console.error(`Error verifying user ${username}:`, error);
+        // }
     };
 
     const handleLogoClick = () => {

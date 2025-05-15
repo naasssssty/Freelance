@@ -79,9 +79,20 @@ services:
     networks:
       - freelancer_network
 
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    networks:
+      - freelancer_network
+
 volumes:
   postgres_data:
   minio_data:
+  jenkins_home:
 
 networks:
   freelancer_network:
