@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaBell } from 'react-icons/fa';
-import '../styles/notificationIcon.css';
+// Σχολιάζουμε το import μέχρι να βρεθεί το σωστό αρχείο
+// import '../styles/notificationIcon.css';
 
 const NotificationIcon = ({ notifications }) => {
     // eslint-disable-next-line
