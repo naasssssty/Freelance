@@ -10,10 +10,12 @@ import {
     // eslint-disable-next-line
     // handleCompleteProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
     // handleCompleteProject,
+    // eslint-disable-next-line
+    // handleWithdrawApplication δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // handleWithdrawApplication
     loadAvailableProjects,
     loadMyApplications,
     loadMyProjects,
-    handleWithdrawApplication
 } from "../services/FreelancerServices";
 import { useDispatch, useSelector } from "react-redux";
 import AvailableProjectCard from '../components/AvailableProjectCard';

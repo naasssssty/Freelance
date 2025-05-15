@@ -50,15 +50,21 @@ const AdminDashboard = () => {
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
 
-    // Παίρνουμε το username απευθείας από το token
-    const getUsername = () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decoded = jwtDecode(token);
-            return decoded.sub;
-        }
-        return '';
-    };
+    // eslint-disable-next-line
+    // getUsername δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const getUsername = () => {
+    //     const token = localStorage.getItem('token');
+    //     if (token) {
+    //         try {
+    //             const decoded = jwtDecode(token);
+    //             return decoded.sub || 'Admin';
+    //         } catch (error) {
+    //             console.error('Error decoding token:', error);
+    //             return 'Admin';
+    //         }
+    //     }
+    //     return 'Admin';
+    // };
 
     console.log('Username from token:', username);
 
