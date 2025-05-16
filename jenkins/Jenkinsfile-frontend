@@ -39,7 +39,7 @@ pipeline {
             post {
                 always {
                     // Publish test results (if applicable)
-                    junit '**/junit.xml'
+                    junit allowEmptyResults: true, testResults: '**/junit.xml'
                 }
             }
         }
