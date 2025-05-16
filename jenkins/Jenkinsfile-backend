@@ -28,8 +28,8 @@ pipeline {
             }
             post {
                 always {
-                    // Publish test results
-                    junit '**/target/surefire-reports/*.xml'
+                    // Publish test results, allow empty results since tests are skipped
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
                 }
             }
         }
