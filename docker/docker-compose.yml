@@ -80,13 +80,14 @@ services:
       - freelancer_network
 
   jenkins:
-    image: jenkins/jenkins:lts
+    image: custom-jenkins-with-docker:latest
     ports:
       - "8081:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST=tcp://host.docker.internal:2375
     networks:
       - freelancer_network
 
@@ -97,4 +98,4 @@ volumes:
 
 networks:
   freelancer_network:
-    driver: bridge
+    name: docker_freelancer_network
