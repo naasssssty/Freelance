@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker-agent'
-    }
+    agent any
     tools {
         maven 'Maven 3'
         jdk 'JDK 21'
