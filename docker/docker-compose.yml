@@ -86,8 +86,7 @@ services:
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-    environment:
-      - DOCKER_HOST=tcp://host.docker.internal:2375
+      - ~/.docker/run/docker.sock:/var/run/docker.sock
     networks:
       - freelancer_network
 
