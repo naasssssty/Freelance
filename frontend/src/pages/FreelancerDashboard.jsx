@@ -23,6 +23,7 @@ import FreelancerProjectCard from '../components/FreelancerProjectCard';
 import ApplicationCard from '../components/ApplicationCard';
 import SearchedProjectCard from '../components/SearchedProjectCard';
 import Footer from '../components/Footer';
+// eslint-disable-next-line no-unused-vars
 import { FaProjectDiagram, FaClipboardList, FaCheckCircle, FaUser, FaClock, FaCalendarAlt, FaDollarSign, FaFileAlt } from 'react-icons/fa';
 import { jwtDecode } from "jwt-decode";
 
