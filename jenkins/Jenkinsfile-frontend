@@ -17,7 +17,8 @@ pipeline {
             steps {
                 // Install npm dependencies for frontend
                 dir('frontend') {
-                    sh 'npm install'
+                    // Use quiet flag to reduce output and possibly prevent buffer issues
+                    sh 'npm install --quiet'
                 }
             }
         }
