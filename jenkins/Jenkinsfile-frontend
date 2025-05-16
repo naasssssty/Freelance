@@ -66,6 +66,12 @@ pipeline {
                 }
             }
         }
+        stage('Check Docker Connection') {
+            steps {
+                sh 'docker info || echo "Docker connection failed"'
+                sh 'env | grep DOCKER || echo "DOCKER env vars not set"'
+            }
+        }
     }
     post {
         always {
