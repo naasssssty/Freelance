@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        nodejs 'Node 21'
+        nodejs 'NodeJS'
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
