@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: freelancer_db
+      POSTGRES_USER: freelancer_user
+      POSTGRES_PASSWORD: freelancer_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - freelancer_network
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/freelancer_db
+      SPRING_DATASOURCE_USERNAME: freelancer_user
+      SPRING_DATASOURCE_PASSWORD: freelancer_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: iRb4jDOLKvmbfkQ
+      MINIO_SECRET_KEY: OskbMSsFLoKw41d
+      MINIO_BUCKET_NAME: freelancer-cvs
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: ""
+      SPRING_MAIL_PASSWORD: ""
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_DEBUG: "true"
+    depends_on:
+      - postgres
+      - minio
+      - mailhog
+    networks:
+      - freelancer_network
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - freelancer_network
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+
+  minio:
+    image: minio/minio
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    environment:
+      MINIO_ROOT_USER: iRb4jDOLKvmbfkQ
+      MINIO_ROOT_PASSWORD: OskbMSsFLoKw41d
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - freelancer_network
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - freelancer_network
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - freelancer_network
+
+volumes:
+  postgres_data:
+  minio_data:
+  jenkins_home:
+
+networks:
+  freelancer_network:
+    driver: bridge

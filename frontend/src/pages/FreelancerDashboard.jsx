@@ -4,10 +4,18 @@ import FreelancerSearchComponent from '../components/FreelancerSearchComponent';
 import "../styles/header.css";
 import { useNavigate } from "react-router-dom";
 import {
-    applyForProject, handleCompleteProject,
+    // eslint-disable-next-line
+    // applyForProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // applyForProject,
+    // eslint-disable-next-line
+    // handleCompleteProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // handleCompleteProject,
+    // eslint-disable-next-line
+    // handleWithdrawApplication δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // handleWithdrawApplication
     loadAvailableProjects,
     loadMyApplications,
-    loadMyProjects
+    loadMyProjects,
 } from "../services/FreelancerServices";
 import { useDispatch, useSelector } from "react-redux";
 import AvailableProjectCard from '../components/AvailableProjectCard';
@@ -15,6 +23,7 @@ import FreelancerProjectCard from '../components/FreelancerProjectCard';
 import ApplicationCard from '../components/ApplicationCard';
 import SearchedProjectCard from '../components/SearchedProjectCard';
 import Footer from '../components/Footer';
+// eslint-disable-next-line no-unused-vars
 import { FaProjectDiagram, FaClipboardList, FaCheckCircle, FaUser, FaClock, FaCalendarAlt, FaDollarSign, FaFileAlt } from 'react-icons/fa';
 import { jwtDecode } from "jwt-decode";
 
@@ -23,7 +32,9 @@ const FreelancerDashboard = () => {
     const dispatch = useDispatch();
 
     const [showAvailableProjects, setShowAvailableProjects] = useState(false);
+    // eslint-disable-next-line no-unused-vars
     const [loading, setLoading] = useState(false);
+    // eslint-disable-next-line no-unused-vars
     const [coverLetters, setCoverLetters] = useState({});
     const [searchedProject, setSearchedProject] = useState(null);
     const [showMyApplications, setShowMyApplications] = useState(false);
@@ -98,18 +109,23 @@ const FreelancerDashboard = () => {
         navigate("/login");
     };
 
-    const handleApplyForProject = async (projectId) => {
-        try {
-            setLoading(true);
-            const cover_letter = coverLetters[projectId] || "";
-            await applyForProject(projectId, cover_letter);
-            alert("Application submitted successfully!");
-        } catch (error) {
-            alert(`Failed to apply: ${error.message}`);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // eslint-disable-next-line
+    // handleApplyForProject δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const handleApplyForProject = async (projectId) => {
+    //     const coverLetter = coverLetters[projectId] || '';
+    //     try {
+    //         setLoading(true);
+    //         await applyForProject(projectId, coverLetter);
+    //         dispatch(loadMyApplications());
+    //         dispatch(loadAvailableProjects());
+    //         alert('Application submitted successfully!');
+    //     } catch (error) {
+    //         console.error('Error applying for project:', error);
+    //         alert('Failed to apply for project. Please try again.');
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const handleLoadMyApplications = async () => {
         try {

@@ -1,18 +1,25 @@
 import React from "react";
 import '../styles/freelancer dashboard/applicationCard.css';
-import { FaUser, FaCalendarAlt, FaIdCard, FaFileAlt } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaIdCard, FaFileAlt, FaDownload } from 'react-icons/fa';
+import { downloadCV } from '../services/ClientServices';
 
-const ApplicationCard = ({ application }) => {
+const ApplicationCard = ({ application, onAccept, onReject }) => {
+    // eslint-disable-next-line
     const getStatusColor = (status) => {
-        switch(status) {
-            case 'PENDING':
-                return 'pending';
-            case 'APPROVED':
-                return 'approved';
-            case 'REJECTED':
-                return 'rejected';
-            default:
-                return '';
+        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
+        // return status === 'ACCEPTED' ? '#4CAF50' : status === 'REJECTED' ? '#F44336' : '#FFC107';
+    };
+
+    const handleDownloadCV = async () => {
+        try {
+            if (application.cvFilePath) {
+                await downloadCV(application.id);
+            } else {
+                alert("No CV available for this application");
+            }
+        } catch (error) {
+            console.error("Error downloading CV:", error);
+            alert("Failed to download CV");
         }
     };
 
@@ -51,9 +58,38 @@ const ApplicationCard = ({ application }) => {
                                 {new Date(application.created_at).toLocaleDateString()}
                             </span>
                         </div>
+                        {application.cvFilePath && (
+                            <div className="meta-item">
+                                <FaFileAlt className="field-icon" />
+                                <span className="label">CV:</span>
+                                <button 
+                                    className="download-cv-button"
+                                    onClick={handleDownloadCV}
+                                >
+                                    <FaDownload /> Download CV
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+            
+            {application.applicationStatus === 'WAITING' && (
+                <div className="application-actions">
+                    <button 
+                        className="accept-button"
+                        onClick={() => onAccept(application.id)}
+                    >
+                        Accept
+                    </button>
+                    <button 
+                        className="reject-button"
+                        onClick={() => onReject(application.id)}
+                    >
+                        Reject
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

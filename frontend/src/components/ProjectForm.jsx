@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { handlePostProject } from "../services/ClientServices";
 import "../styles/client dashboard/projectForm.css";
-import {jwtDecode} from "jwt-decode";
 
 const ProjectForm = ({ handleFormClose }) => {
     const [formData, setFormData] = useState({

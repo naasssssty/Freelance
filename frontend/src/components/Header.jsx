@@ -1,10 +1,16 @@
+import React, { useState, useEffect } from 'react';
+// eslint-disable-next-line
+// Το useNavigate δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+// import { useNavigate } from 'react-router-dom';
 import { FaUserCircle } from "react-icons/fa";
-import React, { useState, useEffect } from "react";
 import logo from '../assets/logo.png';
 import NotificationIcon from './NotificationIcon';
 import NotificationPanel from './NotificationPanel';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../services/NotificationServices';
-import { Link } from "react-router-dom";
+// eslint-disable-next-line
+// Το Link δεν χρησιμοποιείται, οπότε το σχολιάζουμε ή το αφαιρούμε
+// import { Link } from "react-router-dom";
+import '../styles/header.css';
 
 const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
     const [showNotifications, setShowNotifications] = useState(false);

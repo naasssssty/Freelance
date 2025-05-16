@@ -1,10 +1,12 @@
+
+
 .available-project-card {
     background: transparent;
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 20px;
-    margin: 10px;
+    margin: 100px;
     transition: transform 0.2s, box-shadow 0.2s;
     color: black;
 }
@@ -46,6 +48,10 @@
     margin-top: 15px;
 }
 
+.project-meta .label{
+    justify-content: center;
+}
+
 .meta-item {
     display: flex;
     flex-direction: column;
@@ -84,11 +90,9 @@
     color: white;
 }
 
-.apply-form {
-    width: 100%;
-}
 
-.apply-form textarea {
+
+.apply-form-container textarea {
     width: 100%;
     min-height: 120px;
     padding: 12px;
@@ -101,16 +105,11 @@
     margin-bottom: 15px;
 }
 
-.apply-form textarea:focus {
+.apply-form-container textarea:focus {
     outline: none;
     border-color: #2196f3;
 }
 
-.form-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
 
 .submit-button, .cancel-button {
     padding: 8px 16px;
@@ -123,7 +122,7 @@
 .submit-button {
     background: #2196f3;
     border: none;
-    color: white;
+    color: white; 
 }
 
 .submit-button:disabled {
@@ -131,9 +130,17 @@
     cursor: not-allowed;
 }
 
+.apply-form-container {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
 .cancel-button {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(20, 99, 225, 0.958);
     color: rgba(255, 255, 255, 0.7);
 }
 
@@ -341,4 +348,101 @@
     padding: 5px 10px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
+}
+
+.file-upload-container {
+    position: relative;
+    color: rgb(0, 0, 0);
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.file-upload-button {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;                     
+    background-color: transparent;
+    border: 1px dashed #000000;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-button:hover {
+    background-color: #000000;
+    border-color: #000000;
+}
+
+.file-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.file-icon {
+    font-size: 1.2em;
+}
+
+.file-icon.pdf {
+    color: #e74c3c;
+}
+
+.file-icon.docx {
+    color: #3498db;
+}
+
+.file-icon.image {
+    color: #2ecc71;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-bottom: 16px;
+    padding: 8px;
+    background-color: #fde8e8;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.form-actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.submit-button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #2980b9;
+}
+
+.submit-button:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
 } 

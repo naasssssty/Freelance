@@ -1,0 +1,89 @@
+pipeline {
+    agent any
+    tools {
+        nodejs 'Node 21'
+    }
+    environment {
+        DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from GitHub repository
+                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                // Install npm dependencies for frontend
+                dir('frontend') {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('Build') {
+            steps {
+                // Build the frontend using npm
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                // Run tests for frontend
+                dir('frontend') {
+                    sh 'npm run test -- --watchAll=false --coverage'
+                }
+            }
+            post {
+                always {
+                    // Publish test results (if applicable)
+                    junit allowEmptyResults: true, testResults: '**/junit.xml'
+                }
+            }
+        }
+        stage('Debug Directory Structure') {
+            steps {
+                sh 'pwd'  // Εμφανίζει τον τρέχοντα κατάλογο
+                sh 'ls -lR'  // Εμφανίζει τη δομή των φακέλων αναδρομικά
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                // Build Docker image for frontend
+                dir('frontend') {
+                    sh 'docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t papadooo/freelance-frontend:28 .'
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                // Push Docker image to Docker Hub
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+        stage('Check Docker Connection') {
+            steps {
+                sh 'docker info || echo "Docker connection failed"'
+                sh 'env | grep DOCKER || echo "DOCKER env vars not set"'
+            }
+        }
+    }
+    post {
+        always {
+            // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
+            // cleanWs()
+            echo 'Frontend pipeline completed.'
+        }
+        success {
+            echo 'Frontend pipeline completed successfully!'
+        }
+        failure {
+            echo 'Frontend pipeline failed. Check the logs for details.'
+        }
+    }
+} 

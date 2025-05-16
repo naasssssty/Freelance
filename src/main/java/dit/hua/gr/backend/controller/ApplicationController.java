@@ -9,18 +9,20 @@ import dit.hua.gr.backend.service.ProjectService;
 import dit.hua.gr.backend.service.UserService;
 import dit.hua.gr.backend.service.NotificationService;
 import dit.hua.gr.backend.service.MinioService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.io.InputStream;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -32,6 +34,7 @@ public class ApplicationController {
     private final NotificationService notificationService;
     private final MinioService minioService;
 
+    @Autowired
     public ApplicationController(ApplicationService applicationService, ProjectService projectService,
             UserService userService, NotificationService notificationService, MinioService minioService) {
         this.applicationService = applicationService;
@@ -39,6 +42,9 @@ public class ApplicationController {
         this.userService = userService;
         this.notificationService = notificationService;
         this.minioService = minioService;
+        
+        // Αρχικοποίηση του MinIO bucket κατά την εκκίνηση
+        this.minioService.init();
     }
 
     @PostMapping("/project/{projectId}/apply/{username}/with-cv")
@@ -49,22 +55,45 @@ public class ApplicationController {
             @RequestParam("coverLetter") String coverLetter,
             @RequestParam(value = "cvFile", required = false) MultipartFile cvFile) {
 
-        String cvFilePath = null;
-        if (cvFile != null && !cvFile.isEmpty()) {
-            cvFilePath = minioService.uploadFile(cvFile, username, projectId);
+        try {
+            System.out.println("Received application with CV request for project: " + projectId + ", user: " + username);
+            
+            if (cvFile != null) {
+                System.out.println("CV file received: " + cvFile.getOriginalFilename() + ", size: " + cvFile.getSize() + " bytes");
+            } else {
+                System.out.println("No CV file received");
+            }
+            
+            String cvFilePath = null;
+            if (cvFile != null && !cvFile.isEmpty()) {
+                // Upload the file to MinIO
+                System.out.println("Uploading file to MinIO...");
+                cvFilePath = minioService.uploadFile(cvFile, username, projectId);
+                System.out.println("File uploaded successfully. Path: " + cvFilePath);
+            }
+
+            // Create application with CV path
+            System.out.println("Creating application with CV path: " + cvFilePath);
+            Application application = applicationService.createApplicationWithCV(projectId, username, coverLetter, cvFilePath);
+            System.out.println("Application created successfully with ID: " + application.getId());
+
+            // Send notification to the client
+            Project project = application.getProject();
+            User client = project.getClient();
+            notificationService.createNotification(
+                    client,
+                    "New application received for project: " + project.getTitle(),
+                    NotificationType.APPLICATION_RECEIVED);
+            System.out.println("Notification sent to client: " + client.getUsername());
+
+            ApplicationDTO applicationDTO = applicationService.convertToDTO(application);
+            return ResponseEntity.ok(applicationDTO);
+        } catch (Exception e) {
+            System.err.println("Error in applyForProjectWithCV: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
         }
-
-        Application application = applicationService.createApplicationWithCV(projectId, username, coverLetter,
-                cvFilePath);
-
-        // Create notification for project owner
-        notificationService.createNotification(
-                application.getProject().getClient(),
-                "New application received for project: " + application.getProject().getTitle(),
-                NotificationType.APPLICATION_RECEIVED);
-
-        ApplicationDTO applicationDTO = convertToDTO(application);
-        return ResponseEntity.ok(applicationDTO);
     }
 
     @PostMapping("/project/{projectId}/apply/{username}")
@@ -215,11 +244,15 @@ public class ApplicationController {
     }
 
     @GetMapping("/application/{applicationId}/download-cv")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('CLIENT')")
     public ResponseEntity<Resource> downloadCV(@PathVariable Integer applicationId) {
-        Application application = applicationService.getApplicationById(applicationId)
-                .orElseThrow(() -> new RuntimeException("Application not found with ID: " + applicationId));
-
+        Optional<Application> applicationOpt = applicationService.getApplicationById(applicationId);
+        
+        if (applicationOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Application application = applicationOpt.get();
+        
         if (application.getCvFilePath() == null) {
             return ResponseEntity.notFound().build();
         }
@@ -229,11 +262,34 @@ public class ApplicationController {
             InputStreamResource resource = new InputStreamResource(inputStream);
 
             String filename = application.getCvFilePath().substring(application.getCvFilePath().lastIndexOf("/") + 1);
+            
+            // Καθορισμός του content type με βάση το extension
+            String extension = filename.substring(filename.lastIndexOf(".")).toLowerCase();
+            MediaType mediaType;
+            
+            if (extension.equals(".pdf")) {
+                mediaType = MediaType.APPLICATION_PDF;
+            } else if (extension.equals(".docx")) {
+                mediaType = MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            } else if (extension.equals(".doc")) {
+                mediaType = MediaType.parseMediaType("application/msword");
+            } else if (extension.equals(".jpg") || extension.equals(".jpeg")) {
+                mediaType = MediaType.IMAGE_JPEG;
+            } else if (extension.equals(".png")) {
+                mediaType = MediaType.IMAGE_PNG;
+            } else {
+                mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            }
 
             return ResponseEntity.ok()
+                    .contentType(mediaType)
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "Authorization, Content-Type")
                     .body(resource);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

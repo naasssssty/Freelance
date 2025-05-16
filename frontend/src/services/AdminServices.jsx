@@ -41,67 +41,62 @@ export const loadProjectsList = async () => {
     }
 };
 
-export const handleVerify = async (username) => {
+export const handleVerify = async (username, verify) => {
     try {
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
         const response = await axios.put(
-            `http://localhost:8080/user/${username}/verify`, // Backend API endpoint
-            true, // Payload (boolean `true` to verify)
+            `http://localhost:8080/user/${username}/verify`,
+            verify,
             {
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Pass the token
-                    'Content-Type': 'application/json', // Ensure JSON format
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 }
             }
         );
-        alert(`User ${username} verified successfully.`);
-        return response.data; // Return the response if needed
+        return response.data;
     } catch (error) {
-        console.error("Error verifying user:", error);
-        alert(`Failed to verify user ${username}.`);
+        console.error(`Failed to ${verify ? 'verify' : 'unverify'} user:`, error);
         throw error;
     }
 };
 
 export const handleApproveProject = async (id) => {
     try {
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
         const response = await axios.put(
-            `http://localhost:8080/project/${id}/approve`, // Backend API endpoint
-            true, // Payload (boolean `true` to verify)
+            `http://localhost:8080/project/${id}/approve`,
+            true,
             {
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Pass the token
-                    'Content-Type': 'application/json', // Ensure JSON format
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 }
             }
         );
-        alert(`Project ${id} approved successfully.`);
-        return response.data; // Return the response if needed
+        return response.data;
     } catch (error) {
         console.error("Error approving project:", error);
-        alert(`Failed to approve project ${id}.`);
         throw error;
     }
 };
+
 export const handleDenyProject = async (id) => {
     try {
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
         const response = await axios.put(
-            `http://localhost:8080/project/${id}/deny`, // Backend API endpoint
-            false, // Payload (boolean `false` to reject)
+            `http://localhost:8080/project/${id}/deny`,
+            false,
             {
                 headers: {
-                    'Authorization': `Bearer ${token}`, // Pass the token
-                    'Content-Type': 'application/json', // Ensure JSON format
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 }
             }
         );
-        alert(`Project ${id} rejected successfully.`);
-        return response.data; // Return the response if needed
+        return response.data;
     } catch (error) {
         console.error("Error rejecting project:", error);
-        alert(`Failed to reject project ${id}.`);
         throw error;
     }
 };

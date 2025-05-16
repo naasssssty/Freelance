@@ -4,14 +4,21 @@ import {
     FaFileAlt, 
     FaDollarSign, 
     FaCalendarAlt,
+    // eslint-disable-next-line
     FaClock,
+    // eslint-disable-next-line
     FaTags,
+    // eslint-disable-next-line
     FaTools,
+    // eslint-disable-next-line
     FaInfoCircle,
-    FaUpload
+    FaUpload,
+    FaFilePdf,
+    FaFileWord,
+    FaFileImage
 } from 'react-icons/fa';
 import '../styles/freelancer dashboard/availableProjectCard.css';
-import { applyForProjectWithCV } from "../services/FreelancerServices";
+import { applyForProject, applyForProjectWithCV } from "../services/FreelancerServices";
 
 const AvailableProjectCard = ({ project }) => {
     const [isApplying, setIsApplying] = useState(false);
@@ -19,18 +26,45 @@ const AvailableProjectCard = ({ project }) => {
     const [coverLetter, setCoverLetter] = useState('');
     const [cvFile, setCvFile] = useState(null);
     const [fileName, setFileName] = useState('');
+    const [error, setError] = useState('');
 
-    const handleApply = async () => {
+    const handleApply = async (e) => {
+        e.preventDefault();
+        
+        if (!coverLetter.trim()) {
+            setError("Please provide a cover letter");
+            return;
+        }
+        
         try {
             setIsApplying(true);
-            await applyForProjectWithCV(project.id, coverLetter, cvFile);
+            setError("");
+            
+            console.log("Applying for project with CV:", {
+                projectId: project.id,
+                coverLetter,
+                cvFile: cvFile ? cvFile.name : 'none'
+            });
+            
+            if (cvFile) {
+                // Apply with CV
+                await applyForProjectWithCV(project.id, coverLetter, cvFile);
+            } else {
+                // Apply without CV
+                await applyForProject(project.id, coverLetter);
+            }
+            
+            // Reset form and close it
             setShowApplyForm(false);
             setCoverLetter('');
             setCvFile(null);
             setFileName('');
-            alert('Application submitted successfully!');
+            
+            // Show success message
+            alert("Application submitted successfully!");
         } catch (error) {
-            alert(error.message || 'Failed to submit application');
+            console.error("Application error:", error);
+            setError(error.message || "Failed to submit application. Please try again.");
         } finally {
             setIsApplying(false);
         }
@@ -39,133 +73,139 @@ const AvailableProjectCard = ({ project }) => {
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setCvFile(file);
-            setFileName(file.name);
+            // Check file type
+            const fileType = file.type;
+            if (
+                fileType === "application/pdf" || 
+                fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+                fileType.startsWith("image/")
+            ) {
+                setCvFile(file);
+                setFileName(file.name);
+                setError("");
+            } else {
+                setCvFile(null);
+                setFileName("");
+                setError("Please upload a PDF, DOCX, or image file");
+            }
         }
+    };
+
+    const getFileIcon = () => {
+        if (!fileName) return null;
+        
+        if (fileName.endsWith('.pdf')) {
+            return <FaFilePdf className="file-icon pdf" />;
+        } else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+            return <FaFileWord className="file-icon docx" />;
+        } else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg') || fileName.endsWith('.png')) {
+            return <FaFileImage className="file-icon image" />;
+        }
+        
+        return <FaFileAlt className="file-icon" />;
+    };
+
+    // Μετατροπή ημερομηνιών σε αναγνώσιμη μορφή
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "N/A";
+        if (typeof dateStr === 'string') {
+            return new Date(dateStr).toLocaleDateString();
+        }
+        return dateStr.toLocaleDateString();
     };
 
     return (
         <div className="project-card">
-            <div className="project-header">
-                <h3>{project.title}</h3>
-                <span className="status-badge">
-                    <FaClock className="field-icon" /> {project.projectStatus}
-                </span>
-            </div>
-
-            <div className="project-details">
-                <div className="detail-item">
-                    <span className="label">
-                        <FaUser className="field-icon" /> Client
-                    </span>
-                    <span className="value">{project.clientUsername || 'N/A'}</span>
+            <div className="project-card-content">
+                <div className="project-header">
+                    <h3 className="project-title">{project.title || "Untitled Project"}</h3>
+                    
                 </div>
-
-                <div className="detail-item">
-                    <span className="label">
-                        <FaFileAlt className="field-icon" /> Description
-                    </span>
-                    <p className="value description">{project.description}</p>
+                
+                <div className="project-description">
+                    <p>{project.description || "No description available"}</p>
                 </div>
-
-                <div className="detail-item">
-                    <span className="label">
-                        <FaDollarSign className="field-icon" /> Budget
-                    </span>
-                    <span className="value">${project.budget}</span>
-                </div>
-
-                <div className="detail-item">
-                    <span className="label">
-                        <FaCalendarAlt className="field-icon" /> Deadline
-                    </span>
-                    <span className="value">{new Date(project.deadline).toLocaleDateString()}</span>
-                </div>
-
-                {project.category && (
-                    <div className="detail-item">
-                        <span className="label">
-                            <FaTags className="field-icon" /> Category:
-                        </span>
-                        <span className="value">{project.category}</span>
+                
+                <div className="project-meta">
+                    <div className="meta-item" >
+                        <FaUser className="meta-icon"  />
+                        <span className="label" >Client:</span>
+                        <span className="value">{project.clientUsername || "N/A"}</span>
                     </div>
-                )}
-
-                {project.requiredSkills && (
-                    <div className="detail-item">
-                        <span className="label">
-                            <FaTools className="field-icon" /> Required Skills:
-                        </span>
-                        <span className="value">{Array.isArray(project.requiredSkills) ? project.requiredSkills.join(', ') : project.requiredSkills}</span>
+                    <div className="meta-item" >
+                        <FaDollarSign className="meta-icon" />
+                        <span className="label" >Budget:</span>
+                        <span className="value">${project.budget || "0"}</span>
                     </div>
-                )}
-
-                {project.additionalInfo && (
-                    <div className="detail-item">
-                        <span className="label">
-                            <FaInfoCircle className="field-icon" /> Additional Info:
-                        </span>
-                        <p className="value">{project.additionalInfo}</p>
+                    <div className="meta-item" >
+                        <FaCalendarAlt className="meta-icon" />
+                        <span className="label" >Deadline:</span>
+                        <span className="value">{formatDate(project.deadline)}</span>
                     </div>
-                )}
-            </div>
-
-            <div className="project-footer">
-                {!showApplyForm ? (
+                </div>
+                
+                <div className="project-actions">
                     <button 
                         className="apply-button"
-                        onClick={() => setShowApplyForm(true)}
+                        onClick={() => setShowApplyForm(!showApplyForm)}
                     >
-                        Apply Now
+                        {showApplyForm ? "Cancel" : "Apply Now"}
                     </button>
-                ) : (
-                    <div className="apply-form">
-                        <textarea
-                            placeholder="Write your cover letter here..."
-                            value={coverLetter}
-                            onChange={(e) => setCoverLetter(e.target.value)}
-                            disabled={isApplying}
-                        />
-                        
-                        <div className="cv-upload-container">
-                            <label className="cv-upload-label">
-                                <FaUpload className="upload-icon" />
-                                <span>Upload your CV (PDF, DOC, DOCX)</span>
-                                <input 
-                                    type="file" 
-                                    accept=".pdf,.doc,.docx" 
-                                    onChange={handleFileChange}
-                                    disabled={isApplying}
+                </div>
+                
+                {showApplyForm && (
+                    <div className="apply-form-container">
+                        <h4 style={{color: 'black'}}>Apply for this Project</h4>
+                        {error && <div className="error-message">{error}</div>}
+                        <form onSubmit={handleApply}>
+                            <div className="form-group">
+                                <label htmlFor="coverLetter" style={{color: 'black'}}>
+                                    <FaFileAlt /> Cover Letter
+                                </label>
+                                <textarea
+                                    id="coverLetter"
+                                    value={coverLetter}
+                                    onChange={(e) => setCoverLetter(e.target.value)}
+                                    placeholder="Explain why you're a good fit for this project..."
+                                    required
                                 />
-                            </label>
-                            {fileName && (
-                                <div className="file-name">
-                                    <FaFileAlt /> {fileName}
+                            </div>
+                            
+                            <div className="form-group">
+                                <label htmlFor="cvFile" style={{color: 'black'}}>
+                                    <FaUpload /> Upload CV (PDF, DOCX, or Image)
+                                </label>
+                                <div className="file-upload-container">
+                                    <input
+                                        type="file"
+                                        id="cvFile"
+                                        onChange={handleFileChange}
+                                        accept=".pdf,.docx,.jpg,.jpeg,.png"
+                                        className="file-input"
+                                    />
+                                    <div className="file-upload-button">
+                                        Choose File
+                                    </div>
+                                    {fileName && (
+                                        <div className="file-name">
+                                            {getFileIcon()}
+                                            <span>{fileName}</span>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                        
-                        <div className="form-actions">
-                            <button 
-                                className={`submit-button ${isApplying ? 'loading' : ''}`}
-                                onClick={handleApply}
-                                disabled={isApplying || !coverLetter.trim()}
-                            >
-                                {isApplying ? 'Submitting...' : 'Submit Application'}
-                            </button>
-                            <button 
-                                className="cancel-button"
-                                onClick={() => {
-                                    setShowApplyForm(false);
-                                    setCoverLetter('');
-                                    setCvFile(null);
-                                    setFileName('');
-                                }}
-                                disabled={isApplying}
-                            >
-                                Cancel
-                            </button>
-                        </div>
+                                <small style={{color: 'black'}}>Optional: Upload your CV to increase your chances</small>
+                            </div>
+                            
+                            <div className="form-actions">
+                                <button 
+                                    type="submit" 
+                                    className="submit-button"
+                                    disabled={isApplying}
+                                >
+                                    {isApplying ? "Submitting..." : "Submit Application"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 )}
             </div>

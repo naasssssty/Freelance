@@ -1,7 +1,9 @@
 // AdminDashboard.jsx
 
 import {
-    handleVerify,
+    // eslint-disable-next-line
+    // handleVerify δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // handleVerify,
     handleDenyProject,
     handleApproveProject,
     loadUsersList,
@@ -13,41 +15,58 @@ import Header from '../components/Header';
 import AdminSearchComponent from '../components/AdminSearchComponent';
 import '../styles/header.css';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line
 import UserCard from '../components/UserCard';
+// eslint-disable-next-line
 import ProjectCard from '../components/ProjectCard';
 import Footer from '../components/Footer';
 import '../styles/admin dashboard/cards.css';
 import { FaUsers, FaProjectDiagram, FaCheckCircle, FaClock, FaUser, FaEnvelope, FaUserTag, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
 import ReportManagement from '../components/ReportManagement';
-import { jwtDecode } from "jwt-decode";
+// eslint-disable-next-line no-unused-vars
+import jwtDecode from 'jwt-decode';
+import axios from 'axios';
 
 const AdminDashboard = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const [showUsersList, setShowUsersList] = useState(false);
-    const [showProjectsList, setShowProjectsList] = useState(false);
+    const username = localStorage.getItem('username');
+    const { usersList, projectsList } = useSelector((state) => state.admin);
+    const [users, setUsers] = useState([]);
+    const [projects, setProjects] = useState([]);
+    // eslint-disable-next-line
+    // usersLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const usersLoading = useSelector((state) => state.admin.usersLoading);
+    const usersError = useSelector((state) => state.admin.usersError);
+    // eslint-disable-next-line
+    // projectsLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const projectsLoading = useSelector((state) => state.admin.projectsLoading);
+    const projectsError = useSelector((state) => state.admin.projectsError);
+    const [showUsersList, setShowUsersList] = useState(true);
+    const [showProjectsList, setShowProjectsList] = useState(true);
     const [searchedUser, setSearchedUser] = useState(null);
-    const [isLoadingUsers, setIsLoadingUsers] = useState(false);
-    const [isLoadingProjects, setIsLoadingProjects] = useState(false);
+    // eslint-disable-next-line
+    const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
 
-    const { usersList, loading: usersLoading, error: usersError } = useSelector((state) => state.users);
-    const { projectsList, loading: projectsLoading, error: projectsError } = useSelector((state) => state.projects);
-    
-    // Παίρνουμε το username απευθείας από το token
-    const getUsername = () => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decoded = jwtDecode(token);
-            return decoded.sub;
-        }
-        return '';
-    };
+    // eslint-disable-next-line
+    // getUsername δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const getUsername = () => {
+    //     const token = localStorage.getItem('token');
+    //     if (token) {
+    //         try {
+    //             const decoded = jwtDecode(token);
+    //             return decoded.sub || 'Admin';
+    //         } catch (error) {
+    //             console.error('Error decoding token:', error);
+    //             return 'Admin';
+    //         }
+    //     }
+    //     return 'Admin';
+    // };
 
-    const username = getUsername();
     console.log('Username from token:', username);
 
     // Add new state for statistics
@@ -82,28 +101,29 @@ const AdminDashboard = () => {
         setSearchedUser(result);
         setShowUsersList(false);
         setShowProjectsList(false);
+        setShowReports(false);
+        setShowDashboard(false);
     };
 
     const handleLoadUsers = async () => {
         try {
-            setIsLoadingUsers(true);
-            const users = await loadUsersList();
-            dispatch({ type: "SET_USERS_LIST", payload: users });
+            const usersData = await loadUsersList();
+            setUsers(usersData);
+            dispatch({ type: "SET_USERS_LIST", payload: usersData });
             setShowUsersList(true);
             setShowProjectsList(false);
             setShowReports(false);
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading users:", error);
-        } finally {
-            setIsLoadingUsers(false);
         }
     };
 
     const handleLoadProjects = async () => {
         try {
-            const projects = await loadProjectsList();
-            dispatch({ type: "SET_PROJECTS_LIST", payload: projects });
+            const projectsData = await loadProjectsList();
+            setProjects(projectsData);
+            dispatch({ type: "SET_PROJECTS_LIST", payload: projectsData });
             setShowProjectsList(true);
             setShowUsersList(false);
             setShowReports(false);
@@ -118,12 +138,17 @@ const AdminDashboard = () => {
         navigate('/login');
     };
 
-    const handleUserVerify = async (username) => {
-        try {
-            await handleVerify(username, JSON.stringify(true), dispatch, usersList);
-        } catch (error) {
-            console.error("Error verifying user:", error);
-        }
+    // eslint-disable-next-line
+    const handleVerifyUserOld = async (username) => {
+        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
+        // try {
+        //     const response = await handleVerify(username);
+        //     console.log(`User ${username} verified:`, response);
+        //     // Refresh users list
+        //     loadUsers();
+        // } catch (error) {
+        //     console.error(`Error verifying user ${username}:`, error);
+        // }
     };
 
     const handleLogoClick = () => {
@@ -206,6 +231,94 @@ const AdminDashboard = () => {
         );
     };
 
+    const handleVerifyUser = async (userId, verify) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.put(`/user/${userId}/verify`, { verify }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.status === 200) {
+                alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
+                // Ενημερώνουμε το state για να αντικατοπτρίζει την αλλαγή
+                setUsers(users.map(user => 
+                    user.id === userId ? { ...user, verified: verify } : user
+                ));
+                dispatch({
+                    type: "SET_USERS_LIST",
+                    payload: usersList.map(user => 
+                        user.id === userId ? { ...user, verified: verify } : user
+                    )
+                });
+            }
+        } catch (error) {
+            console.error(`Error ${verify ? 'verifying' : 'unverifying'} user:`, error);
+            alert(`Failed to ${verify ? 'verify' : 'unverify'} user`);
+        }
+    };
+
+    const handleProjectApprove = async (id) => {
+        try {
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'APPROVED' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'APPROVED' } : project
+                )
+            });
+
+            // Εκτελούμε το API call στο παρασκήνιο
+            await handleApproveProject(id);
+        } catch (error) {
+            console.error("Error approving project:", error);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+                )
+            });
+        }
+    };
+
+    const handleProjectDeny = async (id) => {
+        try {
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'DENIED' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'DENIED' } : project
+                )
+            });
+
+            // Εκτελούμε το API call στο παρασκήνιο
+            await handleDenyProject(id);
+        } catch (error) {
+            console.error("Error denying project:", error);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+                )
+            });
+        }
+    };
+
     return (
         <div className="dashboard">
             <Header
@@ -274,7 +387,7 @@ const AdminDashboard = () => {
                                         {!user.verified && user.role !== 'ADMIN' && (
                                             <button 
                                                 className="card-button verify-button"
-                                                onClick={() => handleUserVerify(user.username)}
+                                                onClick={() => handleVerifyUser(user.id, true)}
                                             >
                                                 Verify
                                             </button>
@@ -306,13 +419,13 @@ const AdminDashboard = () => {
                                             <>
                                                 <button 
                                                     className="card-button verify-button"
-                                                    onClick={() => handleApproveProject(project.id, dispatch, projectsList)}
+                                                    onClick={() => handleProjectApprove(project.id)}
                                                 >
                                                     Approve
                                                 </button>
                                                 <button 
                                                     className="card-button deny-button"
-                                                    onClick={() => handleDenyProject(project.id, dispatch, projectsList)}
+                                                    onClick={() => handleProjectDeny(project.id)}
                                                 >
                                                     Deny
                                                 </button>
