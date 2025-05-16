@@ -43,11 +43,17 @@ pipeline {
                 }
             }
         }
+        stage('Debug Directory Structure') {
+            steps {
+                sh 'pwd'  // Εμφανίζει τον τρέχοντα κατάλογο
+                sh 'ls -lR'  // Εμφανίζει τη δομή των φακέλων αναδρομικά
+            }
+        }
         stage('Build Docker Image') {
             steps {
                 // Build Docker image for frontend
                 dir('frontend') {
-                    sh 'docker build -t $DOCKER_IMAGE .'
+                    sh 'docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t papadooo/freelance-frontend:28 .'
                 }
             }
         }
