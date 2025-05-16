@@ -18,9 +18,7 @@ pipeline {
         stage('Build') {
             steps {
                 // Build the backend using Maven
-                dir('src') {
-                    sh 'mvn clean install -DskipTests'
-                }
+                sh 'mvn clean install -DskipTests'
             }
         }
         stage('Test') {

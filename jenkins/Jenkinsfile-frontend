@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools {
-        nodejs 'node 21'
+        nodejs 'Node 21'
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
@@ -17,7 +17,9 @@ pipeline {
             steps {
                 // Install npm dependencies for frontend
                 dir('frontend') {
-                    // Use quiet flag to reduce output and possibly prevent buffer issues
+                    // Clean npm cache and reinstall to ensure clean dependencies
+                    sh 'npm cache clean --force'
+                    sh 'rm -rf node_modules'
                     sh 'npm install --quiet'
                 }
             }
