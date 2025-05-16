@@ -17,7 +17,10 @@ pipeline {
             steps {
                 // Install npm dependencies for frontend
                 dir('frontend') {
-                    sh 'npm install'
+                    // Clean npm cache and reinstall to ensure clean dependencies
+                    sh 'npm cache clean --force'
+                    sh 'rm -rf node_modules'
+                    sh 'npm install --quiet'
                 }
             }
         }
