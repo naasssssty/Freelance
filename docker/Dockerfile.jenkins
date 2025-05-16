@@ -10,5 +10,12 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce-cli
 
+# Δημιουργία ομάδας docker με το σωστό GID (ανάλογα με τον host, μπορεί να χρειαστεί προσαρμογή)
+# Συνήθως το GID του docker socket στον host είναι 999 ή 1000, αλλά θα το κάνουμε δυναμικό
+RUN groupadd -g 999 docker || groupadd -g 1000 docker || groupadd docker
+
+# Προσθήκη του χρήστη jenkins στην ομάδα docker
+RUN usermod -aG docker jenkins
+
 # Επιστροφή στον χρήστη jenkins
 USER jenkins

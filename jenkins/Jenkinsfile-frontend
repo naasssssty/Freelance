@@ -4,7 +4,8 @@ pipeline {
         nodejs 'Node 21'
     }
     environment {
-        DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
+        IMAGE_TAG = '28'
+        IMAGE_NAME = "papadooo/freelance-frontend:${IMAGE_TAG}"
     }
     stages {
         stage('Checkout') {
@@ -51,18 +52,18 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                // Build Docker image for frontend
-                dir('frontend') {
-                    sh 'docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t papadooo/freelance-frontend:28 .'
+                withEnv(["PATH+EXTRA=/usr/local/bin"]) {
+                    dir('frontend') {
+                        sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
+                    }
                 }
             }
         }
         stage('Push Docker Image') {
             steps {
-                // Push Docker image to Docker Hub
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                    sh 'docker push $DOCKER_IMAGE'
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                    sh "docker push ${IMAGE_NAME}"
                 }
             }
         }
