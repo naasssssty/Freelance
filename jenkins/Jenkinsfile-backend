@@ -6,6 +6,7 @@ pipeline {
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
+        SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
         stage('Checkout') {
@@ -14,16 +15,16 @@ pipeline {
                 git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
-        stage('Build') {
+        stage('Build and Test') {
+            environment {
+                // Ensure tests use an in-memory database
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+            }
             steps {
                 // Build the backend using Maven
-                sh 'mvn clean install -DskipTests'
-            }
-        }
-        stage('Test') {
-            steps {
-                // Run tests for backend
-                sh 'mvn test'
+                sh 'mvn clean install'
             }
             post {
                 always {
