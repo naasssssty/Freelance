@@ -54,6 +54,11 @@ pipeline {
     }
     post {
         always {
+            script {
+                // Καθαρισμός: Τερματισμός και αφαίρεση του MinIO container
+                sh 'docker stop minio-test || true'
+                sh 'docker rm minio-test || true'
+            }
             // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
             // cleanWs()
             echo 'Backend pipeline completed.'
