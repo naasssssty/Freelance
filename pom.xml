@@ -131,5 +131,14 @@
             </plugin>
         </plugins>
     </build>
-
+    
+    <!-- Προσθήκη test profile -->
+    <profiles>
+        <profile>
+            <id>test</id>
+            <properties>
+                <spring.profiles.active>test</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 </project>
