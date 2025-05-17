@@ -23,10 +23,11 @@ pipeline {
                 SPRING_DATASOURCE_PASSWORD = ''
                 SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
                 SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
             }
             steps {
-                // Build the backend using Maven
-                sh 'mvn clean install'
+                // Build the backend using Maven with explicit test profile
+                sh 'mvn clean install -Ptest'
             }
             post {
                 always {
