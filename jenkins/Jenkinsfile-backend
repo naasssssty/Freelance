@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
         maven 'Maven 3'
-        jdk 'JDK 21'
+        jdk 'JDK 21 Linux'
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
