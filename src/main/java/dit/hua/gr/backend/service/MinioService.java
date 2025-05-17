@@ -3,11 +3,8 @@ package dit.hua.gr.backend.service;
 import io.minio.*;
 import io.minio.errors.*;
 import io.minio.messages.Item;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,48 +13,28 @@ import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import javax.annotation.PostConstruct;
 
 @Service
 public class MinioService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MinioService.class);
-
     @Autowired
     private MinioClient minioClient;
 
-    @Value("${minio.bucket.name}")
-    private String defaultBucketName;
+    @Value("${minio.bucketName}")
+    private String bucketName;
 
-    @Autowired
-    private Environment environment;
-
-    public MinioService(MinioClient minioClient, Environment environment) {
-        this.minioClient = minioClient;
-        this.environment = environment;
-    }
-
-    @PostConstruct
+    /**
+     * Αρχικοποίηση του bucket αν δεν υπάρχει
+     */
     public void init() {
-        // Παράκαμψη αρχικοποίησης MinIO αν το active profile είναι test
-        if (Arrays.asList(environment.getActiveProfiles()).contains("test")) {
-            logger.info("MinIO initialization skipped for test profile");
-            return;
-        }
-
         try {
-            boolean isBucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(defaultBucketName).build());
-            if (isBucketExists) {
-                logger.info("Bucket {} already exists.", defaultBucketName);
-            } else {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(defaultBucketName).build());
-                logger.info("Bucket {} created successfully.", defaultBucketName);
+            boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+            if (!bucketExists) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
             }
-        } catch (MinioException | IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            logger.error("Error initializing MinIO bucket", e);
+        } catch (Exception e) {
             throw new RuntimeException("Error initializing MinIO bucket", e);
         }
     }
@@ -75,7 +52,7 @@ public class MinioService {
             // Upload the file to MinIO
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(defaultBucketName)
+                            .bucket(bucketName)
                             .object(objectName)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
@@ -94,7 +71,7 @@ public class MinioService {
         try {
             return minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(defaultBucketName)
+                            .bucket(bucketName)
                             .object(objectName)
                             .build());
         } catch (Exception e) {
@@ -109,7 +86,7 @@ public class MinioService {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
-                            .bucket(defaultBucketName)
+                            .bucket(bucketName)
                             .object(objectName)
                             .build());
         } catch (Exception e) {
