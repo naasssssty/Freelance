@@ -51,18 +51,15 @@ pipeline {
             steps {
                 // Build Docker image for frontend
                 dir('frontend') {
-                    script {
-                        dockerImage = docker.build("${IMAGE_NAME}", "-f docker/Dockerfile.frontend .")
-                    }
+                    sh "docker build -f docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
                 }
             }
         }
         stage('Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry("${DOCKER_REGISTRY}", 'docker-hub-credentials') {
-                        dockerImage.push()
-                    }
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                    sh "docker push ${IMAGE_NAME}"
                 }
             }
         }
