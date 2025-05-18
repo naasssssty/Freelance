@@ -9,8 +9,9 @@ RUN apt-get update && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
     apt-get install -y docker-ce-cli && \
-    # Create docker group with the same GID as on the host if possible
+    # Ensure the docker group exists with the correct GID (matching the host's docker group)
     groupadd -g 999 docker || groupadd docker && \
+    # Add Jenkins user to the docker group
     usermod -aG docker jenkins
 
 # Επιστροφή στον χρήστη jenkins
