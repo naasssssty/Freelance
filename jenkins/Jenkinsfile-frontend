@@ -71,6 +71,9 @@ pipeline {
             steps {
                 sh 'docker info || echo "Docker connection failed"'
                 sh 'env | grep DOCKER || echo "DOCKER env vars not set"'
+                sh 'ls -l /var/run/docker.sock || echo "Docker socket not found"'
+                sh 'id || echo "Cannot get user info"'
+                sh 'groups || echo "Cannot get group info"'
             }
         }
     }

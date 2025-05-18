@@ -10,12 +10,31 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce-cli
 
-# Δημιουργία ομάδας docker με το σωστό GID (ανάλογα με τον host, μπορεί να χρειαστεί προσαρμογή)
-# Συνήθως το GID του docker socket στον host είναι 999 ή 1000, αλλά θα το κάνουμε δυναμικό
-RUN groupadd -g 999 docker || groupadd -g 1000 docker || groupadd docker
+# Δημιουργία ομάδας docker με δυναμικό GID που θα προσαρμοστεί αργότερα
+RUN groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null || groupadd docker
 
 # Προσθήκη του χρήστη jenkins στην ομάδα docker
 RUN usermod -aG docker jenkins
 
+# Εγκατάσταση εργαλείων για debugging
+RUN apt-get install -y iputils-ping net-tools
+
+# Δημιουργία script για έλεγχο και προσαρμογή του docker group ID
+RUN echo '#!/bin/bash\n\
+if [ -e /var/run/docker.sock ]; then\n\
+  DOCKER_GID=$(stat -c %g /var/run/docker.sock)\n\
+  if ! getent group $DOCKER_GID >/dev/null; then\n\
+    groupmod -g $DOCKER_GID docker\n\
+    echo "Updated docker group ID to $DOCKER_GID"\n\
+  fi\n\
+fi\n\
+exec "$@"' > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
+
 # Επιστροφή στον χρήστη jenkins
 USER jenkins
+
+# Ορισμός του entrypoint για να εκτελείται ο έλεγχος
+ENTRYPOINT ["/docker-entrypoint.sh"]
+
+# Εκκίνηση του Jenkins
+CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
