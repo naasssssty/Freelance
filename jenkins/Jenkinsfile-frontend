@@ -47,19 +47,39 @@ pipeline {
                 }
             }
         }
+        stage('Check Docker Access') {
+            steps {
+                // Check if Docker is accessible
+                sh 'docker info || echo "Docker access failed. Ensure Jenkins has permission to access Docker daemon."'
+            }
+        }
         stage('Build Docker Image') {
             steps {
-                // Build Docker image for frontend
+                // Build Docker image for frontend with error handling
                 dir('frontend') {
-                    sh "docker build -f docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
+                    script {
+                        def buildResult = sh(script: "docker build -f docker/Dockerfile.frontend -t ${IMAGE_NAME} .", returnStatus: true)
+                        if (buildResult != 0) {
+                            echo "Docker build failed with exit code ${buildResult}. Check Docker permissions or Dockerfile."
+                            error("Docker build failed")
+                        }
+                    }
                 }
             }
         }
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                    sh "docker push ${IMAGE_NAME}"
+                    script {
+                        def loginResult = sh(script: "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}", returnStatus: true)
+                        if (loginResult != 0) {
+                            error("Docker login failed")
+                        }
+                        def pushResult = sh(script: "docker push ${IMAGE_NAME}", returnStatus: true)
+                        if (pushResult != 0) {
+                            error("Docker push failed")
+                        }
+                    }
                 }
             }
         }
