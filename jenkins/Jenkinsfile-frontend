@@ -58,7 +58,7 @@ pipeline {
                 // Build Docker image for frontend with error handling
                 dir('frontend') {
                     script {
-                        def buildResult = sh(script: "docker build -f docker/Dockerfile.frontend -t ${IMAGE_NAME} .", returnStatus: true)
+                        def buildResult = sh(script: "docker build -f ../docker/Dockerfile.frontend -t ${IMAGE_NAME} .", returnStatus: true)
                         if (buildResult != 0) {
                             echo "Docker build failed with exit code ${buildResult}. Check Docker permissions or Dockerfile."
                             error("Docker build failed")
@@ -75,6 +75,7 @@ pipeline {
                         if (loginResult != 0) {
                             error("Docker login failed")
                         }
+                        
                         def pushResult = sh(script: "docker push ${IMAGE_NAME}", returnStatus: true)
                         if (pushResult != 0) {
                             error("Docker push failed")

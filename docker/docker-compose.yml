@@ -81,6 +81,7 @@ services:
 
   jenkins:
     image: custom-jenkins-with-docker:latest
+    user: "1000:999"
     privileged: true
     ports:
       - "8081:8080"
