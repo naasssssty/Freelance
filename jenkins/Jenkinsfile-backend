@@ -11,8 +11,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Καθαρίζουμε πρώτα τον workspace
-                cleanWs()
+                // Καθαρίζουμε τον workspace με την εντολή deleteDir
+                deleteDir()
                 
                 // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
                 checkout([
