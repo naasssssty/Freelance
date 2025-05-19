@@ -92,7 +92,7 @@ services:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - DOCKER_HOST=tcp://host.docker.internal:2375
+      - DOCKER_HOST=tcp://192.168.1.5:2375
     networks:
       - freelancer_network
 
