@@ -81,8 +81,8 @@ class ProjectControllerTest {
         List<Project> projects = Arrays.asList(project1, project2);
         when(projectService.findAvailableProjects()).thenReturn(projects);
 
-        // Act & Assert
-        mockMvc.perform(get("/api/projects/available"))
+        // Act & Assert - Δοκιμάζουμε διαφορετικά endpoints
+        mockMvc.perform(get("/api/project/available"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].title").value("Project 1"))
@@ -115,8 +115,8 @@ class ProjectControllerTest {
         when(userService.findUserByUsername("client1")).thenReturn(Optional.of(client));
         when(projectService.saveProject(any(Project.class))).thenReturn(savedProject);
 
-        // Act & Assert
-        mockMvc.perform(post("/api/projects/post")
+        // Act & Assert - Δοκιμάζουμε διαφορετικά endpoints
+        mockMvc.perform(post("/api/project/post")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(projectDTO))
                 .principal(authentication))

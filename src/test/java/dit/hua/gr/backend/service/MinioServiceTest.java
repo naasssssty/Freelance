@@ -48,8 +48,8 @@ class MinioServiceTest {
         String projectId = "project123";
         Integer userId = 1;
         
-        // Κάνουμε mock τη μέθοδο putObject
-        doNothing().when(minioClient).putObject(any());
+        // Αντί για doNothing(), χρησιμοποιούμε when().thenReturn()
+        when(minioClient.putObject(any(PutObjectArgs.class))).thenReturn(null);
         
         // Act & Assert
         assertDoesNotThrow(() -> minioService.uploadFile(file, projectId, userId));
@@ -84,7 +84,8 @@ class MinioServiceTest {
         String projectId = "project123";
         Integer userId = 1;
         
-        doThrow(new IOException("Test exception")).when(minioClient).putObject(any());
+        // Αντί για doThrow(), χρησιμοποιούμε when().thenThrow()
+        when(minioClient.putObject(any(PutObjectArgs.class))).thenThrow(new IOException("Test exception"));
         
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> 
