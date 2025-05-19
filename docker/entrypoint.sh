@@ -8,16 +8,16 @@ if [ -S /var/run/docker.sock ]; then
     DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
     # Check if the group exists, if not create it
     if ! getent group $DOCKER_GID; then
-        groupadd -g $DOCKER_GID docker
+        groupadd -g $DOCKER_GID docker 2>/dev/null || echo "Failed to create group docker with GID $DOCKER_GID"
     fi
-    # Add jenkins user to the docker group
-    usermod -aG $DOCKER_GID jenkins
-    echo "Permissions set for jenkins user."
+    # Add jenkins user to the docker group (continue even if it fails)
+    usermod -aG $DOCKER_GID jenkins 2>/dev/null || echo "Failed to add jenkins user to group with GID $DOCKER_GID"
+    echo "Permissions set for jenkins user (or attempted to set)."
     
-    # Additional step to create a docker_host group with the same GID (from docker-gid.sh logic)
-    groupadd -g $DOCKER_GID docker_host 2>/dev/null || true
-    usermod -aG docker_host jenkins
-    echo "Added jenkins user to docker_host group."
+    # Additional step to create a docker_host group with the same GID (continue even if it fails)
+    groupadd -g $DOCKER_GID docker_host 2>/dev/null || echo "Failed to create group docker_host with GID $DOCKER_GID"
+    usermod -aG docker_host jenkins 2>/dev/null || echo "Failed to add jenkins user to docker_host group"
+    echo "Added jenkins user to docker_host group (or attempted to add)."
 else
     echo "Docker socket not found at /var/run/docker.sock"
 fi

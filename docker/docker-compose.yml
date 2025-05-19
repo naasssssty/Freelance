@@ -80,7 +80,9 @@ services:
       - freelancer_network
 
   jenkins:
-    image: custom-jenkins-with-docker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
     user: "1000:999"
     privileged: true
     ports:

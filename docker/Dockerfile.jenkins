@@ -19,15 +19,15 @@ RUN usermod -aG docker jenkins
 # Εγκατάσταση εργαλείων για debugging
 RUN apt-get install -y iputils-ping net-tools
 
-# Copy entrypoint script
+# Copy entrypoint script (αλλά δεν το χρησιμοποιούμε προσωρινά)
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Επιστροφή στον χρήστη jenkins
 USER jenkins
 
-# Εκτέλεση του entrypoint script πριν από την εκκίνηση του Jenkins
-ENTRYPOINT ["/entrypoint.sh", "/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
+# Χωρίς custom ENTRYPOINT για debugging
+# ENTRYPOINT ["/entrypoint.sh", "/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # Εκκίνηση του Jenkins
 CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
