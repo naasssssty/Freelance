@@ -1,10 +1,10 @@
 # Χρησιμοποιούμε την επίσημη εικόνα του Jenkins ως βάση
 FROM jenkins/jenkins:lts
 
-# Εγκατάσταση του Docker CLI και Docker daemon
+# Εγκατάσταση του Docker CLI, Docker daemon και Git
 USER root
 RUN apt-get update && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && \
+    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
@@ -17,6 +17,9 @@ RUN if ! getent group docker >/dev/null; then \
 
 # Εγκατάσταση εργαλείων για debugging και sudo
 RUN apt-get install -y iputils-ping net-tools sudo
+
+# Ρυθμίζουμε το Git για να επιτρέπει ασφαλή καταλόγους
+RUN git config --global --add safe.directory '*'
 
 # Copy entrypoint script για να ελέγχει το socket
 COPY entrypoint.sh /entrypoint.sh

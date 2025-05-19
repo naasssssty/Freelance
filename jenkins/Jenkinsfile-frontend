@@ -10,8 +10,16 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub repository
-                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
+                // Καθαρίζουμε πρώτα τον workspace
+                cleanWs()
+                
+                // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'test-branch']],
+                    extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
+                    userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
+                ])
             }
         }
         stage('Install Dependencies') {
