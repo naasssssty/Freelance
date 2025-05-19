@@ -39,29 +39,15 @@ class EmailServiceTest {
     }
 
     @Test
-    void testSendProjectApprovalEmail() {
+    void testSendEmail() {
         // Arrange
         String to = "client@example.com";
-        String projectTitle = "Test Project";
+        String subject = "Test Subject";
+        String text = "Test Message";
         doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         // Act
-        emailService.sendProjectApprovalEmail(to, projectTitle);
-
-        // Assert
-        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
-    }
-
-    @Test
-    void testSendApplicationNotificationEmail() {
-        // Arrange
-        String to = "client@example.com";
-        String projectTitle = "Test Project";
-        String freelancerUsername = "freelancer1";
-        doNothing().when(mailSender).send(any(SimpleMailMessage.class));
-
-        // Act
-        emailService.sendApplicationNotificationEmail(to, projectTitle, freelancerUsername);
+        emailService.sendEmail(to, subject, text);
 
         // Assert
         verify(mailSender, times(1)).send(any(SimpleMailMessage.class));

@@ -10,7 +10,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -40,7 +39,7 @@ class ProjectRepositoryIT {
         Project project1 = new Project();
         project1.setTitle("Project 1");
         project1.setDescription("Description 1");
-        project1.setBudget(new BigDecimal("100.00"));
+        project1.setBudget(100.00);
         project1.setDeadline(LocalDate.now().plusDays(30));
         project1.setClient(client);
         project1.setProjectStatus(ProjectStatus.APPROVED);
@@ -49,7 +48,7 @@ class ProjectRepositoryIT {
         Project project2 = new Project();
         project2.setTitle("Project 2");
         project2.setDescription("Description 2");
-        project2.setBudget(new BigDecimal("200.00"));
+        project2.setBudget(200.00);
         project2.setDeadline(LocalDate.now().plusDays(60));
         project2.setClient(client);
         project2.setProjectStatus(ProjectStatus.PENDING);
@@ -82,7 +81,7 @@ class ProjectRepositoryIT {
         Project project = new Project();
         project.setTitle("New Project");
         project.setDescription("New Description");
-        project.setBudget(new BigDecimal("150.00"));
+        project.setBudget(150.00);
         project.setDeadline(LocalDate.now().plusDays(45));
         project.setClient(client);
         project.setProjectStatus(ProjectStatus.PENDING);
@@ -94,7 +93,7 @@ class ProjectRepositoryIT {
         assertNotNull(savedProject.getId());
         assertEquals("New Project", savedProject.getTitle());
         assertEquals("New Description", savedProject.getDescription());
-        assertEquals(0, new BigDecimal("150.00").compareTo(savedProject.getBudget()));
+        assertEquals(150.00, savedProject.getBudget());
         assertEquals(ProjectStatus.PENDING, savedProject.getProjectStatus());
     }
 } 

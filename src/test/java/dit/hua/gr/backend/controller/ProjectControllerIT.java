@@ -19,7 +19,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -79,7 +78,7 @@ class ProjectControllerIT {
         Project project = new Project();
         project.setTitle("Test Project");
         project.setDescription("Test Description");
-        project.setBudget(new BigDecimal("100.00"));
+        project.setBudget(100.00);
         project.setDeadline(LocalDate.now().plusDays(30));
         project.setClient(client);
         project.setProjectStatus(ProjectStatus.APPROVED);
@@ -103,7 +102,7 @@ class ProjectControllerIT {
         PostProjectDTO projectDTO = new PostProjectDTO();
         projectDTO.setTitle("New Project");
         projectDTO.setDescription("New Description");
-        projectDTO.setBudget(new BigDecimal("150.00"));
+        projectDTO.setBudget(150.00);
         projectDTO.setDeadline(LocalDate.now().plusDays(45));
 
         mockMvc.perform(post("/api/projects/post")

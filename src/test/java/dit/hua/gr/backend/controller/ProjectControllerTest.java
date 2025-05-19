@@ -20,7 +20,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -69,14 +68,14 @@ class ProjectControllerTest {
         project1.setId(1);
         project1.setTitle("Project 1");
         project1.setDescription("Description 1");
-        project1.setBudget(new BigDecimal("100.00"));
+        project1.setBudget(100.00);
         project1.setProjectStatus(ProjectStatus.APPROVED);
 
         Project project2 = new Project();
         project2.setId(2);
         project2.setTitle("Project 2");
         project2.setDescription("Description 2");
-        project2.setBudget(new BigDecimal("200.00"));
+        project2.setBudget(200.00);
         project2.setProjectStatus(ProjectStatus.APPROVED);
 
         List<Project> projects = Arrays.asList(project1, project2);
@@ -105,14 +104,14 @@ class ProjectControllerTest {
         PostProjectDTO projectDTO = new PostProjectDTO();
         projectDTO.setTitle("New Project");
         projectDTO.setDescription("New Description");
-        projectDTO.setBudget(new BigDecimal("150.00"));
+        projectDTO.setBudget(150.00);
         projectDTO.setDeadline(LocalDate.now().plusDays(30));
 
         Project savedProject = new Project();
         savedProject.setId(3);
         savedProject.setTitle("New Project");
         savedProject.setDescription("New Description");
-        savedProject.setBudget(new BigDecimal("150.00"));
+        savedProject.setBudget(150.00);
         savedProject.setDeadline(LocalDate.now().plusDays(30));
         savedProject.setClient(client);
         savedProject.setProjectStatus(ProjectStatus.PENDING);

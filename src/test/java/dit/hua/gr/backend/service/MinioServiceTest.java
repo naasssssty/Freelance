@@ -1,5 +1,6 @@
 package dit.hua.gr.backend.service;
 
+import io.minio.GetObjectResponse;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.GetObjectArgs;
@@ -35,7 +36,6 @@ class MinioServiceTest {
     @Test
     void testUploadFile() throws Exception {
         // Arrange
-        String bucketName = "test-bucket";
         String fileName = "test-file.txt";
         String contentType = "text/plain";
         byte[] content = "Hello, World!".getBytes();
@@ -45,22 +45,20 @@ class MinioServiceTest {
         doNothing().when(minioClient).putObject(any(PutObjectArgs.class));
 
         // Act & Assert
-        assertDoesNotThrow(() -> minioService.uploadFile(bucketName, fileName, file));
+        assertDoesNotThrow(() -> minioService.uploadFile(file));
         verify(minioClient, times(1)).putObject(any(PutObjectArgs.class));
     }
 
     @Test
     void testGetFile() throws Exception {
         // Arrange
-        String bucketName = "test-bucket";
         String fileName = "test-file.txt";
-        byte[] content = "Hello, World!".getBytes();
-        InputStream inputStream = new ByteArrayInputStream(content);
+        GetObjectResponse mockResponse = mock(GetObjectResponse.class);
         
-        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(inputStream);
+        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(mockResponse);
 
         // Act
-        InputStream result = minioService.getFile(bucketName, fileName);
+        InputStream result = minioService.getFile(fileName);
 
         // Assert
         assertNotNull(result);
@@ -70,7 +68,6 @@ class MinioServiceTest {
     @Test
     void testUploadFileThrowsException() throws Exception {
         // Arrange
-        String bucketName = "test-bucket";
         String fileName = "test-file.txt";
         String contentType = "text/plain";
         byte[] content = "Hello, World!".getBytes();
@@ -81,7 +78,7 @@ class MinioServiceTest {
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> 
-            minioService.uploadFile(bucketName, fileName, file)
+            minioService.uploadFile(file)
         );
         assertTrue(exception.getMessage().contains("Error uploading file"));
     }
