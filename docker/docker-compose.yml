@@ -1,4 +1,4 @@
-# version: '3.8'
+version: '3.8'
 
 services:
   postgres:
@@ -90,9 +90,9 @@ services:
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock  # mount socket για να τρέχει docker commands
     environment:
-      - DOCKER_HOST=tcp://192.168.1.5:2375
+      # ΑΦΑΙΡΕΣΑ το DOCKER_HOST γιατί προκαλεί πρόβλημα (δεν χρειάζεται όταν χρησιμοποιείς το socket)
     networks:
       - freelancer_network
 
