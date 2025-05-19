@@ -10,24 +10,23 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce-cli docker-ce
 
-# Δημιουργία ομάδας docker με δυναμικό GID που θα προσαρμοστεί αργότερα
-RUN groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null || groupadd docker
-
-# Προσθήκη του χρήστη jenkins στην ομάδα docker
-RUN usermod -aG docker jenkins
+# Ελέγχουμε αν η ομάδα docker υπάρχει ήδη, αλλιώς τη δημιουργούμε
+RUN if ! getent group docker >/dev/null; then \
+        groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null || groupadd docker; \
+    fi
 
 # Εγκατάσταση εργαλείων για debugging και sudo
 RUN apt-get install -y iputils-ping net-tools sudo
 
-# Copy entrypoint script για να ξεκινά ο Docker daemon
+# Copy entrypoint script για να ελέγχει το socket
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Επιστροφή στον χρήστη jenkins
-USER jenkins
+# Παραμένουμε ως root (δεν επιστρέφουμε σε άλλον χρήστη)
 
-# Χρήση custom ENTRYPOINT για να ξεκινά ο Docker daemon και το Jenkins
-ENTRYPOINT ["/entrypoint.sh", "/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
+# Χρήση custom ENTRYPOINT για να ελέγξουμε το Docker socket και να ξεκινήσουμε τον Jenkins
+# Αφαιρούμε το /sbin/tini καθώς δεν είναι διαθέσιμο
+ENTRYPOINT ["/entrypoint.sh", "/usr/local/bin/jenkins.sh"]
 
 # Εκκίνηση του Jenkins
 CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]

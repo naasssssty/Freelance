@@ -1,22 +1,18 @@
 #!/bin/bash
 set -e
 
-# Ξεκινάμε τον Docker daemon στο background
-echo "Starting Docker daemon..."
-sudo dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375 &
+# Δεν χρειάζεται να ξεκινήσουμε Docker daemon, καθώς χρησιμοποιούμε το socket του host
+echo "Using host Docker daemon via socket..."
 
-# Περιμένουμε λίγο για να βεβαιωθούμε ότι ο Docker daemon έχει ξεκινήσει
-sleep 5
-
-# Ελέγχουμε αν ο Docker daemon τρέχει
-docker info >/dev/null 2>&1
-if [ $? -eq 0 ]; then
-    echo "Docker daemon started successfully."
+# Ελέγχουμε αν το Docker socket είναι διαθέσιμο
+if [ -S /var/run/docker.sock ]; then
+    echo "Docker socket found at /var/run/docker.sock"
+    # Προαιρετικά, αλλάζουμε τα δικαιώματα του socket αν χρειάζεται
+    chmod 666 /var/run/docker.sock
 else
-    echo "Failed to start Docker daemon. Check logs for details."
-    exit 1
+    echo "WARNING: Docker socket not found at /var/run/docker.sock"
 fi
 
-# Εκτελούμε την αρχική εντολή του Jenkins (ή οποιαδήποτε άλλη εντολή περνάει)
+# Εκτελούμε την αρχική εντολή του Jenkins
 echo "Starting Jenkins..."
 exec "$@" 
