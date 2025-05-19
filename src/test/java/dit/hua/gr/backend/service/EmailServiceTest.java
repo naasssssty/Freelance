@@ -39,7 +39,7 @@ class EmailServiceTest {
     }
 
     @Test
-    void testSendSimpleMessage() {
+    void testSendSimpleEmail() {
         // Arrange
         String to = "client@example.com";
         String subject = "Test Subject";
@@ -47,7 +47,7 @@ class EmailServiceTest {
         doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         // Act
-        emailService.sendSimpleMessage(to, subject, text);
+        emailService.sendSimpleEmail(to, subject, text);
 
         // Assert
         verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
