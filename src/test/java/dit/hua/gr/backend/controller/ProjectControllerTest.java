@@ -102,7 +102,6 @@ class ProjectControllerTest {
         projectDTO.setDescription("New Description");
         projectDTO.setBudget(300.0);
         projectDTO.setDeadline(LocalDate.now().plusDays(30));
-        projectDTO.setClientId(1);
 
         User client = new User();
         client.setId(1);
@@ -116,13 +115,15 @@ class ProjectControllerTest {
         savedProject.setDeadline(LocalDate.now().plusDays(30));
         savedProject.setClient(client);
 
-        when(userService.findUserById(anyInt())).thenReturn(Optional.of(client));
+        when(authentication.getName()).thenReturn("client1");
+        when(userService.findUserByUsername("client1")).thenReturn(Optional.of(client));
         when(projectService.saveProject(any(Project.class))).thenReturn(savedProject);
 
         // Act & Assert
         mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(projectDTO)))
+                .content(objectMapper.writeValueAsString(projectDTO))
+                .principal(authentication))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(3))
                 .andExpect(jsonPath("$.title").value("New Project"));
