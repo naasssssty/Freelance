@@ -1,7 +1,10 @@
 package dit.hua.gr.backend.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dit.hua.gr.backend.dto.PostProjectDTO;
 import dit.hua.gr.backend.model.Project;
 import dit.hua.gr.backend.model.ProjectStatus;
+import dit.hua.gr.backend.model.Role;
 import dit.hua.gr.backend.model.User;
 import dit.hua.gr.backend.repository.ProjectRepository;
 import dit.hua.gr.backend.repository.UserRepository;
@@ -11,18 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,9 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProjectControllerIT {
 
     @Autowired
-    private WebApplicationContext context;
-
-    @Autowired
     private MockMvc mockMvc;
 
     @Autowired
@@ -45,68 +43,74 @@ class ProjectControllerIT {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private User client;
+    private User freelancer;
+
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
-        
-        // Clean up database before each test
+        // Clean up repositories
         projectRepository.deleteAll();
         userRepository.deleteAll();
-        
-        // Create test data
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setEmail("admin@example.com");
-        admin.setPassword("password");
-        admin.setRole("ADMIN");
-        userRepository.save(admin);
-        
-        User client = new User();
-        client.setUsername("client");
+
+        // Create test users
+        client = new User();
+        client.setUsername("testclient");
         client.setEmail("client@example.com");
-        client.setPassword("password");
-        client.setRole("CLIENT");
+        client.setPassword(passwordEncoder.encode("password"));
+        client.setRole(Role.CLIENT);
+        client.setVerified(true);
         userRepository.save(client);
-        
+
+        freelancer = new User();
+        freelancer.setUsername("testfreelancer");
+        freelancer.setEmail("freelancer@example.com");
+        freelancer.setPassword(passwordEncoder.encode("password"));
+        freelancer.setRole(Role.FREELANCER);
+        freelancer.setVerified(true);
+        userRepository.save(freelancer);
+
+        // Create test projects
         Project project = new Project();
         project.setTitle("Test Project");
-        project.setDescription("This is a test project");
-        project.setStatus(ProjectStatus.APPROVED);
-        project.setBudget(new BigDecimal("1000.00"));
+        project.setDescription("Test Description");
+        project.setBudget(new BigDecimal("100.00"));
         project.setDeadline(LocalDate.now().plusDays(30));
         project.setClient(client);
+        project.setProjectStatus(ProjectStatus.APPROVED);
         projectRepository.save(project);
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = {"ADMIN"})
-    void testGetAllProjects() throws Exception {
-        mockMvc.perform(get("/api/projects")
+    @WithMockUser(username = "testfreelancer", roles = {"FREELANCER"})
+    void testGetAvailableProjects() throws Exception {
+        mockMvc.perform(get("/api/projects/available")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title", is("Test Project")))
-                .andExpect(jsonPath("$[0].status", is("APPROVED")));
+                .andExpect(jsonPath("$[0].description", is("Test Description")));
     }
 
     @Test
-    @WithMockUser(username = "client", roles = {"CLIENT"})
-    void testCreateProject() throws Exception {
-        String projectJson = "{"
-                + "\"title\": \"New Project\","
-                + "\"description\": \"This is a new project\","
-                + "\"budget\": 2000.00,"
-                + "\"deadline\": \"" + LocalDate.now().plusDays(60) + "\""
-                + "}";
+    @WithMockUser(username = "testclient", roles = {"CLIENT"})
+    void testPostProject() throws Exception {
+        PostProjectDTO projectDTO = new PostProjectDTO();
+        projectDTO.setTitle("New Project");
+        projectDTO.setDescription("New Description");
+        projectDTO.setBudget(new BigDecimal("150.00"));
+        projectDTO.setDeadline(LocalDate.now().plusDays(45));
 
-        mockMvc.perform(post("/api/projects")
+        mockMvc.perform(post("/api/projects/post")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(projectJson))
-                .andExpect(status().isCreated())
+                .content(objectMapper.writeValueAsString(projectDTO)))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title", is("New Project")))
-                .andExpect(jsonPath("$.status", is("PENDING")));
+                .andExpect(jsonPath("$.description", is("New Description")));
     }
 } 

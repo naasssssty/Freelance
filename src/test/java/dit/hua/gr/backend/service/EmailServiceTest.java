@@ -9,8 +9,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class EmailServiceTest {
 
@@ -26,40 +25,43 @@ class EmailServiceTest {
     }
 
     @Test
-    void testSendSimpleMessage() {
-        // Arrange
-        String to = "recipient@example.com";
-        String subject = "Test Subject";
-        String text = "Test Message";
-
-        // Act
-        emailService.sendSimpleMessage(to, subject, text);
-
-        // Assert
-        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
-    }
-
-    @Test
-    void testSendRegistrationConfirmation() {
+    void testSendVerificationEmail() {
         // Arrange
         String to = "user@example.com";
         String username = "testuser";
+        doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         // Act
-        emailService.sendRegistrationConfirmation(to, username);
+        emailService.sendVerificationEmail(to, username);
 
         // Assert
         verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
     }
 
     @Test
-    void testSendProjectApprovalNotification() {
+    void testSendProjectApprovalEmail() {
         // Arrange
         String to = "client@example.com";
         String projectTitle = "Test Project";
+        doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         // Act
-        emailService.sendProjectApprovalNotification(to, projectTitle);
+        emailService.sendProjectApprovalEmail(to, projectTitle);
+
+        // Assert
+        verify(mailSender, times(1)).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    void testSendApplicationNotificationEmail() {
+        // Arrange
+        String to = "client@example.com";
+        String projectTitle = "Test Project";
+        String freelancerUsername = "freelancer1";
+        doNothing().when(mailSender).send(any(SimpleMailMessage.class));
+
+        // Act
+        emailService.sendApplicationNotificationEmail(to, projectTitle, freelancerUsername);
 
         // Assert
         verify(mailSender, times(1)).send(any(SimpleMailMessage.class));

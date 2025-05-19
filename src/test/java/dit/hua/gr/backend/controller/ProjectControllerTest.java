@@ -1,103 +1,134 @@
 package dit.hua.gr.backend.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dit.hua.gr.backend.dto.PostProjectDTO;
+import dit.hua.gr.backend.dto.ProjectResponseDTO;
 import dit.hua.gr.backend.model.Project;
+import dit.hua.gr.backend.model.ProjectStatus;
+import dit.hua.gr.backend.model.Role;
 import dit.hua.gr.backend.model.User;
+import dit.hua.gr.backend.service.NotificationService;
 import dit.hua.gr.backend.service.ProjectService;
+import dit.hua.gr.backend.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class ProjectControllerTest {
+
+    private MockMvc mockMvc;
 
     @Mock
     private ProjectService projectService;
 
     @Mock
-    private Authentication authentication;
+    private UserService userService;
 
     @Mock
-    private SecurityContext securityContext;
+    private NotificationService notificationService;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private ProjectController projectController;
 
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
+        mockMvc = MockMvcBuilders.standaloneSetup(projectController).build();
+        objectMapper.findAndRegisterModules(); // For LocalDate serialization
     }
 
     @Test
-    void testGetAllProjects() {
+    void testGetAvailableProjects() throws Exception {
         // Arrange
         Project project1 = new Project();
-        project1.setId(1L);
+        project1.setId(1);
         project1.setTitle("Project 1");
-        
+        project1.setDescription("Description 1");
+        project1.setBudget(new BigDecimal("100.00"));
+        project1.setProjectStatus(ProjectStatus.APPROVED);
+
         Project project2 = new Project();
-        project2.setId(2L);
+        project2.setId(2);
         project2.setTitle("Project 2");
-        
+        project2.setDescription("Description 2");
+        project2.setBudget(new BigDecimal("200.00"));
+        project2.setProjectStatus(ProjectStatus.APPROVED);
+
         List<Project> projects = Arrays.asList(project1, project2);
         
-        when(projectService.findAll()).thenReturn(projects);
+        when(projectService.findAvailableProjects()).thenReturn(projects);
 
-        // Act
-        ResponseEntity<List<Project>> response = projectController.getAllProjects();
-
-        // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().size());
-        assertEquals("Project 1", response.getBody().get(0).getTitle());
-        assertEquals("Project 2", response.getBody().get(1).getTitle());
-        verify(projectService, times(1)).findAll();
+        // Act & Assert
+        mockMvc.perform(get("/api/projects/available")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title").value("Project 1"))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].title").value("Project 2"));
     }
 
     @Test
-    void testCreateProject() {
+    void testPostProject() throws Exception {
         // Arrange
-        User currentUser = new User();
-        currentUser.setId(1L);
-        currentUser.setUsername("client");
-        
-        Project newProject = new Project();
-        newProject.setTitle("New Project");
-        newProject.setDescription("Project Description");
-        
+        User client = new User();
+        client.setId(1);
+        client.setUsername("client1");
+        client.setEmail("client1@example.com");
+        client.setRole(Role.CLIENT);
+
+        PostProjectDTO projectDTO = new PostProjectDTO();
+        projectDTO.setTitle("New Project");
+        projectDTO.setDescription("New Description");
+        projectDTO.setBudget(new BigDecimal("150.00"));
+        projectDTO.setDeadline(LocalDate.now().plusDays(30));
+
         Project savedProject = new Project();
-        savedProject.setId(1L);
+        savedProject.setId(3);
         savedProject.setTitle("New Project");
-        savedProject.setDescription("Project Description");
-        savedProject.setClient(currentUser);
-        
-        when(authentication.getPrincipal()).thenReturn(currentUser);
-        when(projectService.save(any(Project.class))).thenReturn(savedProject);
+        savedProject.setDescription("New Description");
+        savedProject.setBudget(new BigDecimal("150.00"));
+        savedProject.setDeadline(LocalDate.now().plusDays(30));
+        savedProject.setClient(client);
+        savedProject.setProjectStatus(ProjectStatus.PENDING);
 
-        // Act
-        ResponseEntity<Project> response = projectController.createProject(newProject);
+        when(authentication.getName()).thenReturn("client1");
+        when(userService.findUserByUsername("client1")).thenReturn(Optional.of(client));
+        when(projectService.saveProject(any(Project.class))).thenReturn(savedProject);
 
-        // Assert
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1L, response.getBody().getId());
-        assertEquals("New Project", response.getBody().getTitle());
-        assertEquals(currentUser, response.getBody().getClient());
-        verify(projectService, times(1)).save(any(Project.class));
+        // Act & Assert
+        mockMvc.perform(post("/api/projects/post")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(projectDTO))
+                .principal(authentication))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(3))
+                .andExpect(jsonPath("$.title").value("New Project"))
+                .andExpect(jsonPath("$.description").value("New Description"));
     }
 } 
