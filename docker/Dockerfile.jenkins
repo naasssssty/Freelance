@@ -1,14 +1,14 @@
 # Χρησιμοποιούμε την επίσημη εικόνα του Jenkins ως βάση
 FROM jenkins/jenkins:lts
 
-# Εγκατάσταση του Docker CLI
+# Εγκατάσταση του Docker CLI και Docker daemon
 USER root
 RUN apt-get update && \
     apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
-    apt-get install -y docker-ce-cli
+    apt-get install -y docker-ce-cli docker-ce
 
 # Δημιουργία ομάδας docker με δυναμικό GID που θα προσαρμοστεί αργότερα
 RUN groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null || groupadd docker
@@ -19,15 +19,15 @@ RUN usermod -aG docker jenkins
 # Εγκατάσταση εργαλείων για debugging και sudo
 RUN apt-get install -y iputils-ping net-tools sudo
 
-# Copy entrypoint script (αλλά δεν το χρησιμοποιούμε προσωρινά)
+# Copy entrypoint script για να ξεκινά ο Docker daemon
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Επιστροφή στον χρήστη jenkins
 USER jenkins
 
-# Χωρίς custom ENTRYPOINT για debugging
-# ENTRYPOINT ["/entrypoint.sh", "/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
+# Χρήση custom ENTRYPOINT για να ξεκινά ο Docker daemon και το Jenkins
+ENTRYPOINT ["/entrypoint.sh", "/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # Εκκίνηση του Jenkins
 CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
