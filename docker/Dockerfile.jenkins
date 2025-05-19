@@ -19,22 +19,15 @@ RUN usermod -aG docker jenkins
 # Εγκατάσταση εργαλείων για debugging
 RUN apt-get install -y iputils-ping net-tools
 
-# Δημιουργία script για προσαρμογή του GID της ομάδας docker κατά την εκκίνηση
-RUN echo '#!/bin/bash\n\
-if [ -e /var/run/docker.sock ]; then\n\
-  DOCKER_GID=$(stat -c %g /var/run/docker.sock)\n\
-  groupadd -g $DOCKER_GID docker_host 2>/dev/null || true\n\
-  usermod -aG docker_host jenkins\n\
-fi\n\
-exec /sbin/tini -- /usr/local/bin/jenkins.sh "$@"' > /docker-gid.sh
-
-RUN chmod +x /docker-gid.sh
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Επιστροφή στον χρήστη jenkins
 USER jenkins
 
-# Εκτέλεση του script προσαρμογής GID πριν από την εκκίνηση του Jenkins
-ENTRYPOINT ["/docker-gid.sh"]
+# Εκτέλεση του entrypoint script πριν από την εκκίνηση του Jenkins
+ENTRYPOINT ["/entrypoint.sh", "/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # Εκκίνηση του Jenkins
 CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]
