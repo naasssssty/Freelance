@@ -16,8 +16,8 @@ RUN groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null ||
 # Προσθήκη του χρήστη jenkins στην ομάδα docker
 RUN usermod -aG docker jenkins
 
-# Εγκατάσταση εργαλείων για debugging
-RUN apt-get install -y iputils-ping net-tools
+# Εγκατάσταση εργαλείων για debugging και sudo
+RUN apt-get install -y iputils-ping net-tools sudo
 
 # Copy entrypoint script (αλλά δεν το χρησιμοποιούμε προσωρινά)
 COPY entrypoint.sh /entrypoint.sh
