@@ -41,11 +41,13 @@ class MinioServiceTest {
         byte[] content = "Hello, World!".getBytes();
         
         MultipartFile file = new MockMultipartFile(fileName, fileName, contentType, content);
+        String projectId = "project123";
+        Integer userId = 1;
         
         doNothing().when(minioClient).putObject(any(PutObjectArgs.class));
 
         // Act & Assert
-        assertDoesNotThrow(() -> minioService.uploadFile(file));
+        assertDoesNotThrow(() -> minioService.uploadFile(file, projectId, userId));
         verify(minioClient, times(1)).putObject(any(PutObjectArgs.class));
     }
 
@@ -73,12 +75,14 @@ class MinioServiceTest {
         byte[] content = "Hello, World!".getBytes();
         
         MultipartFile file = new MockMultipartFile(fileName, fileName, contentType, content);
+        String projectId = "project123";
+        Integer userId = 1;
         
         doThrow(new MinioException("Test exception")).when(minioClient).putObject(any(PutObjectArgs.class));
 
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> 
-            minioService.uploadFile(file)
+            minioService.uploadFile(file, projectId, userId)
         );
         assertTrue(exception.getMessage().contains("Error uploading file"));
     }
