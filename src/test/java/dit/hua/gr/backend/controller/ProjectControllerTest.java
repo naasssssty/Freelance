@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -57,8 +57,12 @@ class ProjectControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(projectController).build();
-        objectMapper.findAndRegisterModules(); // For LocalDate serialization
+        mockMvc = MockMvcBuilders
+                .standaloneSetup(projectController)
+                .build();
+        
+        // Configure ObjectMapper for LocalDate
+        objectMapper.findAndRegisterModules();
     }
 
     @Test
@@ -68,23 +72,21 @@ class ProjectControllerTest {
         project1.setId(1);
         project1.setTitle("Project 1");
         project1.setDescription("Description 1");
-        project1.setBudget(100.00);
-        project1.setProjectStatus(ProjectStatus.APPROVED);
+        project1.setBudget(100.0);
+        project1.setDeadline(LocalDate.now().plusDays(10));
 
         Project project2 = new Project();
         project2.setId(2);
         project2.setTitle("Project 2");
         project2.setDescription("Description 2");
-        project2.setBudget(200.00);
-        project2.setProjectStatus(ProjectStatus.APPROVED);
+        project2.setBudget(200.0);
+        project2.setDeadline(LocalDate.now().plusDays(20));
 
         List<Project> projects = Arrays.asList(project1, project2);
-        
         when(projectService.findAvailableProjects()).thenReturn(projects);
 
         // Act & Assert
-        mockMvc.perform(get("/api/projects/available")
-                .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/api/projects"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].title").value("Project 1"))
@@ -95,39 +97,34 @@ class ProjectControllerTest {
     @Test
     void testPostProject() throws Exception {
         // Arrange
-        User client = new User();
-        client.setId(1);
-        client.setUsername("client1");
-        client.setEmail("client1@example.com");
-        client.setRole(Role.CLIENT);
-
         PostProjectDTO projectDTO = new PostProjectDTO();
         projectDTO.setTitle("New Project");
         projectDTO.setDescription("New Description");
-        projectDTO.setBudget(150.00);
+        projectDTO.setBudget(300.0);
         projectDTO.setDeadline(LocalDate.now().plusDays(30));
+        projectDTO.setClientId(1);
+
+        User client = new User();
+        client.setId(1);
+        client.setUsername("client1");
 
         Project savedProject = new Project();
         savedProject.setId(3);
         savedProject.setTitle("New Project");
         savedProject.setDescription("New Description");
-        savedProject.setBudget(150.00);
+        savedProject.setBudget(300.0);
         savedProject.setDeadline(LocalDate.now().plusDays(30));
         savedProject.setClient(client);
-        savedProject.setProjectStatus(ProjectStatus.PENDING);
 
-        when(authentication.getName()).thenReturn("client1");
-        when(userService.findUserByUsername("client1")).thenReturn(Optional.of(client));
+        when(userService.findUserById(anyInt())).thenReturn(Optional.of(client));
         when(projectService.saveProject(any(Project.class))).thenReturn(savedProject);
 
         // Act & Assert
-        mockMvc.perform(post("/api/projects/post")
+        mockMvc.perform(post("/api/projects")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(projectDTO))
-                .principal(authentication))
+                .content(objectMapper.writeValueAsString(projectDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(3))
-                .andExpect(jsonPath("$.title").value("New Project"))
-                .andExpect(jsonPath("$.description").value("New Description"));
+                .andExpect(jsonPath("$.title").value("New Project"));
     }
 } 

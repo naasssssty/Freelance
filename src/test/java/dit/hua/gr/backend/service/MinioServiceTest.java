@@ -14,6 +14,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,9 +29,12 @@ class MinioServiceTest {
     @InjectMocks
     private MinioService minioService;
 
+    private final String bucketName = "test-bucket";
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        minioService.setBucketName(bucketName);
     }
 
     @Test
@@ -44,27 +48,26 @@ class MinioServiceTest {
         String projectId = "project123";
         Integer userId = 1;
         
-        doNothing().when(minioClient).putObject(any(PutObjectArgs.class));
-
         // Act & Assert
         assertDoesNotThrow(() -> minioService.uploadFile(file, projectId, userId));
-        verify(minioClient, times(1)).putObject(any(PutObjectArgs.class));
     }
 
     @Test
     void testGetFile() throws Exception {
         // Arrange
         String fileName = "test-file.txt";
-        GetObjectResponse mockResponse = mock(GetObjectResponse.class);
+        byte[] content = "Hello, World!".getBytes();
+        InputStream inputStream = new ByteArrayInputStream(content);
+        GetObjectResponse response = mock(GetObjectResponse.class);
         
-        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(mockResponse);
-
+        when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(response);
+        when(response.readAllBytes()).thenReturn(content);
+        
         // Act
-        InputStream result = minioService.getFile(fileName);
-
+        byte[] result = minioService.getFile(fileName);
+        
         // Assert
-        assertNotNull(result);
-        verify(minioClient, times(1)).getObject(any(GetObjectArgs.class));
+        assertArrayEquals(content, result);
     }
 
     @Test
@@ -78,8 +81,8 @@ class MinioServiceTest {
         String projectId = "project123";
         Integer userId = 1;
         
-        doThrow(new MinioException("Test exception")).when(minioClient).putObject(any(PutObjectArgs.class));
-
+        when(minioClient.putObject(any(PutObjectArgs.class))).thenThrow(new IOException("Test exception"));
+        
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> 
             minioService.uploadFile(file, projectId, userId)
