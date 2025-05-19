@@ -2,10 +2,7 @@ package dit.hua.gr.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dit.hua.gr.backend.dto.PostProjectDTO;
-import dit.hua.gr.backend.dto.ProjectResponseDTO;
 import dit.hua.gr.backend.model.Project;
-import dit.hua.gr.backend.model.ProjectStatus;
-import dit.hua.gr.backend.model.Role;
 import dit.hua.gr.backend.model.User;
 import dit.hua.gr.backend.service.NotificationService;
 import dit.hua.gr.backend.service.ProjectService;
@@ -26,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -86,7 +82,7 @@ class ProjectControllerTest {
         when(projectService.findAvailableProjects()).thenReturn(projects);
 
         // Act & Assert
-        mockMvc.perform(get("/api/projects"))
+        mockMvc.perform(get("/api/projects/available"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].title").value("Project 1"))
@@ -120,7 +116,7 @@ class ProjectControllerTest {
         when(projectService.saveProject(any(Project.class))).thenReturn(savedProject);
 
         // Act & Assert
-        mockMvc.perform(post("/api/projects")
+        mockMvc.perform(post("/api/projects/post")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(projectDTO))
                 .principal(authentication))

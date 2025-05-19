@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -32,6 +33,8 @@ class MinioServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // Χρησιμοποιούμε το ReflectionTestUtils για να ορίσουμε το bucketName
+        ReflectionTestUtils.setField(minioService, "bucketName", "test-bucket");
     }
 
     @Test
@@ -44,6 +47,9 @@ class MinioServiceTest {
         MultipartFile file = new MockMultipartFile(fileName, fileName, contentType, content);
         String projectId = "project123";
         Integer userId = 1;
+        
+        // Κάνουμε mock τη μέθοδο putObject
+        doNothing().when(minioClient).putObject(any());
         
         // Act & Assert
         assertDoesNotThrow(() -> minioService.uploadFile(file, projectId, userId));
@@ -58,6 +64,7 @@ class MinioServiceTest {
         GetObjectResponse response = mock(GetObjectResponse.class);
         
         when(minioClient.getObject(any(GetObjectArgs.class))).thenReturn(response);
+        when(response.readAllBytes()).thenReturn(content);
         
         // Act
         InputStream result = minioService.getFile(fileName);
@@ -77,7 +84,7 @@ class MinioServiceTest {
         String projectId = "project123";
         Integer userId = 1;
         
-        when(minioClient.putObject(any(PutObjectArgs.class))).thenThrow(new IOException("Test exception"));
+        doThrow(new IOException("Test exception")).when(minioClient).putObject(any());
         
         // Act & Assert
         Exception exception = assertThrows(RuntimeException.class, () -> 
