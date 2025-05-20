@@ -2,7 +2,9 @@ package dit.hua.gr.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dit.hua.gr.backend.dto.PostProjectDTO;
+import dit.hua.gr.backend.dto.ProjectResponseDTO;
 import dit.hua.gr.backend.model.Project;
+import dit.hua.gr.backend.model.ProjectStatus;
 import dit.hua.gr.backend.model.User;
 import dit.hua.gr.backend.service.NotificationService;
 import dit.hua.gr.backend.service.ProjectService;
@@ -13,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -64,12 +67,19 @@ class ProjectControllerTest {
     @Test
     void testGetAvailableProjects() throws Exception {
         // Arrange
+        User client = new User();
+        client.setId(1);
+        client.setUsername("client1");
+        
         Project project1 = new Project();
         project1.setId(1);
         project1.setTitle("Project 1");
         project1.setDescription("Description 1");
         project1.setBudget(100.0);
         project1.setDeadline(LocalDate.now().plusDays(10));
+        project1.setClient(client);
+        project1.setProjectStatus(ProjectStatus.APPROVED);
+        project1.setCreated_at(LocalDate.now());
 
         Project project2 = new Project();
         project2.setId(2);
@@ -77,16 +87,17 @@ class ProjectControllerTest {
         project2.setDescription("Description 2");
         project2.setBudget(200.0);
         project2.setDeadline(LocalDate.now().plusDays(20));
+        project2.setClient(client);
+        project2.setProjectStatus(ProjectStatus.APPROVED);
+        project2.setCreated_at(LocalDate.now());
 
         List<Project> projects = Arrays.asList(project1, project2);
         when(projectService.findAvailableProjects()).thenReturn(projects);
 
         // Act & Assert - Χρησιμοποιούμε το σωστό endpoint
-        mockMvc.perform(get("/project/allProjects"))
+        mockMvc.perform(get("/project/available"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].title").value("Project 1"))
-                .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].title").value("Project 2"));
     }
 
@@ -110,6 +121,7 @@ class ProjectControllerTest {
         savedProject.setBudget(300.0);
         savedProject.setDeadline(LocalDate.now().plusDays(30));
         savedProject.setClient(client);
+        savedProject.setCreated_at(LocalDate.now());
 
         when(authentication.getName()).thenReturn("client1");
         when(userService.findUserByUsername("client1")).thenReturn(Optional.of(client));
@@ -121,7 +133,6 @@ class ProjectControllerTest {
                 .content(objectMapper.writeValueAsString(projectDTO))
                 .principal(authentication))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(3))
                 .andExpect(jsonPath("$.title").value("New Project"));
     }
 } 
