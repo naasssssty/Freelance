@@ -17,7 +17,8 @@ pipeline {
         }
         stage('Build and Test') {
             environment {
-                // Ensure tests use an in-memory database
+                // Ensure tests use an in-memory database and test profile
+                SPRING_PROFILES_ACTIVE = 'test'
                 SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
                 SPRING_DATASOURCE_USERNAME = 'sa'
                 SPRING_DATASOURCE_PASSWORD = ''
@@ -27,7 +28,7 @@ pipeline {
             }
             steps {
                 // Build the backend using Maven with explicit test profile
-                sh 'mvn clean install -Ptest'
+                sh 'mvn clean install -Ptest -Dspring.profiles.active=test'
             }
             post {
                 always {
