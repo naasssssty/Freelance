@@ -157,7 +157,7 @@ public class ApplicationControllerTest {
         List<Application> applications = Arrays.asList(testApplication);
         when(projectService.findProjectById(1)).thenReturn(Optional.of(testProject));
         when(userService.findUserByUsername("testclient")).thenReturn(Optional.of(testClient));
-        when(applicationService.findApplicationsByProject(testProject)).thenReturn(applications);
+        when(applicationService.getApplicationsByProject(testProject)).thenReturn(applications);
         when(applicationService.convertToDTO(testApplication)).thenReturn(applicationDTO);
 
         // Act & Assert
@@ -174,7 +174,7 @@ public class ApplicationControllerTest {
         // Arrange
         List<Application> applications = Arrays.asList(testApplication);
         when(userService.findUserByUsername("testfreelancer")).thenReturn(Optional.of(testFreelancer));
-        when(applicationService.findApplicationsByFreelancer(testFreelancer)).thenReturn(applications);
+        when(applicationService.getApplicationsByFreelancer(testFreelancer)).thenReturn(applications);
         when(applicationService.convertToDTO(testApplication)).thenReturn(applicationDTO);
 
         // Act & Assert
@@ -192,7 +192,7 @@ public class ApplicationControllerTest {
         testApplication.setApplicationStatus(ApplicationStatus.APPROVED);
         when(applicationService.getApplicationById(1)).thenReturn(Optional.of(testApplication));
         when(userService.findUserByUsername("testclient")).thenReturn(Optional.of(testClient));
-        when(applicationService.approveApplication(testApplication)).thenReturn(testApplication);
+        when(applicationService.accept(testApplication)).thenReturn(testApplication);
         when(applicationService.convertToDTO(testApplication)).thenReturn(applicationDTO);
 
         // Act & Assert
@@ -208,7 +208,7 @@ public class ApplicationControllerTest {
         testApplication.setApplicationStatus(ApplicationStatus.REJECTED);
         when(applicationService.getApplicationById(1)).thenReturn(Optional.of(testApplication));
         when(userService.findUserByUsername("testclient")).thenReturn(Optional.of(testClient));
-        when(applicationService.rejectApplication(testApplication)).thenReturn(testApplication);
+        when(applicationService.reject(testApplication)).thenReturn(testApplication);
         when(applicationService.convertToDTO(testApplication)).thenReturn(applicationDTO);
 
         // Act & Assert
