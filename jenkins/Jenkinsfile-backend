@@ -2,11 +2,16 @@ pipeline {
     agent any
     tools {
         maven 'Maven 3'
+<<<<<<< HEAD
         jdk 'JDK 21'
         nodejs 'Node 21'
+=======
+        jdk 'JDK 21 Linux'
+>>>>>>> test-branch
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
+        SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
         stage('Checkout') {
@@ -15,14 +20,26 @@ pipeline {
                 git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
+<<<<<<< HEAD
         stage('Build') {
             steps {
                 // Build the backend using Maven
                 sh 'mvn clean install -DskipTests'
+=======
+        stage('Build and Test') {
+            environment {
+                // Ensure tests use an in-memory database and test profile
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+>>>>>>> test-branch
             }
-        }
-        stage('Test') {
             steps {
+<<<<<<< HEAD
                 // Temporarily skip tests until configuration issue is resolved
                 sh 'mvn test -DskipTests'
             }
@@ -30,6 +47,30 @@ pipeline {
                 always {
                     // Publish test results, allow empty results since tests are skipped
                     junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+=======
+                // Build the backend using Maven with explicit test profile
+                sh 'mvn clean install -Ptest -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    // Publish test results
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                // Build Docker image for backend using the correct Dockerfile
+                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                // Push Docker image to Docker Hub
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker push $DOCKER_IMAGE'
+>>>>>>> test-branch
                 }
             }
         }

@@ -8,13 +8,24 @@ pipeline {
     environment {
         IMAGE_TAG = '28'
         IMAGE_NAME = "papadooo/freelance-frontend:${IMAGE_TAG}"
+<<<<<<< HEAD
         DOCKER_REGISTRY = 'https://registry.hub.docker.com'
+=======
+>>>>>>> test-branch
     }
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub repository
-                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
+                // Καθαρίζουμε πρώτα τον workspace
+                cleanWs()
+                
+                // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: 'test-branch']],
+                    extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
+                    userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
+                ])
             }
         }
         stage('Install Dependencies') {
@@ -55,6 +66,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
+<<<<<<< HEAD
                 // Build Docker image for frontend with error handling
                 dir('frontend') {
                     script {
@@ -63,6 +75,11 @@ pipeline {
                             echo "Docker build failed with exit code ${buildResult}. Check Docker permissions or Dockerfile."
                             error("Docker build failed")
                         }
+=======
+                withEnv(["PATH+EXTRA=/usr/local/bin"]) {
+                    dir('frontend') {
+                        sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
+>>>>>>> test-branch
                     }
                 }
             }
@@ -70,6 +87,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+<<<<<<< HEAD
                     script {
                         def loginResult = sh(script: "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}", returnStatus: true)
                         if (loginResult != 0) {
@@ -84,6 +102,22 @@ pipeline {
                 }
             }
         }
+=======
+                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                    sh "docker push ${IMAGE_NAME}"
+                }
+            }
+        }
+        stage('Check Docker Connection') {
+            steps {
+                sh 'docker info || echo "Docker connection failed"'
+                sh 'env | grep DOCKER || echo "DOCKER env vars not set"'
+                sh 'ls -l /var/run/docker.sock || echo "Docker socket not found"'
+                sh 'id || echo "Cannot get user info"'
+                sh 'groups || echo "Cannot get group info"'
+            }
+        }
+>>>>>>> test-branch
     }
     post {
         always {
