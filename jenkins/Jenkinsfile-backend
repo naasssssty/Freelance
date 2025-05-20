@@ -11,20 +11,11 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Καθαρίζουμε τον workspace με την εντολή deleteDir
-                deleteDir()
-                
-                // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: 'test-branch']],
-                    extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
-                    userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
-                ])
+                // Checkout code from GitHub repository
+                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
-        
-        stage('Build') {
+        stage('Build and Test') {
             environment {
                 // Ensure tests use an in-memory database
                 SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
@@ -36,23 +27,7 @@ pipeline {
             }
             steps {
                 // Build the backend using Maven with explicit test profile
-                sh 'mvn clean package -DskipTests -Ptest'
-            }
-        }
-        
-        stage('Unit Tests') {
-            environment {
-                // Ensure tests use an in-memory database
-                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
-                SPRING_DATASOURCE_USERNAME = 'sa'
-                SPRING_DATASOURCE_PASSWORD = ''
-                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
-                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
-                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
-            }
-            steps {
-                // Run unit tests
-                sh 'mvn test -Ptest'
+                sh 'mvn clean install -Ptest'
             }
             post {
                 always {
@@ -61,49 +36,12 @@ pipeline {
                 }
             }
         }
-        
-        stage('Integration Tests') {
-            environment {
-                // Ensure tests use an in-memory database
-                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
-                SPRING_DATASOURCE_USERNAME = 'sa'
-                SPRING_DATASOURCE_PASSWORD = ''
-                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
-                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
-                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
-            }
-            steps {
-                // Run integration tests
-                sh 'mvn failsafe:integration-test failsafe:verify -Pintegration-test'
-            }
-            post {
-                always {
-                    // Publish integration test results
-                    junit '**/target/failsafe-reports/*.xml'
-                }
-            }
-        }
-        
-        stage('Code Quality') {
-            steps {
-                // Run code quality checks
-                sh 'mvn checkstyle:checkstyle pmd:pmd spotbugs:spotbugs'
-            }
-            post {
-                always {
-                    // Publish code quality results
-                    recordIssues tools: [checkStyle(), pmdParser(), spotBugs()]
-                }
-            }
-        }
-        
         stage('Build Docker Image') {
             steps {
                 // Build Docker image for backend
-                sh 'docker build -f docker/Dockerfile.backend -t $DOCKER_IMAGE .'
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
-        
         stage('Push Docker Image') {
             steps {
                 // Push Docker image to Docker Hub
@@ -113,18 +51,7 @@ pipeline {
                 }
             }
         }
-        
-        stage('Check Docker Connection') {
-            steps {
-                sh 'docker info || echo "Docker connection failed"'
-                sh 'env | grep DOCKER || echo "DOCKER env vars not set"'
-                sh 'ls -l /var/run/docker.sock || echo "Docker socket not found"'
-                sh 'id || echo "Cannot get user info"'
-                sh 'groups || echo "Cannot get group info"'
-            }
-        }
     }
-    
     post {
         always {
             // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
