@@ -192,7 +192,7 @@ public class ApplicationControllerTest {
         testApplication.setApplicationStatus(ApplicationStatus.APPROVED);
         when(applicationService.getApplicationById(1)).thenReturn(Optional.of(testApplication));
         when(userService.findUserByUsername("testclient")).thenReturn(Optional.of(testClient));
-        when(applicationService.acceptApplication(testApplication)).thenReturn(testApplication);
+        when(applicationService.acceptApplication(1)).thenReturn(testApplication);
         when(applicationService.convertToDTO(testApplication)).thenReturn(applicationDTO);
 
         // Act & Assert
@@ -208,7 +208,7 @@ public class ApplicationControllerTest {
         testApplication.setApplicationStatus(ApplicationStatus.REJECTED);
         when(applicationService.getApplicationById(1)).thenReturn(Optional.of(testApplication));
         when(userService.findUserByUsername("testclient")).thenReturn(Optional.of(testClient));
-        when(applicationService.rejectApplication(testApplication)).thenReturn(testApplication);
+        when(applicationService.updateApplicationStatus(1, ApplicationStatus.REJECTED)).thenReturn(testApplication);
         when(applicationService.convertToDTO(testApplication)).thenReturn(applicationDTO);
 
         // Act & Assert
