@@ -8,10 +8,7 @@ pipeline {
     environment {
         IMAGE_TAG = '28'
         IMAGE_NAME = "papadooo/freelance-frontend:${IMAGE_TAG}"
-<<<<<<< HEAD
-        DOCKER_REGISTRY = 'https://registry.hub.docker.com'
-=======
->>>>>>> test-branch
+    
     }
     stages {
         stage('Checkout') {
