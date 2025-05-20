@@ -32,7 +32,8 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const username = localStorage.getItem('username');
-    const { usersList, projectsList } = useSelector((state) => state.admin);
+    const admin = useSelector((state) => state.admin) || { usersList: [], projectsList: [] };
+    const { usersList, projectsList } = admin;
     const [users, setUsers] = useState([]);
     const [projects, setProjects] = useState([]);
     // eslint-disable-next-line
@@ -97,6 +98,20 @@ const AdminDashboard = () => {
         }
     }, [usersList, projectsList]);
 
+    // Add this useEffect to load initial data
+    useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                await loadUsersList(dispatch);
+                await loadProjectsList(dispatch);
+            } catch (error) {
+                console.error("Error loading initial data:", error);
+            }
+        };
+        
+        loadInitialData();
+    }, [dispatch]);
+
     const handleSearchResult = (result) => {
         setSearchedUser(result);
         setShowUsersList(false);
@@ -107,9 +122,8 @@ const AdminDashboard = () => {
 
     const handleLoadUsers = async () => {
         try {
-            const usersData = await loadUsersList();
+            const usersData = await loadUsersList(dispatch);
             setUsers(usersData);
-            dispatch({ type: "SET_USERS_LIST", payload: usersData });
             setShowUsersList(true);
             setShowProjectsList(false);
             setShowReports(false);
@@ -121,9 +135,8 @@ const AdminDashboard = () => {
 
     const handleLoadProjects = async () => {
         try {
-            const projectsData = await loadProjectsList();
+            const projectsData = await loadProjectsList(dispatch);
             setProjects(projectsData);
-            dispatch({ type: "SET_PROJECTS_LIST", payload: projectsData });
             setShowProjectsList(true);
             setShowUsersList(false);
             setShowReports(false);
