@@ -32,17 +32,22 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const username = localStorage.getItem('username');
-    
-    // Αποφεύγουμε εντελώς το useSelector προς το παρόν
-    const [usersList, setUsersList] = useState([]);
-    const [projectsList, setProjectsList] = useState([]);
+    const admin = useSelector((state) => state.admin) || { usersList: [], projectsList: [] };
+    const { usersList, projectsList } = admin;
     const [users, setUsers] = useState([]);
     const [projects, setProjects] = useState([]);
-    const [usersError, setUsersError] = useState(null);
-    const [projectsError, setProjectsError] = useState(null);
+    // eslint-disable-next-line
+    // usersLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const usersLoading = useSelector((state) => state.admin.usersLoading);
+    const usersError = useSelector((state) => state.admin.usersError);
+    // eslint-disable-next-line
+    // projectsLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
+    // const projectsLoading = useSelector((state) => state.admin.projectsLoading);
+    const projectsError = useSelector((state) => state.admin.projectsError);
     const [showUsersList, setShowUsersList] = useState(true);
     const [showProjectsList, setShowProjectsList] = useState(true);
     const [searchedUser, setSearchedUser] = useState(null);
+    // eslint-disable-next-line
     const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
@@ -73,43 +78,39 @@ const AdminDashboard = () => {
         pendingProjects: 0
     });
 
-    // Φορτώνουμε τα δεδομένα απευθείας χωρίς να βασιζόμαστε στο Redux
+    // Add useEffect to calculate statistics when lists are loaded
+    useEffect(() => {
+        if (usersList) {
+            const pendingVerifications = usersList.filter(user => !user.verified && user.role === 'FREELANCER').length;
+            setDashboardStats(prev => ({
+                ...prev,
+                totalUsers: usersList.length,
+                pendingVerifications
+            }));
+        }
+        if (projectsList) {
+            const pendingProjects = projectsList.filter(project => project.projectStatus === 'PENDING').length;
+            setDashboardStats(prev => ({
+                ...prev,
+                totalProjects: projectsList.length,
+                pendingProjects
+            }));
+        }
+    }, [usersList, projectsList]);
+
+    // Add this useEffect to load initial data
     useEffect(() => {
         const loadInitialData = async () => {
             try {
-                // Φορτώνουμε τους χρήστες
-                const usersData = await loadUsersList();
-                setUsersList(usersData);
-                setUsers(usersData);
-                
-                // Φορτώνουμε τα projects
-                const projectsData = await loadProjectsList();
-                setProjectsList(projectsData);
-                setProjects(projectsData);
-                
-                // Υπολογίζουμε τα στατιστικά
-                const pendingVerifications = usersData.filter(user => !user.verified && user.role === 'FREELANCER').length;
-                const pendingProjects = projectsData.filter(project => project.projectStatus === 'PENDING').length;
-                
-                setDashboardStats({
-                    totalUsers: usersData.length,
-                    pendingVerifications,
-                    totalProjects: projectsData.length,
-                    pendingProjects
-                });
+                await loadUsersList(dispatch);
+                await loadProjectsList(dispatch);
             } catch (error) {
                 console.error("Error loading initial data:", error);
-                if (error.message.includes('users')) {
-                    setUsersError(error.message);
-                }
-                if (error.message.includes('projects')) {
-                    setProjectsError(error.message);
-                }
             }
         };
         
         loadInitialData();
-    }, []);
+    }, [dispatch]);
 
     const handleSearchResult = (result) => {
         setSearchedUser(result);
@@ -121,31 +122,27 @@ const AdminDashboard = () => {
 
     const handleLoadUsers = async () => {
         try {
-            const usersData = await loadUsersList();
+            const usersData = await loadUsersList(dispatch);
             setUsers(usersData);
-            setUsersList(usersData);
             setShowUsersList(true);
             setShowProjectsList(false);
             setShowReports(false);
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading users:", error);
-            setUsersError(error.message);
         }
     };
 
     const handleLoadProjects = async () => {
         try {
-            const projectsData = await loadProjectsList();
+            const projectsData = await loadProjectsList(dispatch);
             setProjects(projectsData);
-            setProjectsList(projectsData);
             setShowProjectsList(true);
             setShowUsersList(false);
             setShowReports(false);
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading projects:", error);
-            setProjectsError(error.message);
         }
     };
 
@@ -177,28 +174,19 @@ const AdminDashboard = () => {
 
     const menuOptions = [
         {
-            label: "Dashboard",
-            onClick: () => {
-                setShowDashboard(true);
-                setShowUsersList(false);
-                setShowProjectsList(false);
-                setShowReports(false);
-            }
-        },
-        {
-            label: "Users",
+            label: "Users List",
             onClick: handleLoadUsers
         },
         {
-            label: "Projects",
+            label: "Projects List",
             onClick: handleLoadProjects
         },
         {
             label: "Reports",
             onClick: () => {
-                setShowReports(true);
                 setShowUsersList(false);
                 setShowProjectsList(false);
+                setShowReports(true);
                 setShowDashboard(false);
             }
         },
@@ -208,38 +196,47 @@ const AdminDashboard = () => {
         }
     ];
 
-    // Προσθέτουμε μια συνάρτηση για το renderWelcomeDashboard
+    // Add new welcome dashboard section after the Header component
     const renderWelcomeDashboard = () => {
+        if (showUsersList || showProjectsList || searchedUser) {
+            return null;
+        }
+
         return (
             <div className="welcome-dashboard">
-                <h1>Καλώς ήρθες, {username}!</h1>
-                <div className="dashboard-stats-grid">
+                <h1>Welcome to Admin Dashboard</h1>
+                <p>Manage your platform's users and projects from here</p>
+                
+                <div className="stats-container">
                     <div className="stat-card">
                         <FaUsers className="stat-icon" />
-                        <div className="stat-content">
-                            <h3>Συνολικοί Χρήστες</h3>
-                            <p className="stat-number">{dashboardStats.totalUsers}</p>
+                        <div className="stat-info">
+                            <h3>Total Users</h3>
+                            <p>{dashboardStats.totalUsers}</p>
                         </div>
                     </div>
+                    
                     <div className="stat-card">
                         <FaCheckCircle className="stat-icon" />
-                        <div className="stat-content">
-                            <h3>Εκκρεμείς Επαληθεύσεις</h3>
-                            <p className="stat-number">{dashboardStats.pendingVerifications}</p>
+                        <div className="stat-info">
+                            <h3>Pending Verifications</h3>
+                            <p>{dashboardStats.pendingVerifications}</p>
                         </div>
                     </div>
+                    
                     <div className="stat-card">
                         <FaProjectDiagram className="stat-icon" />
-                        <div className="stat-content">
-                            <h3>Συνολικά Έργα</h3>
-                            <p className="stat-number">{dashboardStats.totalProjects}</p>
+                        <div className="stat-info">
+                            <h3>Total Projects</h3>
+                            <p>{dashboardStats.totalProjects}</p>
                         </div>
                     </div>
+                    
                     <div className="stat-card">
                         <FaClock className="stat-icon" />
-                        <div className="stat-content">
-                            <h3>Εκκρεμή Έργα</h3>
-                            <p className="stat-number">{dashboardStats.pendingProjects}</p>
+                        <div className="stat-info">
+                            <h3>Pending Projects</h3>
+                            <p>{dashboardStats.pendingProjects}</p>
                         </div>
                     </div>
                 </div>
@@ -247,54 +244,91 @@ const AdminDashboard = () => {
         );
     };
 
-    // Ορίζουμε τις επιλογές του μενού
     const handleVerifyUser = async (userId, verify) => {
         try {
-            // Ενημερώνουμε τοπικά την κατάσταση για άμεση ανταπόκριση UI
-            setUsersList(usersList.map(user => 
-                user.id === userId ? { ...user, verified: verify } : user
-            ));
-            
-            // Εκτελούμε το API call
-            await handleVerify(userId, verify);
+            const token = localStorage.getItem('token');
+            const response = await axios.put(`/user/${userId}/verify`, { verify }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.status === 200) {
+                alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
+                // Ενημερώνουμε το state για να αντικατοπτρίζει την αλλαγή
+                setUsers(users.map(user => 
+                    user.id === userId ? { ...user, verified: verify } : user
+                ));
+                dispatch({
+                    type: "SET_USERS_LIST",
+                    payload: usersList.map(user => 
+                        user.id === userId ? { ...user, verified: verify } : user
+                    )
+                });
+            }
         } catch (error) {
-            console.error("Error verifying user:", error);
-            // Επαναφέρουμε την κατάσταση σε περίπτωση σφάλματος
-            setUsersList(usersList);
+            console.error(`Error ${verify ? 'verifying' : 'unverifying'} user:`, error);
+            alert(`Failed to ${verify ? 'verify' : 'unverify'} user`);
         }
     };
 
-    // Συνάρτηση για έγκριση έργου
     const handleProjectApprove = async (id) => {
         try {
-            // Ενημερώνουμε τοπικά την κατάσταση
-            setProjectsList(projectsList.map(project => 
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
+            setProjects(projects.map(project => 
                 project.id === id ? { ...project, projectStatus: 'APPROVED' } : project
             ));
-            
-            // Εκτελούμε το API call
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'APPROVED' } : project
+                )
+            });
+
+            // Εκτελούμε το API call στο παρασκήνιο
             await handleApproveProject(id);
         } catch (error) {
             console.error("Error approving project:", error);
-            // Επαναφέρουμε την κατάσταση σε περίπτωση σφάλματος
-            setProjectsList(projectsList);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+                )
+            });
         }
     };
 
-    // Συνάρτηση για απόρριψη έργου
     const handleProjectDeny = async (id) => {
         try {
-            // Ενημερώνουμε τοπικά την κατάσταση
-            setProjectsList(projectsList.map(project => 
+            // Ενημερώνουμε άμεσα την κατάσταση τοπικά για να φαίνεται η αλλαγή στο UI
+            setProjects(projects.map(project => 
                 project.id === id ? { ...project, projectStatus: 'DENIED' } : project
             ));
-            
-            // Εκτελούμε το API call
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'DENIED' } : project
+                )
+            });
+
+            // Εκτελούμε το API call στο παρασκήνιο
             await handleDenyProject(id);
         } catch (error) {
             console.error("Error denying project:", error);
-            // Επαναφέρουμε την κατάσταση σε περίπτωση σφάλματος
-            setProjectsList(projectsList);
+            // Σε περίπτωση σφάλματος, επαναφέρουμε την κατάσταση
+            setProjects(projects.map(project => 
+                project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+            ));
+            dispatch({
+                type: "SET_PROJECTS_LIST",
+                payload: projectsList.map(project => 
+                    project.id === id ? { ...project, projectStatus: 'PENDING' } : project
+                )
+            });
         }
     };
 
@@ -305,17 +339,16 @@ const AdminDashboard = () => {
                 searchComponent={
                     <AdminSearchComponent onSearchResult={handleSearchResult}/>
                 }
-                onLogoClick={() => {
-                    setShowDashboard(true);
-                    setShowUsersList(false);
-                    setShowProjectsList(false);
-                    setShowReports(false);
-                }}
+                onLogoClick={handleLogoClick}
                 username={username}
             />
             
             <div className="dashboard-content">
-                {showDashboard && renderWelcomeDashboard()}
+                {showDashboard && (
+                    <div className="dashboard-stats">
+                        {renderWelcomeDashboard()}
+                    </div>
+                )}
 
                 {usersError && (
                     <div className="error-message">
