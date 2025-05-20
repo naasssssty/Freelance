@@ -63,20 +63,10 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-<<<<<<< HEAD
-                // Build Docker image for frontend with error handling
-                dir('frontend') {
-                    script {
-                        def buildResult = sh(script: "docker build -f ../docker/Dockerfile.frontend -t ${IMAGE_NAME} .", returnStatus: true)
-                        if (buildResult != 0) {
-                            echo "Docker build failed with exit code ${buildResult}. Check Docker permissions or Dockerfile."
-                            error("Docker build failed")
-                        }
-=======
+
                 withEnv(["PATH+EXTRA=/usr/local/bin"]) {
                     dir('frontend') {
                         sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
->>>>>>> test-branch
                     }
                 }
             }
@@ -84,22 +74,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-<<<<<<< HEAD
-                    script {
-                        def loginResult = sh(script: "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}", returnStatus: true)
-                        if (loginResult != 0) {
-                            error("Docker login failed")
-                        }
-                        
-                        def pushResult = sh(script: "docker push ${IMAGE_NAME}", returnStatus: true)
-                        if (pushResult != 0) {
-                            error("Docker push failed")
-                        }
-                    }
-                }
-            }
-        }
-=======
+
                     sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
                     sh "docker push ${IMAGE_NAME}"
                 }
@@ -114,7 +89,6 @@ pipeline {
                 sh 'groups || echo "Cannot get group info"'
             }
         }
->>>>>>> test-branch
     }
     post {
         always {
