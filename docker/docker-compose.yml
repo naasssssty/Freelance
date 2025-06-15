@@ -31,7 +31,7 @@ services:
       MINIO_BUCKET_NAME: freelancer-cvs
       SPRING_PROFILES_ACTIVE: dev
       SPRING_MAIL_HOST: mailhog
-      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_PORT: 8031
       SPRING_MAIL_USERNAME: ""
       SPRING_MAIL_PASSWORD: ""
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
@@ -74,8 +74,8 @@ services:
   mailhog:
     image: mailhog/mailhog
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "8032:8025"
+      - "8031:1025"
     networks:
       - freelancer_network
 
