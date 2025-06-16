@@ -2,9 +2,8 @@
 
 import axios from "axios";
 
-// Create an instance of Axios with default configuration
+// Create an instance of Axios with default configuration for relative paths
 const apiClient = axios.create({
-    baseURL: "http://localhost:8080", // Replace with your backend URL
     headers: {
         "Content-Type": "application/json",
     },

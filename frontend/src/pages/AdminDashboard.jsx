@@ -244,10 +244,10 @@ const AdminDashboard = () => {
         );
     };
 
-    const handleVerifyUser = async (userId, verify) => {
+    const handleVerifyUser = async (username, verify) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(`/user/${userId}/verify`, { verify }, {
+            const response = await axios.put(`/user/${username}/verify`, verify, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -257,12 +257,12 @@ const AdminDashboard = () => {
                 alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
                 // Ενημερώνουμε το state για να αντικατοπτρίζει την αλλαγή
                 setUsers(users.map(user => 
-                    user.id === userId ? { ...user, verified: verify } : user
+                    user.username === username ? { ...user, verified: verify } : user
                 ));
                 dispatch({
                     type: "SET_USERS_LIST",
                     payload: usersList.map(user => 
-                        user.id === userId ? { ...user, verified: verify } : user
+                        user.username === username ? { ...user, verified: verify } : user
                     )
                 });
             }
@@ -400,7 +400,7 @@ const AdminDashboard = () => {
                                         {!user.verified && user.role !== 'ADMIN' && (
                                             <button 
                                                 className="card-button verify-button"
-                                                onClick={() => handleVerifyUser(user.id, true)}
+                                                onClick={() => handleVerifyUser(user.username, true)}
                                             >
                                                 Verify
                                             </button>

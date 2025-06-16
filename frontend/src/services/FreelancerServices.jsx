@@ -1,8 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode"; // Fix import: `jwtDecode` is not a named export
 
-const API_BASE_URL = "http://localhost:8080";
-
 // Utility: Retrieve token and decode username
 const getTokenAndDecode = () => {
     const token = localStorage.getItem("token");
@@ -27,7 +25,7 @@ const getAuthHeaders = () => {
 // Load available projects for freelancers
 export const loadAvailableProjects = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/project/available`, {
+        const response = await axios.get(`/project/available`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -46,7 +44,7 @@ export const applyForProject = async (projectId, coverLetter) => {
         }
 
         const response = await axios.post(
-            `${API_BASE_URL}/project/${projectId}/apply/${username}`,
+            `/project/${projectId}/apply/${username}`,
             coverLetter,
             { headers: getAuthHeaders() }
         );
@@ -60,7 +58,7 @@ export const applyForProject = async (projectId, coverLetter) => {
 // Search projects by title
 export const searchProjectsByTitle = async (title) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/project/title/${title}`, {
+        const response = await axios.get(`/project/title/${title}`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -74,7 +72,7 @@ export const searchProjectsByTitle = async (title) => {
 export const getAssignedProjects = async () => {
     try {
         const { username } = getTokenAndDecode();
-        const response = await axios.get(`${API_BASE_URL}/project/freelancer/${username}`, {
+        const response = await axios.get(`/project/freelancer/${username}`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -87,7 +85,7 @@ export const getAssignedProjects = async () => {
 // Load freelancer's projects
 export const loadMyProjects = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/project/freelancer/my-projects`, {
+        const response = await axios.get(`/project/freelancer/my-projects`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -101,7 +99,7 @@ export const loadMyProjects = async () => {
 export const loadMyApplications = async () => {
     try {
         const { token, username } = getTokenAndDecode();
-        const response = await axios.get(`${API_BASE_URL}/freelancer/${username}/my-applications`,
+        const response = await axios.get(`/freelancer/${username}/my-applications`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -119,7 +117,7 @@ export const handleCompleteProject = async (projectId) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.put(
-            `http://localhost:8080/project/${projectId}/complete`,
+            `/project/${projectId}/complete`,
             null,  // Request body (null since we don't need to send data)
             {
                 headers: {
@@ -138,7 +136,7 @@ export const handleCompleteProject = async (projectId) => {
 export const createReport = async (projectId, description) => {
     try {
         const response = await axios.post(
-            `${API_BASE_URL}/api/reports`,
+            `/api/reports`,
             {
                 projectId,
                 description
@@ -169,7 +167,7 @@ export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
         }
 
         const response = await axios.post(
-            `${API_BASE_URL}/project/${projectId}/apply/${username}/with-cv`,
+            `/project/${projectId}/apply/${username}/with-cv`,
             formData,
             { 
                 headers: {
