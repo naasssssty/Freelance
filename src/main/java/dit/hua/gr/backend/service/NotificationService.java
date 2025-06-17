@@ -21,13 +21,16 @@ public class NotificationService {
     }
 
     public Notification createNotification(User user, String message, NotificationType type) {
+        System.out.println("Creating notification for user: " + user.getUsername() + ", message: " + message + ", type: " + type);
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setMessage(message);
         notification.setType(type);
         notification.setTimestamp(LocalDateTime.now());
         notification.setRead(false);
-        return notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        System.out.println("Notification saved with ID: " + saved.getId());
+        return saved;
     }
 
     public List<NotificationDTO> getUserNotifications(User user) {

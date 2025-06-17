@@ -19,6 +19,7 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
 
     useEffect(() => {
         fetchNotifications();
+        fetchUnreadCount();
         // Set up polling for both notifications and unread count
         const interval = setInterval(() => {
             fetchNotifications();

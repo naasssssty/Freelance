@@ -33,7 +33,7 @@ export const getUnreadCount = async () => {
 export const markAsRead = async (notificationId) => {
     try {
         const token = localStorage.getItem('token');
-        await axios.put(`/api/notifications/${notificationId}/read`, null, {
+        await axios.put(`/notifications/${notificationId}/read`, null, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
