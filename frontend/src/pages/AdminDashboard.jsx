@@ -51,18 +51,57 @@ const AdminDashboard = () => {
     const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);
 
     // Restore previous view state from localStorage after refresh
     useEffect(() => {
-        const savedView = localStorage.getItem('adminDashboardView');
-        if (savedView) {
-            const viewState = JSON.parse(savedView);
-            setShowUsersList(viewState.showUsersList || false);
-            setShowProjectsList(viewState.showProjectsList || false);
-            setShowReports(viewState.showReports || false);
-            setShowDashboard(viewState.showDashboard !== false); // Default to true if not set
-        }
-    }, []);
+        const initializeAdminDashboard = async () => {
+            const savedView = localStorage.getItem('adminDashboardView');
+            
+            if (savedView) {
+                try {
+                    const viewState = JSON.parse(savedView);
+                    
+                    // Set the view state
+                    setShowUsersList(viewState.showUsersList || false);
+                    setShowProjectsList(viewState.showProjectsList || false);
+                    setShowReports(viewState.showReports || false);
+                    setShowDashboard(viewState.showDashboard !== false);
+                    
+                    // Load data if needed after restoring view
+                    if (viewState.showUsersList && (!usersList || usersList.length === 0)) {
+                        await loadUsersList(dispatch).then(usersData => setUsers(usersData));
+                    }
+                    if (viewState.showProjectsList && (!projectsList || projectsList.length === 0)) {
+                        await loadProjectsList(dispatch).then(projectsData => setProjects(projectsData));
+                    }
+                } catch (error) {
+                    console.error('Error parsing saved view state:', error);
+                    // If there's an error, default to dashboard view
+                    setShowDashboard(true);
+                    setShowUsersList(false);
+                    setShowProjectsList(false);
+                    setShowReports(false);
+                }
+            }
+            
+            // Load initial data if not already loaded
+            if (!usersList || usersList.length === 0 || !projectsList || projectsList.length === 0) {
+                try {
+                    await loadUsersList(dispatch);
+                    await loadProjectsList(dispatch);
+                } catch (error) {
+                    console.error("Error loading initial data:", error);
+                }
+            }
+            
+            // Mark initialization as complete
+            setIsInitializing(false);
+        };
+        
+        initializeAdminDashboard();
+    }, []); // Empty dependency array to run only once
 
     // Save current view state to localStorage whenever it changes
     useEffect(() => {
@@ -121,20 +160,6 @@ const AdminDashboard = () => {
         }
     }, [usersList, projectsList]);
 
-    // Add this useEffect to load initial data
-    useEffect(() => {
-        const loadInitialData = async () => {
-            try {
-                await loadUsersList(dispatch);
-                await loadProjectsList(dispatch);
-            } catch (error) {
-                console.error("Error loading initial data:", error);
-            }
-        };
-        
-        loadInitialData();
-    }, [dispatch]);
-
     const handleSearchResult = (result) => {
         setSearchedUser(result);
         setShowUsersList(false);
@@ -144,6 +169,7 @@ const AdminDashboard = () => {
     };
 
     const handleLoadUsers = async () => {
+        setIsLoading(true);
         try {
             const usersData = await loadUsersList(dispatch);
             setUsers(usersData);
@@ -153,10 +179,13 @@ const AdminDashboard = () => {
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading users:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleLoadProjects = async () => {
+        setIsLoading(true);
         try {
             const projectsData = await loadProjectsList(dispatch);
             setProjects(projectsData);
@@ -166,11 +195,14 @@ const AdminDashboard = () => {
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading projects:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('adminDashboardView');
         navigate('/login');
     };
 
@@ -354,6 +386,55 @@ const AdminDashboard = () => {
         }
     };
 
+    if (isLoading || isInitializing) {
+        return (
+            <div className="dashboard">
+                <Header
+                    menuOptions={menuOptions}
+                    searchComponent={
+                        <AdminSearchComponent onSearchResult={handleSearchResult}/>
+                    }
+                    onLogoClick={handleLogoClick}
+                    username={username}
+                />
+                
+                <div className="dashboard-content">
+                    <div style={{ 
+                        padding: '20px', 
+                        textAlign: 'center',
+                        minHeight: '400px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <div>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                border: '4px solid #f3f3f3',
+                                borderTop: '4px solid #3498db',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                margin: '0 auto 20px'
+                            }}></div>
+                            <h3 style={{ color: '#666', fontWeight: 'normal' }}>
+                                {isInitializing ? 'Initializing Admin Dashboard...' : 'Loading...'}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <Footer />
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
+            </div>
+        );
+    }
+
     return (
         <div className="dashboard">
             <Header
@@ -365,7 +446,10 @@ const AdminDashboard = () => {
                 username={username}
             />
             
-            <div className="dashboard-content">
+            <div className="dashboard-content" style={{
+                opacity: isInitializing ? 0 : 1,
+                transition: 'opacity 0.3s ease-in-out'
+            }}>
                 {showDashboard && (
                     <div className="dashboard-stats">
                         {renderWelcomeDashboard()}
