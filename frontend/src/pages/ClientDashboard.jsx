@@ -203,7 +203,7 @@ const ClientDashboard = () => {
         setShowWelcome(true);
     };
 
-    if (isLoading) {
+    if (isLoading || isInitializing) {
         return (
             <div className="dashboard-layout">
                 <Header
@@ -213,11 +213,37 @@ const ClientDashboard = () => {
                     searchComponent={null}
                 />
                 <div className="dashboard-container">
-                    <div style={{ padding: '20px', textAlign: 'center' }}>
-                        <h2>Loading...</h2>
+                    <div style={{ 
+                        padding: '20px', 
+                        textAlign: 'center',
+                        minHeight: '400px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <div>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                border: '4px solid #f3f3f3',
+                                borderTop: '4px solid #3498db',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                margin: '0 auto 20px'
+                            }}></div>
+                            <h3 style={{ color: '#666', fontWeight: 'normal' }}>
+                                {isInitializing ? 'Initializing...' : 'Loading...'}
+                            </h3>
+                        </div>
                     </div>
                 </div>
                 <Footer />
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
             </div>
         );
     }
@@ -230,7 +256,10 @@ const ClientDashboard = () => {
                 username={username}
                 searchComponent={null}
             />
-            <div className="dashboard-container">
+            <div className="dashboard-container" style={{
+                opacity: isInitializing ? 0 : 1,
+                transition: 'opacity 0.3s ease-in-out'
+            }}>
                 {showWelcome && <ClientWelcome username={username} />}
                 
                 {showProjectForm && <ProjectForm handleFormClose={handleFormClose}/>}
