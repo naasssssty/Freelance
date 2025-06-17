@@ -60,8 +60,7 @@ const ApplicationCard = ({ application, onAccept, onReject }) => {
                         </div>
                         {application.cvFilePath && (
                             <div className="meta-item">
-                                <FaFileAlt className="field-icon" />
-                                <span className="label">CV:</span>
+                                <span className="label"><FaFileAlt className="field-icon" /> CV: </span>
                                 <button 
                                     className="download-cv-button"
                                     onClick={handleDownloadCV}
