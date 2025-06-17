@@ -38,7 +38,7 @@ export const loadMyApplications = async () => {
     try {
         const { token, username } = getTokenAndDecode();
         const response = await axios.get(
-            `/client/${username}/my-applications`,
+            `/client/api/${username}/my-applications`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,

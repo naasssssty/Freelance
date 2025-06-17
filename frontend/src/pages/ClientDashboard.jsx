@@ -1,6 +1,6 @@
 //ClientDashboard.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../components/Header';
 import '../styles/header.css';
 import { useNavigate } from "react-router-dom";
@@ -37,16 +37,6 @@ const ClientDashboard = () => {
     // eslint-disable-next-line
     const { myProjects, loading: myProjectsLoading, error: myProjectsError  } = useSelector((state) => state.projects);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const decoded = jwtDecode(token);
-            setUsername(decoded.sub);
-            fetchProjects(decoded.sub);
-            fetchApplications(decoded.sub);
-        }
-    }, []);
-
     const fetchProjects = async (username) => {
         try {
             const projectsData = await loadMyProjects(username);
@@ -65,14 +55,7 @@ const ClientDashboard = () => {
         }
     };
 
-    const handleLoadProjectForm = () => {
-        setShowProjectForm(true);
-        setShowMyProjects(false);
-        setShowMyApplications(false);
-        setShowWelcome(false);  // Κρύβουμε το welcome screen
-    };
-
-    const handleLoadMyApplications = async () => {
+    const handleLoadMyApplications = useCallback(async () => {
         try {
             const applications = await loadMyApplications();
             dispatch({ type: "SET_MY_APPLICATIONS", payload: applications });
@@ -83,9 +66,9 @@ const ClientDashboard = () => {
         } catch (error) {
             console.error("Error loading your applications:", error);
         }
-    };
+    }, [dispatch]);
 
-    const handleLoadMyProjects = async () => {
+    const handleLoadMyProjects = useCallback(async () => {
         try {
             const projects = await loadMyProjects();
             dispatch({ type: "SET_MY_PROJECTS", payload: projects });
@@ -96,6 +79,59 @@ const ClientDashboard = () => {
         } catch (error) {
             console.error("Error loading your projects:", error);
         }
+    }, [dispatch]);
+
+    // Restore previous view state from localStorage after refresh
+    useEffect(() => {
+        const savedView = localStorage.getItem('clientDashboardView');
+        if (savedView) {
+            const viewState = JSON.parse(savedView);
+            setShowProjectForm(viewState.showProjectForm || false);
+            setShowMyApplications(viewState.showMyApplications || false);
+            setShowMyProjects(viewState.showMyProjects || false);
+            setShowWelcome(viewState.showWelcome !== false); // Default to true if not set
+        }
+    }, []);
+
+    // Load data when view state is restored from localStorage
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token && showMyProjects && (!myProjects || myProjects.length === 0)) {
+            // If we're supposed to show projects but don't have any, load them
+            handleLoadMyProjects();
+        }
+        if (token && showMyApplications && (!myApplications || myApplications.length === 0)) {
+            // If we're supposed to show applications but don't have any, load them
+            handleLoadMyApplications();
+        }
+    }, [showMyProjects, showMyApplications, myProjects, myApplications, handleLoadMyProjects, handleLoadMyApplications]); // Dependencies on view states
+
+    // Save current view state to localStorage whenever it changes
+    useEffect(() => {
+        const viewState = {
+            showProjectForm,
+            showMyApplications,
+            showMyProjects,
+            showWelcome
+        };
+        localStorage.setItem('clientDashboardView', JSON.stringify(viewState));
+    }, [showProjectForm, showMyApplications, showMyProjects, showWelcome]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const decoded = jwtDecode(token);
+            setUsername(decoded.sub);
+            fetchProjects(decoded.sub);
+            fetchApplications(decoded.sub);
+        }
+    }, []);
+
+    const handleLoadProjectForm = () => {
+        setShowProjectForm(true);
+        setShowMyProjects(false);
+        setShowMyApplications(false);
+        setShowWelcome(false);  // Κρύβουμε το welcome screen
     };
 
     const handleLogout = () => {
