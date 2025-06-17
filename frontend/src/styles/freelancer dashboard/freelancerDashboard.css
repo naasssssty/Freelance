@@ -18,6 +18,50 @@
     width: 100%;
 }
 
+/* Loading animations */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Smooth transitions for sections */
+.projects-grid,
+.applications-grid,
+.search-result-container,
+.welcome-dashboard {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.stat-card {
+    animation: slideIn 0.3s ease-out;
+    animation-fill-mode: both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
 
 .applications-grid,
 .projects-grid {
@@ -119,8 +163,7 @@ h2 {
     backdrop-filter: blur(10px);
 }
 
-/* Add these styles to your existing CSS */
-
+/* Enhanced welcome screen styles */
 .welcome-dashboard {
     padding: 20px;
     margin-bottom: 30px;
@@ -151,11 +194,29 @@ h2 {
     display: flex;
     align-items: center;
     gap: 15px;
+    position: relative;
+    overflow: hidden;
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4a90e2, #357abd);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
 }
 
 .stat-icon {
@@ -164,6 +225,7 @@ h2 {
     background: rgba(74, 144, 226, 0.1);
     padding: 15px;
     border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .stat-content {
@@ -174,6 +236,7 @@ h2 {
     color: #333;
     font-size: 1.1rem;
     margin-bottom: 5px;
+    font-weight: 600;
 }
 
 .stat-content p {
@@ -181,6 +244,85 @@ h2 {
     font-size: 1.8rem;
     font-weight: bold;
     margin: 0;
+    line-height: 1.2;
+}
+
+.stat-content small {
+    display: block;
+    margin-top: 5px;
+    font-weight: normal;
+}
+
+/* Quick tips section */
+.quick-tips {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.quick-tips h3 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+}
+
+.quick-tips p {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Enhanced loading states */
+.stat-loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-loading .loading-text {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Pulse animation for loading stats */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.stat-card.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Success rate color coding */
+.stat-content p.success-rate-high {
+    color: #28a745;
+}
+
+.stat-content p.success-rate-medium {
+    color: #ffc107;
+}
+
+.stat-content p.success-rate-low {
+    color: #dc3545;
+}
+
+/* Earnings formatting */
+.stat-content p.earnings {
+    color: #28a745;
+    font-weight: 700;
+}
+
+/* Time display styling */
+.stat-content p.time-display {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: normal;
 }
 
 /* Responsive adjustments */
@@ -188,9 +330,148 @@ h2 {
     .stats-grid {
         grid-template-columns: 1fr;
         padding: 0 10px;
+        gap: 15px;
     }
 
     .welcome-dashboard h1 {
         font-size: 1.8rem;
+    }
+
+    .stat-card {
+        animation-delay: 0s !important;
+        padding: 15px;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        padding: 12px;
+    }
+
+    .stat-content p {
+        font-size: 1.5rem;
+    }
+
+    .quick-tips {
+        margin-top: 20px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .stat-content h3 {
+        font-size: 1rem;
+    }
+
+    .stat-content p {
+        font-size: 1.3rem;
+    }
+}
+
+/* Loading spinner styles */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 15px;
+    min-height: 200px;
+}
+
+.loading-spinner {
+    animation: spin 1s linear infinite;
+    font-size: 2rem;
+    color: #2b85c2;
+}
+
+.loading-text {
+    color: #666;
+    font-size: 1rem;
+    text-align: center;
+}
+
+/* Enhanced transitions for better UX */
+.dashboard-container > * {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.dashboard-container > *.fade-enter {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.dashboard-container > *.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dashboard-container > *.fade-exit {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dashboard-container > *.fade-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+/* Time display styling */
+.stat-content p.time-display {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: normal;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+        gap: 15px;
+    }
+
+    .welcome-dashboard h1 {
+        font-size: 1.8rem;
+    }
+
+    .stat-card {
+        animation-delay: 0s !important;
+        padding: 15px;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        padding: 12px;
+    }
+
+    .stat-content p {
+        font-size: 1.5rem;
+    }
+
+    .quick-tips {
+        margin-top: 20px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stat-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .stat-content h3 {
+        font-size: 1rem;
+    }
+
+    .stat-content p {
+        font-size: 1.3rem;
     }
 } 

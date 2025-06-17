@@ -155,30 +155,100 @@ export const createReport = async (projectId, description) => {
 // Update the applyForProject function to handle CV uploads
 export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
     try {
-        const { username } = getTokenAndDecode();
-        if (!coverLetter || coverLetter.trim() === "") {
-            throw new Error("Cover Letter cannot be empty.");
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
         }
 
         const formData = new FormData();
-        formData.append("coverLetter", coverLetter);
+        formData.append('projectId', projectId);
+        formData.append('coverLetter', coverLetter);
         if (cvFile) {
-            formData.append("cvFile", cvFile);
+            formData.append('cvFile', cvFile);
         }
 
-        const response = await axios.post(
-            `/project/${projectId}/apply/${username}/with-cv`,
-            formData,
-            { 
-                headers: {
-                    'Authorization': `Bearer ${getTokenAndDecode().token}`,
-                    'Content-Type': 'multipart/form-data'
-                } 
-            }
-        );
-        return response.data;
+        const response = await fetch('http://localhost:5000/api/freelancer/apply-with-cv', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to submit application');
+        }
+
+        return await response.json();
     } catch (error) {
-        console.error("Error applying for project:", error);
-        throw error.response ? error.response.data : error;
+        console.error('Error applying for project with CV:', error);
+        throw error;
+    }
+};
+
+// New function for getting dashboard statistics
+export const getDashboardStats = async () => {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        // Get all data in parallel
+        const [availableProjectsResponse, applicationsResponse, projectsResponse] = await Promise.allSettled([
+            fetch('http://localhost:5000/api/freelancer/available-projects', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:5000/api/freelancer/my-applications', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            fetch('http://localhost:5000/api/freelancer/my-projects', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+
+        let stats = {
+            totalAvailableProjects: 0,
+            myApplications: 0,
+            myActiveProjects: 0,
+            completedProjects: 0,
+            pendingApplications: 0,
+            approvedApplications: 0,
+            rejectedApplications: 0,
+            totalEarnings: 0
+        };
+
+        // Process available projects
+        if (availableProjectsResponse.status === 'fulfilled' && availableProjectsResponse.value.ok) {
+            const availableProjects = await availableProjectsResponse.value.json();
+            stats.totalAvailableProjects = availableProjects.length;
+        }
+
+        // Process applications
+        if (applicationsResponse.status === 'fulfilled' && applicationsResponse.value.ok) {
+            const applications = await applicationsResponse.value.json();
+            stats.myApplications = applications.length;
+            stats.pendingApplications = applications.filter(a => a.applicationStatus === 'PENDING').length;
+            stats.approvedApplications = applications.filter(a => a.applicationStatus === 'APPROVED').length;
+            stats.rejectedApplications = applications.filter(a => a.applicationStatus === 'REJECTED').length;
+        }
+
+        // Process projects
+        if (projectsResponse.status === 'fulfilled' && projectsResponse.value.ok) {
+            const projects = await projectsResponse.value.json();
+            stats.myActiveProjects = projects.filter(p => p.projectStatus === 'IN_PROGRESS').length;
+            stats.completedProjects = projects.filter(p => p.projectStatus === 'COMPLETED').length;
+            
+            // Calculate total earnings from completed projects
+            stats.totalEarnings = projects
+                .filter(p => p.projectStatus === 'COMPLETED')
+                .reduce((total, project) => total + (project.budget || 0), 0);
+        }
+
+        return stats;
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        throw error;
     }
 };

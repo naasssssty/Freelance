@@ -160,7 +160,7 @@
 }
 
 .complete-button:hover {
-    background: #388e3c;
+    background: #26732acb;
 }
 
 .complete-button.loading {
@@ -198,7 +198,7 @@
 }
 
 .chat-button:hover {
-    background: #1976d2;
+    background: #135ea9a4;
 }
 
 .report-button {
@@ -215,7 +215,7 @@
 }
 
 .report-button:hover {
-    background: #c82333;
+    background: #c82333a9;
 }
 
 .report-form-content {

@@ -74,22 +74,6 @@ const ApplicationCard = ({ application, onAccept, onReject }) => {
                 </div>
             </div>
             
-            {application.applicationStatus === 'WAITING' && (
-                <div className="application-actions">
-                    <button 
-                        className="accept-button"
-                        onClick={() => onAccept(application.id)}
-                    >
-                        Accept
-                    </button>
-                    <button 
-                        className="reject-button"
-                        onClick={() => onReject(application.id)}
-                    >
-                        Reject
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
