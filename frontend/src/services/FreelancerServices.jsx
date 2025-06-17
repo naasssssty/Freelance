@@ -135,19 +135,27 @@ export const handleCompleteProject = async (projectId) => {
 
 export const createReport = async (projectId, description) => {
     try {
+        console.log('Creating report with:', { projectId, description });
+        console.log('Making request to: /report');
+        
         const response = await axios.post(
-            `/api/reports`,
+            `/report`,
             {
-                projectId,
-                description
+                projectId: parseInt(projectId),
+                description: description
             },
             {
                 headers: getAuthHeaders()
             }
         );
+        console.log('Report created successfully:', response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating report:", error);
+        console.error("Request URL:", error.config?.url);
+        console.error("Request method:", error.config?.method);
+        console.error("Request headers:", error.config?.headers);
+        console.error("Request data:", error.config?.data);
         throw error.response ? error.response.data : error;
     }
 };
@@ -155,19 +163,18 @@ export const createReport = async (projectId, description) => {
 // Update the applyForProject function to handle CV uploads
 export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
     try {
-        const token = localStorage.getItem('token');
+        const { token, username } = getTokenAndDecode();
         if (!token) {
             throw new Error('No authentication token found');
         }
 
         const formData = new FormData();
-        formData.append('projectId', projectId);
         formData.append('coverLetter', coverLetter);
         if (cvFile) {
             formData.append('cvFile', cvFile);
         }
 
-        const response = await fetch('http://localhost:5000/api/freelancer/apply-with-cv', {
+        const response = await fetch(`/project/${projectId}/apply/${username}/with-cv`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -190,20 +197,20 @@ export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
 // New function for getting dashboard statistics
 export const getDashboardStats = async () => {
     try {
-        const token = localStorage.getItem('token');
+        const { token, username } = getTokenAndDecode();
         if (!token) {
             throw new Error('No authentication token found');
         }
 
-        // Get all data in parallel
+        // Get all data in parallel using axios with relative URLs
         const [availableProjectsResponse, applicationsResponse, projectsResponse] = await Promise.allSettled([
-            fetch('http://localhost:5000/api/freelancer/available-projects', {
+            axios.get('/project/available', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('http://localhost:5000/api/freelancer/my-applications', {
+            axios.get(`/freelancer/${username}/my-applications`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('http://localhost:5000/api/freelancer/my-projects', {
+            axios.get('/project/freelancer/my-projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
@@ -220,14 +227,14 @@ export const getDashboardStats = async () => {
         };
 
         // Process available projects
-        if (availableProjectsResponse.status === 'fulfilled' && availableProjectsResponse.value.ok) {
-            const availableProjects = await availableProjectsResponse.value.json();
+        if (availableProjectsResponse.status === 'fulfilled' && availableProjectsResponse.value.status === 200) {
+            const availableProjects = availableProjectsResponse.value.data;
             stats.totalAvailableProjects = availableProjects.length;
         }
 
         // Process applications
-        if (applicationsResponse.status === 'fulfilled' && applicationsResponse.value.ok) {
-            const applications = await applicationsResponse.value.json();
+        if (applicationsResponse.status === 'fulfilled' && applicationsResponse.value.status === 200) {
+            const applications = applicationsResponse.value.data;
             stats.myApplications = applications.length;
             stats.pendingApplications = applications.filter(a => a.applicationStatus === 'PENDING').length;
             stats.approvedApplications = applications.filter(a => a.applicationStatus === 'APPROVED').length;
@@ -235,8 +242,8 @@ export const getDashboardStats = async () => {
         }
 
         // Process projects
-        if (projectsResponse.status === 'fulfilled' && projectsResponse.value.ok) {
-            const projects = await projectsResponse.value.json();
+        if (projectsResponse.status === 'fulfilled' && projectsResponse.value.status === 200) {
+            const projects = projectsResponse.value.data;
             stats.myActiveProjects = projects.filter(p => p.projectStatus === 'IN_PROGRESS').length;
             stats.completedProjects = projects.filter(p => p.projectStatus === 'COMPLETED').length;
             

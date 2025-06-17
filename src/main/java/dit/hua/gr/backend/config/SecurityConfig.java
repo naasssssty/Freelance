@@ -57,6 +57,7 @@ public class SecurityConfig {
                         .requestMatchers("/project/{projectId}/complete").hasAnyRole("ADMIN", "FREELANCER")
                         .requestMatchers("/chat/**").authenticated()
                         .requestMatchers("/notifications/**").hasAnyRole("CLIENT", "FREELANCER", "ADMIN")
+                        .requestMatchers("/report/**").hasAnyRole("CLIENT", "FREELANCER", "ADMIN")
                         .requestMatchers("/application/*/download-cv").permitAll()
                         .anyRequest().authenticated())
                 .userDetailsService(userDetailsServiceImp)
