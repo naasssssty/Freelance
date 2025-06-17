@@ -38,7 +38,7 @@ export const loadMyApplications = async () => {
     try {
         const { token, username } = getTokenAndDecode();
         const response = await axios.get(
-            `/client/api/${username}/my-applications`,
+            `/client/${username}/my-applications`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -49,7 +49,6 @@ export const loadMyApplications = async () => {
         return response.data;
     } catch (error) {
         console.error("Error loading applications:", error);
-        alert('Failed to load applications.');
         throw error;
     }
 };
@@ -57,9 +56,6 @@ export const loadMyApplications = async () => {
 export const loadMyProjects = async () => {
     try {
         const { token } = getTokenAndDecode();
-        const decoded = jwtDecode(token);
-        console.log('Decoded token:', decoded);
-
         const response = await axios.get(
             `/project/my-projects`,
             {
@@ -71,10 +67,7 @@ export const loadMyProjects = async () => {
         );
         return response.data;
     } catch (error) {
-        console.error("Full error:", error);
-        console.error("Error response:", error.response);
         console.error("Error loading projects:", error);
-        alert('Failed to load projects.');
         throw error;
     }
 };
