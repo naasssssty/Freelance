@@ -28,6 +28,7 @@ const ClientDashboard = () => {
     const [showMyProjects, setShowMyProjects] = useState(false);
     const [showWelcome, setShowWelcome] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);
 
     // Get data from Redux store
     const { myApplications } = useSelector((state) => state.applications || {});
@@ -51,26 +52,41 @@ const ClientDashboard = () => {
 
     // Restore previous view state from localStorage after refresh
     useEffect(() => {
-        const savedView = localStorage.getItem('clientDashboardView');
-        if (savedView) {
-            try {
-                const viewState = JSON.parse(savedView);
-                setShowProjectForm(viewState.showProjectForm || false);
-                setShowMyApplications(viewState.showMyApplications || false);
-                setShowMyProjects(viewState.showMyProjects || false);
-                setShowWelcome(viewState.showWelcome !== false);
-                
-                // Load data if needed after restoring view
-                if (viewState.showMyProjects && (!myProjects || myProjects.length === 0)) {
-                    handleLoadMyProjects();
+        const initializeDashboard = async () => {
+            const savedView = localStorage.getItem('clientDashboardView');
+            
+            if (savedView) {
+                try {
+                    const viewState = JSON.parse(savedView);
+                    
+                    // Set the view state first
+                    setShowProjectForm(viewState.showProjectForm || false);
+                    setShowMyApplications(viewState.showMyApplications || false);
+                    setShowMyProjects(viewState.showMyProjects || false);
+                    setShowWelcome(viewState.showWelcome !== false);
+                    
+                    // Load data if needed after restoring view
+                    if (viewState.showMyProjects && (!myProjects || myProjects.length === 0)) {
+                        await handleLoadMyProjects();
+                    }
+                    if (viewState.showMyApplications && (!myApplications || myApplications.length === 0)) {
+                        await handleLoadMyApplications();
+                    }
+                } catch (error) {
+                    console.error('Error parsing saved view state:', error);
+                    // If there's an error, default to welcome view
+                    setShowWelcome(true);
+                    setShowProjectForm(false);
+                    setShowMyApplications(false);
+                    setShowMyProjects(false);
                 }
-                if (viewState.showMyApplications && (!myApplications || myApplications.length === 0)) {
-                    handleLoadMyApplications();
-                }
-            } catch (error) {
-                console.error('Error parsing saved view state:', error);
             }
-        }
+            
+            // Mark initialization as complete
+            setIsInitializing(false);
+        };
+        
+        initializeDashboard();
     }, []); // Empty dependency array to run only once
 
     // Save current view state to localStorage whenever it changes
