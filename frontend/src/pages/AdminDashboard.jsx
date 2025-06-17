@@ -44,13 +44,36 @@ const AdminDashboard = () => {
     // projectsLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
     // const projectsLoading = useSelector((state) => state.admin.projectsLoading);
     const projectsError = useSelector((state) => state.admin.projectsError);
-    const [showUsersList, setShowUsersList] = useState(true);
-    const [showProjectsList, setShowProjectsList] = useState(true);
+    const [showUsersList, setShowUsersList] = useState(false);
+    const [showProjectsList, setShowProjectsList] = useState(false);
     const [searchedUser, setSearchedUser] = useState(null);
     // eslint-disable-next-line
     const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
+
+    // Restore previous view state from localStorage after refresh
+    useEffect(() => {
+        const savedView = localStorage.getItem('adminDashboardView');
+        if (savedView) {
+            const viewState = JSON.parse(savedView);
+            setShowUsersList(viewState.showUsersList || false);
+            setShowProjectsList(viewState.showProjectsList || false);
+            setShowReports(viewState.showReports || false);
+            setShowDashboard(viewState.showDashboard !== false); // Default to true if not set
+        }
+    }, []);
+
+    // Save current view state to localStorage whenever it changes
+    useEffect(() => {
+        const viewState = {
+            showUsersList,
+            showProjectsList,
+            showReports,
+            showDashboard
+        };
+        localStorage.setItem('adminDashboardView', JSON.stringify(viewState));
+    }, [showUsersList, showProjectsList, showReports, showDashboard]);
 
     // eslint-disable-next-line
     // getUsername δεν χρησιμοποιείται, οπότε το σχολιάζουμε
@@ -254,7 +277,6 @@ const AdminDashboard = () => {
                 }
             });
             if (response.status === 200) {
-                alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
                 // Ενημερώνουμε το state για να αντικατοπτρίζει την αλλαγή
                 setUsers(users.map(user => 
                     user.username === username ? { ...user, verified: verify } : user
