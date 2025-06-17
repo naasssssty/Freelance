@@ -124,3 +124,23 @@ export const downloadCV = async (applicationId) => {
         throw error;
     }
 };
+
+// Get client statistics
+export const getClientStats = async () => {
+    try {
+        const { token } = getTokenAndDecode();
+        const response = await axios.get(
+            `/project/client/stats`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error loading client statistics:", error);
+        throw error;
+    }
+};

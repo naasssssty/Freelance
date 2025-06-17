@@ -50,16 +50,25 @@ const ClientDashboard = () => {
         }
     }, [navigate]);
 
-    // Restore previous view state from localStorage after refresh
+    // Restore previous view state from localStorage after refresh, but ensure welcome is default for fresh login
     useEffect(() => {
         const initializeDashboard = async () => {
             const savedView = localStorage.getItem('clientDashboardView');
+            const isReturningUser = localStorage.getItem('clientReturningUser');
             
-            if (savedView) {
+            // If this is a fresh login (not a returning user), always show welcome
+            if (!isReturningUser) {
+                setShowWelcome(true);
+                setShowProjectForm(false);
+                setShowMyApplications(false);
+                setShowMyProjects(false);
+                localStorage.setItem('clientReturningUser', 'true');
+            } else if (savedView) {
+                // Only restore saved view if user is returning (refresh case)
                 try {
                     const viewState = JSON.parse(savedView);
                     
-                    // Set the view state first
+                    // Set the view state
                     setShowProjectForm(viewState.showProjectForm || false);
                     setShowMyApplications(viewState.showMyApplications || false);
                     setShowMyProjects(viewState.showMyProjects || false);
@@ -145,6 +154,7 @@ const ClientDashboard = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         localStorage.removeItem('clientDashboardView');
+        localStorage.removeItem('clientReturningUser'); // Clear the returning user flag
         navigate('/login');
     };
 
