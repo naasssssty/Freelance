@@ -27,9 +27,21 @@ public class TestEmailController {
                 request.getSubject(),
                 request.getContent()
             );
-            return ResponseEntity.ok("Test email sent successfully");
+            return ResponseEntity.ok("Email sent successfully to " + request.getTo());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to send test email: " + e.getMessage());
+            return ResponseEntity.status(500)
+                .body("Failed to send email: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/send-verification")
+    public ResponseEntity<String> sendTestVerificationEmail(@RequestBody TestEmailRequest request) {
+        try {
+            emailService.sendVerificationEmail(request.getTo(), "TestUser");
+            return ResponseEntity.ok("Verification email sent successfully to " + request.getTo());
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                .body("Failed to send verification email: " + e.getMessage());
         }
     }
 

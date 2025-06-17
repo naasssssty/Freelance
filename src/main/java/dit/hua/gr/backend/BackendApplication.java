@@ -40,7 +40,7 @@ public class BackendApplication {
     public JavaMailSender getDevJavaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("mailhog");
-        mailSender.setPort(8031);
+        mailSender.setPort(1025);
         
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
