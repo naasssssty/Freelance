@@ -54,12 +54,21 @@ const AdminDashboard = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
 
-    // Restore previous view state from localStorage after refresh
+    // Restore previous view state from localStorage after refresh, but ensure welcome is default for fresh login
     useEffect(() => {
         const initializeAdminDashboard = async () => {
             const savedView = localStorage.getItem('adminDashboardView');
+            const isReturningUser = localStorage.getItem('adminReturningUser');
             
-            if (savedView) {
+            // If this is a fresh login (not a returning user), always show welcome
+            if (!isReturningUser) {
+                setShowDashboard(true);
+                setShowUsersList(false);
+                setShowProjectsList(false);
+                setShowReports(false);
+                localStorage.setItem('adminReturningUser', 'true');
+            } else if (savedView) {
+                // Only restore saved view if user is returning (refresh case)
                 try {
                     const viewState = JSON.parse(savedView);
                     
@@ -203,6 +212,7 @@ const AdminDashboard = () => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('adminDashboardView');
+        localStorage.removeItem('adminReturningUser');
         navigate('/login');
     };
 
