@@ -25,27 +25,27 @@ public class NotificationService {
     @Transactional
     public Notification createNotification(User user, String message, NotificationType type) {
         try {
-            Notification notification = new Notification();
-            notification.setUser(user);
-            notification.setMessage(message);
-            notification.setType(type);
-            notification.setTimestamp(LocalDateTime.now());
-            notification.setRead(false);
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setMessage(message);
+        notification.setType(type);
+        notification.setTimestamp(LocalDateTime.now());
+        notification.setRead(false);
 
             return notificationRepository.save(notification);
         } catch (Exception e) {
             System.err.println("Error creating notification for user " + user.getUsername() + ": " + e.getMessage());
             throw new RuntimeException("Failed to create notification", e);
-        }
+    }
     }
 
     @Transactional(readOnly = true)
     public List<NotificationDTO> getUserNotifications(User user) {
         try {
-            List<Notification> notifications = notificationRepository.findByUserOrderByTimestampDesc(user);
-            return notifications.stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
+        List<Notification> notifications = notificationRepository.findByUserOrderByTimestampDesc(user);
+        return notifications.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
         } catch (Exception e) {
             System.err.println("Error fetching notifications for user " + user.getUsername() + ": " + e.getMessage());
             throw new RuntimeException("Failed to fetch notifications", e);
@@ -65,10 +65,10 @@ public class NotificationService {
     @Transactional
     public void markAsRead(Long notificationId) {
         try {
-            notificationRepository.findById(notificationId).ifPresent(notification -> {
-                notification.setRead(true);
-                notificationRepository.save(notification);
-            });
+        notificationRepository.findById(notificationId).ifPresent(notification -> {
+            notification.setRead(true);
+            notificationRepository.save(notification);
+        });
         } catch (Exception e) {
             System.err.println("Error marking notification " + notificationId + " as read: " + e.getMessage());
             throw new RuntimeException("Failed to mark notification as read", e);
@@ -90,7 +90,7 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public long getUnreadCount(User user) {
         try {
-            return notificationRepository.countByUserAndReadFalse(user);
+        return notificationRepository.countByUserAndReadFalse(user);
         } catch (Exception e) {
             System.err.println("Error getting unread count for user " + user.getUsername() + ": " + e.getMessage());
             return 0;

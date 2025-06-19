@@ -211,7 +211,8 @@ const FreelancerDashboard = () => {
         };
 
         handleInitialization();
-    }, [initializeDashboard, dashboardState.isFirstLogin]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dashboardState.isFirstLogin]);
 
     const handleSearchResult = (result) => {
         setSearchedProject(result);

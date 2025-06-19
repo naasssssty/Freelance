@@ -28,8 +28,8 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
         let interval;
         if (!showNotifications) {
             interval = setInterval(() => {
-                fetchNotifications();
-                fetchUnreadCount();
+            fetchNotifications();
+            fetchUnreadCount();
             }, 10000); // Poll every 10 seconds when panel is closed
         }
         
@@ -94,7 +94,7 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
                     )
                 );
                 // Refresh unread count
-                await fetchUnreadCount();
+            await fetchUnreadCount();
             }
         } catch (error) {
             console.error('Error marking notification as read:', error);

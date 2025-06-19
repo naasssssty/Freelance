@@ -3,7 +3,7 @@ import { FaEnvelope, FaCheck, FaBell, FaExclamationTriangle, FaTimes } from 'rea
 import '../styles/notifications/notificationPanel.css';
 
 const NotificationPanel = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose, loading, error }) => {
-    
+
     const getNotificationIcon = (type) => {
         switch (type) {
             case 'APPLICATION_RECEIVED':
@@ -66,43 +66,43 @@ const NotificationPanel = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClo
                 </div>
             </div>
 
-            {loading && (
+                {loading && (
                 <div className="notification-loading">
                     <p>Loading notifications...</p>
                 </div>
-            )}
-
-            {error && (
+                )}
+                
+                {error && (
                 <div className="notification-error">
                     <p>Failed to load notifications. Please try again.</p>
-                </div>
-            )}
-
+                    </div>
+                )}
+                
             {!loading && !error && (
                 <div className="notification-list">
                     {safeNotifications.length === 0 ? (
-                        <div className="no-notifications">
+                    <div className="no-notifications">
                             <FaBell />
                             <p>No notifications yet</p>
-                        </div>
+                    </div>
                     ) : (
                         safeNotifications.map((notification) => (
-                            <div
-                                key={notification.id}
-                                className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                        <div 
+                            key={notification.id} 
+                            className={`notification-item ${!notification.read ? 'unread' : ''}`}
                                 onClick={(e) => handleMarkAsRead(notification.id, e)}
-                            >
+                        >
                                 <div className="notification-icon">
-                                    {getNotificationIcon(notification.type)}
+                                {getNotificationIcon(notification.type)}
                                 </div>
-                                <div className="notification-content">
-                                    <p className="notification-message">{notification.message}</p>
+                            <div className="notification-content">
+                                <p className="notification-message">{notification.message}</p>
                                     <span className="notification-time">{notification.timestamp}</span>
-                                </div>
                             </div>
-                        ))
-                    )}
-                </div>
+                        </div>
+                    ))
+                )}
+            </div>
             )}
         </div>
     );

@@ -45,11 +45,11 @@ public class NotificationController {
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER', 'ADMIN')")
     public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
         try {
-            User user = userService.findUserByUsername(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userService.findUserByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-            long count = notificationService.getUnreadCount(user);
-            return ResponseEntity.ok(count);
+        long count = notificationService.getUnreadCount(user);
+        return ResponseEntity.ok(count);
         } catch (Exception e) {
             System.err.println("ERROR in getUnreadCount for user " + authentication.getName() + ": " + e.getMessage());
             return ResponseEntity.ok(0L);
@@ -60,8 +60,8 @@ public class NotificationController {
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER', 'ADMIN')")
     public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
         try {
-            notificationService.markAsRead(id);
-            return ResponseEntity.ok().build();
+        notificationService.markAsRead(id);
+        return ResponseEntity.ok().build();
         } catch (Exception e) {
             System.err.println("ERROR in markAsRead for notification " + id + ": " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

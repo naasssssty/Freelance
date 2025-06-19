@@ -96,6 +96,7 @@ const ClientDashboard = () => {
         };
         
         initializeDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty dependency array to run only once
 
     // Save current view state to localStorage whenever it changes
