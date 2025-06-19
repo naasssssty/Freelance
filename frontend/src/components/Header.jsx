@@ -16,57 +16,122 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
+        // Initial fetch
         fetchNotifications();
         fetchUnreadCount();
-        // Set up polling for both notifications and unread count
-        const interval = setInterval(() => {
-            fetchNotifications();
-            fetchUnreadCount();
-        }, 5000); // Poll every 5 seconds
         
-        return () => clearInterval(interval);
-    }, []);
+        // Set up polling only when notifications panel is closed
+        let interval;
+        if (!showNotifications) {
+            interval = setInterval(() => {
+                fetchNotifications();
+                fetchUnreadCount();
+            }, 10000); // Poll every 10 seconds when panel is closed
+        }
+        
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [showNotifications]); // Depend on showNotifications to control polling
 
     const fetchNotifications = async () => {
         try {
+            setLoading(true);
+            setError(null);
             const data = await getNotifications();
-            setNotifications(data);
+            console.log('Notifications received:', data);
+            
+            // Ensure data is always an array
+            if (Array.isArray(data)) {
+                setNotifications(data);
+            } else {
+                console.warn('Notifications data is not an array:', data);
+                setNotifications([]);
+            }
         } catch (error) {
             console.error('Error fetching notifications:', error);
+            setError('Failed to load notifications');
+            setNotifications([]); // Set empty array on error
+        } finally {
+            setLoading(false);
         }
     };
 
     const fetchUnreadCount = async () => {
         try {
             const count = await getUnreadCount();
-            setUnreadCount(count);
+            console.log('Unread count received:', count);
+            
+            // Ensure count is a number
+            if (typeof count === 'number') {
+                setUnreadCount(count);
+            } else {
+                console.warn('Unread count is not a number:', count);
+                setUnreadCount(0);
+            }
         } catch (error) {
             console.error('Error fetching unread count:', error);
+            setUnreadCount(0); // Set 0 on error
         }
     };
 
     const handleMarkAsRead = async (notificationId) => {
         try {
-            await markAsRead(notificationId);
-            // Refresh both notifications and unread count
-            await fetchNotifications();
-            await fetchUnreadCount();
+            const success = await markAsRead(notificationId);
+            if (success) {
+                // Update local state immediately for better UX
+                setNotifications(prev => 
+                    prev.map(notif => 
+                        notif.id === notificationId 
+                            ? { ...notif, read: true }
+                            : notif
+                    )
+                );
+                // Refresh unread count
+                await fetchUnreadCount();
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error);
+            setError('Failed to mark notification as read');
         }
     };
 
     const handleMarkAllAsRead = async () => {
         try {
-            await markAllAsRead();
-            // Refresh both notifications and unread count
-            await fetchNotifications();
-            await fetchUnreadCount();
+            const success = await markAllAsRead();
+            if (success) {
+                // Update local state immediately for better UX
+                setNotifications(prev => 
+                    prev.map(notif => ({ ...notif, read: true }))
+                );
+                setUnreadCount(0);
+            }
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
+            setError('Failed to mark all notifications as read');
         }
+    };
+
+    const handleNotificationToggle = () => {
+        setShowNotifications(!showNotifications);
+        // If opening notifications panel, refresh data
+        if (!showNotifications) {
+            fetchNotifications();
+            fetchUnreadCount();
+        }
+    };
+
+    const handleCloseNotifications = () => {
+        setShowNotifications(false);
+        // Refresh data when closing to get latest state
+        fetchNotifications();
+        fetchUnreadCount();
     };
 
     return (
@@ -98,7 +163,7 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
 
             <div className="profile_container">
                 <NotificationIcon 
-                    onClick={() => setShowNotifications(!showNotifications)}
+                    onClick={handleNotificationToggle}
                     unreadCount={unreadCount}
                 />
                 <div className="profile_icon">
@@ -114,7 +179,9 @@ const Header = ({ menuOptions, searchComponent, onLogoClick, username }) => {
                     notifications={notifications}
                     onMarkAsRead={handleMarkAsRead}
                     onMarkAllAsRead={handleMarkAllAsRead}
-                    onClose={() => setShowNotifications(false)}
+                    onClose={handleCloseNotifications}
+                    loading={loading}
+                    error={error}
                 />
             )}
         </header>

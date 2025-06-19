@@ -28,32 +28,44 @@ public class NotificationController {
     @GetMapping
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER', 'ADMIN')")
     public ResponseEntity<List<NotificationDTO>> getUserNotifications(Authentication authentication) {
-        System.out.println("Getting notifications for user: " + authentication.getName());
-        User user = userService.findUserByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            User user = userService.findUserByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<NotificationDTO> notifications = notificationService.getUserNotifications(user);
-        System.out.println("Found " + notifications.size() + " notifications for user: " + user.getUsername());
-        return ResponseEntity.ok(notifications);
+            List<NotificationDTO> notifications = notificationService.getUserNotifications(user);
+            
+            return ResponseEntity.ok(notifications);
+        } catch (Exception e) {
+            System.err.println("ERROR in getUserNotifications for user " + authentication.getName() + ": " + e.getMessage());
+            throw e;
+        }
     }
 
     @GetMapping("/unread-count")
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER', 'ADMIN')")
     public ResponseEntity<Long> getUnreadCount(Authentication authentication) {
-        System.out.println("Getting unread count for user: " + authentication.getName());
-        User user = userService.findUserByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            User user = userService.findUserByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        long count = notificationService.getUnreadCount(user);
-        System.out.println("Unread count for user " + user.getUsername() + ": " + count);
-        return ResponseEntity.ok(count);
+            long count = notificationService.getUnreadCount(user);
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            System.err.println("ERROR in getUnreadCount for user " + authentication.getName() + ": " + e.getMessage());
+            return ResponseEntity.ok(0L);
+        }
     }
 
     @PutMapping("/{id}/read")
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER', 'ADMIN')")
     public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
-        notificationService.markAsRead(id);
-        return ResponseEntity.ok().build();
+        try {
+            notificationService.markAsRead(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.err.println("ERROR in markAsRead for notification " + id + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/mark-all-read")
@@ -66,6 +78,7 @@ public class NotificationController {
             notificationService.markAllAsRead(user);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
+            System.err.println("ERROR in markAllAsRead for user " + authentication.getName() + ": " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
