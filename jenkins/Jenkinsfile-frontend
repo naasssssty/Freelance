@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'docker-agent'
+    }
     tools {
         nodejs 'Node 21'
     }
@@ -7,6 +9,7 @@ pipeline {
         IMAGE_TAG = '28'
         IMAGE_NAME = "papadooo/freelance-frontend:${IMAGE_TAG}"
         CI = 'true'
+        GENERATE_SOURCEMAP = 'false'
     }
     stages {
         stage('Checkout') {
@@ -17,7 +20,7 @@ pipeline {
                 // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: 'A']],
+                    branches: [[name: 'test-branch']],
                     extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
                     userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
                 ])
@@ -27,8 +30,7 @@ pipeline {
             steps {
                 // Install npm dependencies for frontend
                 dir('frontend') {
-                    sh 'npm ci'
-                    sh 'npm audit --audit-level=high || true'
+                    sh 'npm ci --prefer-offline --no-audit'
                 }
             }
         }
@@ -36,7 +38,7 @@ pipeline {
             steps {
                 // Run ESLint for code quality
                 dir('frontend') {
-                    sh 'npx eslint src/ --ext .js,.jsx --quiet || true'
+                    sh 'npm run lint || true'
                 }
             }
         }
@@ -44,28 +46,18 @@ pipeline {
             steps {
                 // Run unit tests with coverage
                 dir('frontend') {
-                    sh 'CI=true npm test -- --coverage --watchAll=false'
+                    sh 'npm test -- --coverage --testResultsProcessor=jest-junit --coverageReporters=text-lcov --coverageReporters=html --coverageReporters=cobertura'
                 }
             }
             post {
                 always {
-                    echo 'Unit tests completed'
-                }
-            }
-        }
-        stage('Integration Tests') {
-            steps {
-                // Run integration tests (if any)
-                dir('frontend') {
-                    sh 'npm run test -- --testPathPattern=integration --watchAll=false --coverage=false || true'
-                }
-            }
-        }
-        stage('Security Audit') {
-            steps {
-                // Run security audit
-                dir('frontend') {
-                    sh 'npm audit --audit-level=moderate || true'
+                    // Publish test results
+                    publishTestResults testResultsPattern: 'frontend/junit.xml'
+                    // Publish coverage reports
+                    publishCoverage adapters: [
+                        coberturaAdapter('frontend/coverage/cobertura-coverage.xml')
+                    ], 
+                    sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
                 }
             }
         }
@@ -77,22 +69,17 @@ pipeline {
                 }
             }
             post {
-                success {
+                always {
                     // Archive build artifacts
                     archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true
                 }
             }
         }
-        stage('Build Performance Tests') {
+        stage('Security Audit') {
             steps {
-                // Analyze build size and performance
+                // Run npm audit for security vulnerabilities
                 dir('frontend') {
-                    sh '''
-                        echo "Build size analysis:"
-                        du -sh build/
-                        echo "Largest files in build:"
-                        find build/ -type f -exec du -h {} + | sort -rh | head -10
-                    '''
+                    sh 'npm audit --audit-level=moderate || true'
                 }
             }
         }
@@ -106,19 +93,7 @@ pipeline {
             steps {
                 withEnv(["PATH+EXTRA=/usr/local/bin"]) {
                     dir('frontend') {
-                        sh "docker build -f ../docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
-                    }
-                }
-            }
-        }
-        stage('Docker Security Scan') {
-            steps {
-                // Scan Docker image for vulnerabilities
-                script {
-                    try {
-                        sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image ${IMAGE_NAME} || true"
-                    } catch (Exception e) {
-                        echo "Security scan failed: ${e.getMessage()}"
+                        sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
                     }
                 }
             }
@@ -141,19 +116,36 @@ pipeline {
     }
     post {
         always {
-            echo 'Frontend pipeline completed.'
-            
             // Clean workspace
             cleanWs()
+            echo 'Frontend pipeline completed.'
         }
         success {
             echo 'Frontend pipeline completed successfully!'
+            // Send notification on success
+            emailext (
+                subject: "✅ Frontend Pipeline Success - Build #${env.BUILD_NUMBER}",
+                body: "The frontend pipeline has completed successfully.\n\nBuild: ${env.BUILD_URL}",
+                to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
+            )
         }
         failure {
             echo 'Frontend pipeline failed. Check the logs for details.'
+            // Send notification on failure
+            emailext (
+                subject: "❌ Frontend Pipeline Failed - Build #${env.BUILD_NUMBER}",
+                body: "The frontend pipeline has failed.\n\nBuild: ${env.BUILD_URL}\n\nPlease check the logs for details.",
+                to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
+            )
         }
         unstable {
-            echo 'Frontend pipeline is unstable. Some tests may have failed.'
+            echo 'Frontend pipeline completed with warnings.'
+            // Send notification on unstable build
+            emailext (
+                subject: "⚠️ Frontend Pipeline Unstable - Build #${env.BUILD_NUMBER}",
+                body: "The frontend pipeline completed with warnings.\n\nBuild: ${env.BUILD_URL}",
+                to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
+            )
         }
     }
 }

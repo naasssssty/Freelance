@@ -1,89 +1,96 @@
 import { getTokenAndDecode } from '../auth';
-import Cookies from 'universal-cookie';
-import { jwtDecode } from 'jwt-decode';
 
-// Mock dependencies
-jest.mock('universal-cookie');
-jest.mock('jwt-decode');
+// Mock jwt-decode
+jest.mock('jwt-decode', () => jest.fn());
 
 describe('Auth Utils', () => {
-  let mockCookies;
-
-  beforeEach(() => {
-    mockCookies = {
-      get: jest.fn(),
-      set: jest.fn(),
-      remove: jest.fn()
-    };
-    Cookies.mockImplementation(() => mockCookies);
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('getTokenAndDecode', () => {
-    it('should return decoded token when valid token exists', () => {
-      const mockToken = 'valid.jwt.token';
-      const mockDecodedToken = {
-        username: 'testuser',
-        role: 'CLIENT',
-        isVerified: true,
-        exp: Date.now() / 1000 + 3600 // 1 hour from now
-      };
-
-      mockCookies.get.mockReturnValue(mockToken);
-      jwtDecode.mockReturnValue(mockDecodedToken);
-
-      const result = getTokenAndDecode();
-
-      expect(mockCookies.get).toHaveBeenCalledWith('token');
-      expect(jwtDecode).toHaveBeenCalledWith(mockToken);
-      expect(result).toEqual(mockDecodedToken);
+    beforeEach(() => {
+        jest.clearAllMocks();
+        localStorage.clear();
     });
 
-    it('should return null when no token exists', () => {
-      mockCookies.get.mockReturnValue(null);
+    describe('getTokenAndDecode', () => {
+        it('should return decoded token when valid token exists in localStorage', () => {
+            const jwtDecode = require('jwt-decode');
+            const mockDecodedToken = {
+                username: 'testuser',
+                role: 'CLIENT',
+                exp: Date.now() / 1000 + 3600 // 1 hour from now
+            };
 
-      const result = getTokenAndDecode();
+            localStorage.setItem('token', 'valid-jwt-token');
+            jwtDecode.mockReturnValue(mockDecodedToken);
 
-      expect(mockCookies.get).toHaveBeenCalledWith('token');
-      expect(jwtDecode).not.toHaveBeenCalled();
-      expect(result).toBeNull();
+            const result = getTokenAndDecode();
+
+            expect(result).toEqual(mockDecodedToken);
+            expect(jwtDecode).toHaveBeenCalledWith('valid-jwt-token');
+        });
+
+        it('should return null when no token exists in localStorage', () => {
+            const result = getTokenAndDecode();
+
+            expect(result).toBeNull();
+        });
+
+        it('should return null when token is invalid', () => {
+            const jwtDecode = require('jwt-decode');
+            
+            localStorage.setItem('token', 'invalid-token');
+            jwtDecode.mockImplementation(() => {
+                throw new Error('Invalid token');
+            });
+
+            const result = getTokenAndDecode();
+
+            expect(result).toBeNull();
+        });
+
+        it('should return null when token is expired', () => {
+            const jwtDecode = require('jwt-decode');
+            const mockDecodedToken = {
+                username: 'testuser',
+                role: 'CLIENT',
+                exp: Date.now() / 1000 - 3600 // 1 hour ago (expired)
+            };
+
+            localStorage.setItem('token', 'expired-jwt-token');
+            jwtDecode.mockReturnValue(mockDecodedToken);
+
+            const result = getTokenAndDecode();
+
+            expect(result).toBeNull();
+        });
+
+        it('should handle localStorage errors gracefully', () => {
+            // Mock localStorage to throw an error
+            const originalGetItem = localStorage.getItem;
+            localStorage.getItem = jest.fn(() => {
+                throw new Error('localStorage error');
+            });
+
+            const result = getTokenAndDecode();
+
+            expect(result).toBeNull();
+
+            // Restore original localStorage
+            localStorage.getItem = originalGetItem;
+        });
+
+        it('should return null for empty string token', () => {
+            localStorage.setItem('token', '');
+
+            const result = getTokenAndDecode();
+
+            expect(result).toBeNull();
+        });
+
+        it('should return null for null token in localStorage', () => {
+            localStorage.setItem('token', 'null');
+
+            const result = getTokenAndDecode();
+
+            expect(result).toBeNull();
+        });
     });
-
-    it('should return null when token is invalid', () => {
-      const mockToken = 'invalid.jwt.token';
-      
-      mockCookies.get.mockReturnValue(mockToken);
-      jwtDecode.mockImplementation(() => {
-        throw new Error('Invalid token');
-      });
-
-      const result = getTokenAndDecode();
-
-      expect(mockCookies.get).toHaveBeenCalledWith('token');
-      expect(jwtDecode).toHaveBeenCalledWith(mockToken);
-      expect(result).toBeNull();
-    });
-
-    it('should return null when token is expired', () => {
-      const mockToken = 'expired.jwt.token';
-      const mockDecodedToken = {
-        username: 'testuser',
-        role: 'CLIENT',
-        isVerified: true,
-        exp: Date.now() / 1000 - 3600 // 1 hour ago (expired)
-      };
-
-      mockCookies.get.mockReturnValue(mockToken);
-      jwtDecode.mockReturnValue(mockDecodedToken);
-
-      const result = getTokenAndDecode();
-
-      expect(mockCookies.get).toHaveBeenCalledWith('token');
-      expect(jwtDecode).toHaveBeenCalledWith(mockToken);
-      expect(result).toBeNull();
-    });
-  });
 }); 
