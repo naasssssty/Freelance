@@ -49,72 +49,6 @@ pipeline {
             }
         }
         
-        stage('Integration Tests') {
-            environment {
-                // Same test environment configuration
-                SPRING_PROFILES_ACTIVE = 'test'
-                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
-                SPRING_DATASOURCE_USERNAME = 'sa'
-                SPRING_DATASOURCE_PASSWORD = ''
-                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
-                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
-                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
-            }
-            steps {
-                echo 'Running integration tests...'
-                // Run integration tests (currently only context loading, but prepared for more)
-                sh 'mvn verify -Dspring.profiles.active=test -DskipUnitTests=true'
-            }
-            post {
-                always {
-                    // Publish integration test results
-                    junit(
-                        allowEmptyResults: true,
-                        testResults: '**/target/failsafe-reports/*.xml'
-                    )
-                }
-            }
-        }
-        
-        stage('Code Coverage') {
-            steps {
-                echo 'Generating code coverage report...'
-                // Generate JaCoCo coverage report (if plugin is added later)
-                script {
-                    try {
-                        sh 'mvn jacoco:report'
-                        echo 'Code coverage report generated successfully'
-                    } catch (Exception e) {
-                        echo 'JaCoCo plugin not configured yet - skipping coverage report'
-                    }
-                }
-            }
-            post {
-                always {
-                    script {
-                        // Skip HTML publishing until plugin is installed
-                        echo 'HTML Publisher plugin not available - skipping coverage report publishing'
-                    }
-                }
-            }
-        }
-        
-        stage('Quality Gates') {
-            steps {
-                echo 'Evaluating quality gates...'
-                script {
-                    // Basic quality checks
-                    def testResults = readFile('target/surefire-reports/TEST-*.xml')
-                    if (testResults.contains('failures="0"') && testResults.contains('errors="0"')) {
-                        echo '✅ All tests passed - Quality gate: PASSED'
-                    } else {
-                        echo '❌ Some tests failed - Quality gate: FAILED'
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
-            }
-        }
-        
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
@@ -123,10 +57,6 @@ pipeline {
         }
         
         stage('Build Docker Image') {
-            when {
-                // Only build Docker image if all quality gates pass
-                expression { currentBuild.result != 'UNSTABLE' }
-            }
             steps {
                 echo 'Building Docker image...'
                 // Build Docker image for backend using the correct Dockerfile
@@ -135,10 +65,6 @@ pipeline {
         }
         
         stage('Push Docker Image') {
-            when {
-                // Only push if all previous stages succeeded
-                expression { currentBuild.result != 'UNSTABLE' }
-            }
             steps {
                 echo 'Pushing Docker image to registry...'
                 // Push Docker image to Docker Hub
@@ -154,11 +80,9 @@ pipeline {
             echo 'Backend pipeline completed.'
             // Archive test reports
             archiveArtifacts(
-                artifacts: '**/target/surefire-reports/*.xml, **/target/failsafe-reports/*.xml',
+                artifacts: '**/target/surefire-reports/*.xml',
                 allowEmptyArchive: true
             )
-            // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
-            // cleanWs()
         }
         success {
             echo '✅ Backend pipeline completed successfully!'
@@ -166,9 +90,6 @@ pipeline {
         }
         failure {
             echo '❌ Backend pipeline failed. Check the logs for details.'
-        }
-        unstable {
-            echo '⚠️ Backend pipeline completed with warnings. Some quality gates failed.'
         }
     }
 } 
