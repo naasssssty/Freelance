@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">86.66% </span>
+                <span class="strong">26.66% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/15</span>
+                <span class='fraction'>4/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.66% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>4/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>0/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">86.66% </span>
+                <span class="strong">26.66% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/15</span>
+                <span class='fraction'>4/15</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -106,38 +106,38 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">//auth.jsx
 &nbsp;
@@ -151,31 +151,31 @@ const apiClient = axios.create({
 });
 &nbsp;
 // Login API call
-export const login = async (credentials) =&gt; {
-    try {
-        const response = await apiClient.post("/api/login", credentials);
+export const login = <span class="fstat-no" title="function not covered" >as</span>ync (credentials) =&gt; {
+<span class="cstat-no" title="statement not covered" >    try {</span>
+        const response = <span class="cstat-no" title="statement not covered" >await apiClient.post("/api/login", credentials);</span>
 <span class="cstat-no" title="statement not covered" >        return response; </span>// Return the entire response object
     } catch (error) {
-        throw error.response ? <span class="branch-0 cbranch-no" title="branch not covered" >error.response.data </span>: error; // Throw the error message from the server
+<span class="cstat-no" title="statement not covered" >        throw error.response ? error.response.data : error; </span>// Throw the error message from the server
     }
 };
 &nbsp;
 // Register API call
-export const register = async (userData) =&gt; {
-    try {
-        const response = await apiClient.post("/api/register", userData);
+export const register = <span class="fstat-no" title="function not covered" >as</span>ync (userData) =&gt; {
+<span class="cstat-no" title="statement not covered" >    try {</span>
+        const response = <span class="cstat-no" title="statement not covered" >await apiClient.post("/api/register", userData);</span>
 <span class="cstat-no" title="statement not covered" >        return response.data; </span>// Return the response data
     } catch (error) {
-        throw error.response ? <span class="branch-0 cbranch-no" title="branch not covered" >error.response.data </span>: error;
+<span class="cstat-no" title="statement not covered" >        throw error.response ? error.response.data : error;</span>
     }
 };
 &nbsp;
 // Add a function to store and retrieve tokens if needed
-export const setAuthToken = (token) =&gt; {
-    if (token) {
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+export const setAuthToken = <span class="fstat-no" title="function not covered" >(t</span>oken) =&gt; {
+<span class="cstat-no" title="statement not covered" >    if (token) {</span>
+<span class="cstat-no" title="statement not covered" >        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;</span>
     } else {
-        delete apiClient.defaults.headers.common["Authorization"];
+<span class="cstat-no" title="statement not covered" >        delete apiClient.defaults.headers.common["Authorization"];</span>
     }
 };</pre></td></tr></table></pre>
 
@@ -184,7 +184,7 @@ export const setAuthToken = (token) =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-20T19:23:19.625Z
+                at 2025-06-20T19:34:47.052Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
