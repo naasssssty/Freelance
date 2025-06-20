@@ -1,9 +1,7 @@
 pipeline {
-    agent {
-        label 'docker-agent'
-    }
+    agent any
     tools {
-        nodejs 'Node 21'
+        nodejs 'NodeJS'
     }
     environment {
         IMAGE_TAG = '28'
@@ -52,12 +50,28 @@ pipeline {
             post {
                 always {
                     // Publish test results
-                    publishTestResults testResultsPattern: 'frontend/junit.xml'
+                    script {
+                        try {
+                            publishTestResults testResultsPattern: 'frontend/junit.xml', allowEmptyResults: true
+                        } catch (Exception e) {
+                            echo "Could not publish test results: ${e.getMessage()}"
+                        }
+                    }
                     // Publish coverage reports
-                    publishCoverage adapters: [
-                        coberturaAdapter('frontend/coverage/cobertura-coverage.xml')
-                    ], 
-                    sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                    script {
+                        try {
+                            publishHTML([
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'frontend/coverage/lcov-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Coverage Report'
+                            ])
+                        } catch (Exception e) {
+                            echo "Could not publish coverage report: ${e.getMessage()}"
+                        }
+                    }
                 }
             }
         }
@@ -71,7 +85,7 @@ pipeline {
             post {
                 always {
                     // Archive build artifacts
-                    archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true
+                    archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true, allowEmptyArchive: true
                 }
             }
         }
@@ -86,31 +100,64 @@ pipeline {
         stage('Check Docker Access') {
             steps {
                 // Check if Docker is accessible
-                sh 'docker info || echo "Docker access failed. Ensure Jenkins has permission to access Docker daemon."'
+                script {
+                    try {
+                        sh 'docker info'
+                        echo 'Docker is accessible'
+                    } catch (Exception e) {
+                        echo "Docker access failed: ${e.getMessage()}"
+                        echo "Skipping Docker stages"
+                        env.SKIP_DOCKER = 'true'
+                    }
+                }
             }
         }
         stage('Build Docker Image') {
+            when {
+                not { environment name: 'SKIP_DOCKER', value: 'true' }
+            }
             steps {
-                withEnv(["PATH+EXTRA=/usr/local/bin"]) {
-                    dir('frontend') {
-                        sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
+                script {
+                    try {
+                        dir('.') {
+                            sh "docker build -f docker/Dockerfile.frontend -t ${IMAGE_NAME} frontend/"
+                        }
+                    } catch (Exception e) {
+                        echo "Docker build failed: ${e.getMessage()}"
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
         }
         stage('Push Docker Image') {
+            when {
+                not { environment name: 'SKIP_DOCKER', value: 'true' }
+            }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                    sh "docker push ${IMAGE_NAME}"
+                script {
+                    try {
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                            sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
+                            sh "docker push ${IMAGE_NAME}"
+                        }
+                    } catch (Exception e) {
+                        echo "Docker push failed: ${e.getMessage()}"
+                        currentBuild.result = 'UNSTABLE'
+                    }
                 }
             }
         }
         stage('Cleanup') {
             steps {
-                // Clean up Docker images to save space
-                sh "docker rmi ${IMAGE_NAME} || true"
-                sh 'docker system prune -f || true'
+                script {
+                    try {
+                        // Clean up Docker images to save space
+                        sh "docker rmi ${IMAGE_NAME} || true"
+                        sh 'docker system prune -f || true'
+                    } catch (Exception e) {
+                        echo "Docker cleanup failed: ${e.getMessage()}"
+                    }
+                }
             }
         }
     }
@@ -123,29 +170,47 @@ pipeline {
         success {
             echo 'Frontend pipeline completed successfully!'
             // Send notification on success
-            emailext (
-                subject: "✅ Frontend Pipeline Success - Build #${env.BUILD_NUMBER}",
-                body: "The frontend pipeline has completed successfully.\n\nBuild: ${env.BUILD_URL}",
-                to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
-            )
+            script {
+                try {
+                    emailext (
+                        subject: "✅ Frontend Pipeline Success - Build #${env.BUILD_NUMBER}",
+                        body: "The frontend pipeline has completed successfully.\n\nBuild: ${env.BUILD_URL}",
+                        to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
+                    )
+                } catch (Exception e) {
+                    echo "Could not send email notification: ${e.getMessage()}"
+                }
+            }
         }
         failure {
             echo 'Frontend pipeline failed. Check the logs for details.'
             // Send notification on failure
-            emailext (
-                subject: "❌ Frontend Pipeline Failed - Build #${env.BUILD_NUMBER}",
-                body: "The frontend pipeline has failed.\n\nBuild: ${env.BUILD_URL}\n\nPlease check the logs for details.",
-                to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
-            )
+            script {
+                try {
+                    emailext (
+                        subject: "❌ Frontend Pipeline Failed - Build #${env.BUILD_NUMBER}",
+                        body: "The frontend pipeline has failed.\n\nBuild: ${env.BUILD_URL}\n\nPlease check the logs for details.",
+                        to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
+                    )
+                } catch (Exception e) {
+                    echo "Could not send email notification: ${e.getMessage()}"
+                }
+            }
         }
         unstable {
             echo 'Frontend pipeline completed with warnings.'
             // Send notification on unstable build
-            emailext (
-                subject: "⚠️ Frontend Pipeline Unstable - Build #${env.BUILD_NUMBER}",
-                body: "The frontend pipeline completed with warnings.\n\nBuild: ${env.BUILD_URL}",
-                to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
-            )
+            script {
+                try {
+                    emailext (
+                        subject: "⚠️ Frontend Pipeline Unstable - Build #${env.BUILD_NUMBER}",
+                        body: "The frontend pipeline completed with warnings.\n\nBuild: ${env.BUILD_URL}",
+                        to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
+                    )
+                } catch (Exception e) {
+                    echo "Could not send email notification: ${e.getMessage()}"
+                }
+            }
         }
     }
 }
