@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout code from GitHub repository
-                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
+                git branch: 'A', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
         stage('Build and Test') {

@@ -17,7 +17,7 @@ pipeline {
                 // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: 'test-branch']],
+                    branches: [[name: 'A']],
                     extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
                     userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
                 ])
