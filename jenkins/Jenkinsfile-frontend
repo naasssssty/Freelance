@@ -36,7 +36,7 @@ pipeline {
             steps {
                 // Run ESLint for code quality
                 dir('frontend') {
-                    sh 'npx eslint src/ --ext .js,.jsx || true'
+                    sh 'npx eslint src/ --ext .js,.jsx --quiet || true'
                 }
             }
         }
@@ -44,7 +44,7 @@ pipeline {
             steps {
                 // Run unit tests with coverage
                 dir('frontend') {
-                    sh 'npm run test:ci'
+                    sh 'CI=true npm test -- --coverage --watchAll=false'
                 }
             }
             post {
