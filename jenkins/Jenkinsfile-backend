@@ -92,19 +92,8 @@ pipeline {
             post {
                 always {
                     script {
-                        // Publish coverage reports if they exist
-                        try {
-                            publishHTML([
-                                allowMissing: true,
-                                alwaysLinkToLastBuild: true,
-                                keepAll: true,
-                                reportDir: 'target/site/jacoco',
-                                reportFiles: 'index.html',
-                                reportName: 'JaCoCo Coverage Report'
-                            ])
-                        } catch (Exception e) {
-                            echo 'Coverage reports not available yet'
-                        }
+                        // Skip HTML publishing until plugin is installed
+                        echo 'HTML Publisher plugin not available - skipping coverage report publishing'
                     }
                 }
             }
