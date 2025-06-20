@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import '../styles/client dashboard/clientApplicationCard.css';
 import Chat from "./Chat";
 import { FaDownload } from 'react-icons/fa';
+import axios from 'axios';
 
 const ClientApplicationCard = ({ application, onAccept, onReject }) => {
     console.log('Application data:', application);
@@ -46,35 +47,34 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
     };
 
     const handleReport = async () => {
-        try {
-            if (!reportDescription.trim()) {
-                alert('Please enter a description of the issue');
-                return;
-            }
+        if (!reportDescription.trim()) {
+            alert('Please enter a description for the report');
+            return;
+        }
 
-            const response = await fetch('/api/reports', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+        try {
+            const response = await axios.post(
+                `/report`,
+                {
                     projectId: application.project_id,
                     description: reportDescription
-                })
-            });
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
-            if (response.ok) {
+            if (response.status === 200 || response.status === 201) {
                 alert('Report submitted successfully');
                 setShowReportForm(false);
                 setReportDescription('');
-            } else {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to submit report');
             }
         } catch (error) {
             console.error('Error submitting report:', error);
-            alert(error.message || 'Failed to submit report');
+            alert('Failed to submit report: ' + (error.response?.data?.message || error.message));
         }
     };
 

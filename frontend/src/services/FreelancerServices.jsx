@@ -1,8 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode"; // Fix import: `jwtDecode` is not a named export
 
-const API_BASE_URL = "http://localhost:8080";
-
 // Utility: Retrieve token and decode username
 const getTokenAndDecode = () => {
     const token = localStorage.getItem("token");
@@ -27,7 +25,7 @@ const getAuthHeaders = () => {
 // Load available projects for freelancers
 export const loadAvailableProjects = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/project/available`, {
+        const response = await axios.get(`/project/available`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -46,7 +44,7 @@ export const applyForProject = async (projectId, coverLetter) => {
         }
 
         const response = await axios.post(
-            `${API_BASE_URL}/project/${projectId}/apply/${username}`,
+            `/project/${projectId}/apply/${username}`,
             coverLetter,
             { headers: getAuthHeaders() }
         );
@@ -60,7 +58,7 @@ export const applyForProject = async (projectId, coverLetter) => {
 // Search projects by title
 export const searchProjectsByTitle = async (title) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/project/title/${title}`, {
+        const response = await axios.get(`/project/title/${title}`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -74,7 +72,7 @@ export const searchProjectsByTitle = async (title) => {
 export const getAssignedProjects = async () => {
     try {
         const { username } = getTokenAndDecode();
-        const response = await axios.get(`${API_BASE_URL}/project/freelancer/${username}`, {
+        const response = await axios.get(`/project/freelancer/${username}`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -87,7 +85,7 @@ export const getAssignedProjects = async () => {
 // Load freelancer's projects
 export const loadMyProjects = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/project/freelancer/my-projects`, {
+        const response = await axios.get(`/project/freelancer/my-projects`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -101,7 +99,7 @@ export const loadMyProjects = async () => {
 export const loadMyApplications = async () => {
     try {
         const { token, username } = getTokenAndDecode();
-        const response = await axios.get(`${API_BASE_URL}/freelancer/${username}/my-applications`,
+        const response = await axios.get(`/freelancer/${username}/my-applications`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -119,7 +117,7 @@ export const handleCompleteProject = async (projectId) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.put(
-            `http://localhost:8080/project/${projectId}/complete`,
+            `/project/${projectId}/complete`,
             null,  // Request body (null since we don't need to send data)
             {
                 headers: {
@@ -137,19 +135,27 @@ export const handleCompleteProject = async (projectId) => {
 
 export const createReport = async (projectId, description) => {
     try {
+        console.log('Creating report with:', { projectId, description });
+        console.log('Making request to: /report');
+        
         const response = await axios.post(
-            `${API_BASE_URL}/api/reports`,
+            `/report`,
             {
-                projectId,
-                description
+                projectId: parseInt(projectId),
+                description: description
             },
             {
                 headers: getAuthHeaders()
             }
         );
+        console.log('Report created successfully:', response.data);
         return response.data;
     } catch (error) {
         console.error("Error creating report:", error);
+        console.error("Request URL:", error.config?.url);
+        console.error("Request method:", error.config?.method);
+        console.error("Request headers:", error.config?.headers);
+        console.error("Request data:", error.config?.data);
         throw error.response ? error.response.data : error;
     }
 };
@@ -157,30 +163,99 @@ export const createReport = async (projectId, description) => {
 // Update the applyForProject function to handle CV uploads
 export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
     try {
-        const { username } = getTokenAndDecode();
-        if (!coverLetter || coverLetter.trim() === "") {
-            throw new Error("Cover Letter cannot be empty.");
+        const { token, username } = getTokenAndDecode();
+        if (!token) {
+            throw new Error('No authentication token found');
         }
 
         const formData = new FormData();
-        formData.append("coverLetter", coverLetter);
+        formData.append('coverLetter', coverLetter);
         if (cvFile) {
-            formData.append("cvFile", cvFile);
+            formData.append('cvFile', cvFile);
         }
 
-        const response = await axios.post(
-            `${API_BASE_URL}/project/${projectId}/apply/${username}/with-cv`,
-            formData,
-            { 
-                headers: {
-                    'Authorization': `Bearer ${getTokenAndDecode().token}`,
-                    'Content-Type': 'multipart/form-data'
-                } 
-            }
-        );
-        return response.data;
+        const response = await fetch(`/project/${projectId}/apply/${username}/with-cv`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to submit application');
+        }
+
+        return await response.json();
     } catch (error) {
-        console.error("Error applying for project:", error);
-        throw error.response ? error.response.data : error;
+        console.error('Error applying for project with CV:', error);
+        throw error;
+    }
+};
+
+// New function for getting dashboard statistics
+export const getDashboardStats = async () => {
+    try {
+        const { token, username } = getTokenAndDecode();
+        if (!token) {
+            throw new Error('No authentication token found');
+        }
+
+        // Get all data in parallel using axios with relative URLs
+        const [availableProjectsResponse, applicationsResponse, projectsResponse] = await Promise.allSettled([
+            axios.get('/project/available', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            axios.get(`/freelancer/${username}/my-applications`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }),
+            axios.get('/project/freelancer/my-projects', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+        ]);
+
+        let stats = {
+            totalAvailableProjects: 0,
+            myApplications: 0,
+            myActiveProjects: 0,
+            completedProjects: 0,
+            pendingApplications: 0,
+            approvedApplications: 0,
+            rejectedApplications: 0,
+            totalEarnings: 0
+        };
+
+        // Process available projects
+        if (availableProjectsResponse.status === 'fulfilled' && availableProjectsResponse.value.status === 200) {
+            const availableProjects = availableProjectsResponse.value.data;
+            stats.totalAvailableProjects = availableProjects.length;
+        }
+
+        // Process applications
+        if (applicationsResponse.status === 'fulfilled' && applicationsResponse.value.status === 200) {
+            const applications = applicationsResponse.value.data;
+            stats.myApplications = applications.length;
+            stats.pendingApplications = applications.filter(a => a.applicationStatus === 'PENDING').length;
+            stats.approvedApplications = applications.filter(a => a.applicationStatus === 'APPROVED').length;
+            stats.rejectedApplications = applications.filter(a => a.applicationStatus === 'REJECTED').length;
+        }
+
+        // Process projects
+        if (projectsResponse.status === 'fulfilled' && projectsResponse.value.status === 200) {
+            const projects = projectsResponse.value.data;
+            stats.myActiveProjects = projects.filter(p => p.projectStatus === 'IN_PROGRESS').length;
+            stats.completedProjects = projects.filter(p => p.projectStatus === 'COMPLETED').length;
+            
+            // Calculate total earnings from completed projects
+            stats.totalEarnings = projects
+                .filter(p => p.projectStatus === 'COMPLETED')
+                .reduce((total, project) => total + (project.budget || 0), 0);
+        }
+
+        return stats;
+    } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        throw error;
     }
 };

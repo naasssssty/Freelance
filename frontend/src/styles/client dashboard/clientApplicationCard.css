@@ -129,7 +129,7 @@
 }
 
 .accept-button:hover {
-    background: #4caf50;
+    background: rgba(23, 99, 3, 0.99);
     color: white;
 }
 

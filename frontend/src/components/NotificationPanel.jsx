@@ -1,85 +1,109 @@
-import React, { useEffect } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import React from 'react';
+import { FaEnvelope, FaCheck, FaBell, FaExclamationTriangle, FaTimes } from 'react-icons/fa';
 import '../styles/notifications/notificationPanel.css';
 
-const NotificationPanel = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose }) => {
-    // Add useEffect to scroll to bottom when new notifications arrive
-    useEffect(() => {
-        const panel = document.querySelector('.notification-list');
-        if (panel) {
-            panel.scrollTop = panel.scrollHeight;
-        }
-    }, [notifications]);
+const NotificationPanel = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClose, loading, error }) => {
 
     const getNotificationIcon = (type) => {
         switch (type) {
             case 'APPLICATION_RECEIVED':
-                return '📝';
+                return <FaEnvelope />;
             case 'APPLICATION_ACCEPTED':
-                return '✅';
+                return <FaCheck />;
             case 'APPLICATION_REJECTED':
-                return '❌';
+                return <FaExclamationTriangle />;
             case 'PROJECT_COMPLETED':
-                return '🎉';
+                return <FaCheck />;
             case 'NEW_MESSAGE':
-                return '💬';
+                return <FaEnvelope />;
             case 'REPORT_STATUS_CHANGED':
-                return '🔔';
+                return <FaBell />;
             default:
-                return '📌';
+                return <FaBell />;
         }
     };
 
-    if (!notifications) {
-        return (
-            <div className="notification-panel">
-                <div className="notification-header">
-                    <h3>Notifications</h3>
-                    <button onClick={onClose}>Close</button>
-                </div>
-                <div className="notification-list">
-                    <div className="no-notifications">Loading notifications...</div>
-                </div>
-            </div>
-        );
-    }
+    const handleMarkAsRead = async (notificationId, event) => {
+        event.stopPropagation();
+        try {
+            await onMarkAsRead(notificationId);
+        } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+        }
+    };
+
+    const handleMarkAllAsRead = async (event) => {
+        event.stopPropagation();
+        try {
+            await onMarkAllAsRead();
+        } catch (error) {
+            console.error('Failed to mark all notifications as read:', error);
+        }
+    };
+
+    const handleClose = (event) => {
+        event.stopPropagation();
+        onClose();
+    };
+
+    // Ensure notifications is always an array
+    const safeNotifications = Array.isArray(notifications) ? notifications : [];
+    const hasUnreadNotifications = safeNotifications.some(notif => !notif.read);
 
     return (
-        <div className="notification-panel">
+        <div className="notification-panel" onClick={(e) => e.stopPropagation()}>
             <div className="notification-header">
                 <h3>Notifications</h3>
                 <div className="notification-actions">
-                    {notifications.length > 0 && (
-                        <button onClick={onMarkAllAsRead}>Mark all as read</button>
+                    {hasUnreadNotifications && !loading && (
+                        <button onClick={handleMarkAllAsRead} title="Mark all as read">
+                            Mark all read
+                        </button>
                     )}
-                    <button onClick={onClose}>Close</button>
+                    <button onClick={handleClose} className="close-btn" title="Close">
+                        <FaTimes />
+                    </button>
                 </div>
             </div>
-            <div className="notification-list">
-                {notifications.length === 0 ? (
-                    <div className="no-notifications">
-                        No notifications
+
+                {loading && (
+                <div className="notification-loading">
+                    <p>Loading notifications...</p>
+                </div>
+                )}
+                
+                {error && (
+                <div className="notification-error">
+                    <p>Failed to load notifications. Please try again.</p>
                     </div>
-                ) : (
-                    notifications.map(notification => (
+                )}
+                
+            {!loading && !error && (
+                <div className="notification-list">
+                    {safeNotifications.length === 0 ? (
+                    <div className="no-notifications">
+                            <FaBell />
+                            <p>No notifications yet</p>
+                    </div>
+                    ) : (
+                        safeNotifications.map((notification) => (
                         <div 
                             key={notification.id} 
                             className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                            onClick={() => onMarkAsRead(notification.id)}
+                                onClick={(e) => handleMarkAsRead(notification.id, e)}
                         >
-                            <span className="notification-icon">
+                                <div className="notification-icon">
                                 {getNotificationIcon(notification.type)}
-                            </span>
+                                </div>
                             <div className="notification-content">
                                 <p className="notification-message">{notification.message}</p>
-                                <span className="notification-time">
-                                    {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                                </span>
+                                    <span className="notification-time">{notification.timestamp}</span>
                             </div>
                         </div>
                     ))
                 )}
             </div>
+            )}
         </div>
     );
 };

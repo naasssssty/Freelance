@@ -1,19 +1,16 @@
 import React from 'react';
 import { FaBell } from 'react-icons/fa';
-// eslint-disable-next-line
-// Σχολιάζουμε ή αφαιρούμε το import για το CSS που δεν υπάρχει
-// import '../styles/notificationIcon.css';
+import '../styles/notifications/notificationIcon.css';
 
-const NotificationIcon = ({ notifications }) => {
-    // eslint-disable-next-line
-    const getUnreadCount = () => {
-        // Σχολιάζουμε αυτή τη συνάρτηση καθώς δεν χρησιμοποιείται
-        // return notifications.filter(notification => !notification.read).length;
-    };
-
+const NotificationIcon = ({ onClick, unreadCount }) => {
     return (
-        <div className="notification-icon">
+        <div className="notification-icon" onClick={onClick}>
             <FaBell size={24} />
+            {unreadCount > 0 && (
+                <span className="notification-badge">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+            )}
         </div>
     );
 };
