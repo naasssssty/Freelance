@@ -8,15 +8,7 @@ RUN apt-get update && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
-<<<<<<< HEAD
-    apt-get install -y docker-ce-cli && \
-    # Ensure the docker group exists with the correct GID (matching the host's docker group)
-    groupadd -g 999 docker || groupadd docker && \
-    # Add Jenkins user to the docker group
-    usermod -aG docker jenkins
-=======
     apt-get install -y docker-ce-cli docker-ce
->>>>>>> test-branch
 
 # Ελέγχουμε αν η ομάδα docker υπάρχει ήδη, αλλιώς τη δημιουργούμε
 RUN if ! getent group docker >/dev/null; then \
