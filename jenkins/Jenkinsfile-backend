@@ -49,6 +49,34 @@ pipeline {
             }
         }
         
+        stage('Integration Tests') {
+            environment {
+                // Same test environment as unit tests
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:integrationtestdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+            }
+            steps {
+                echo 'Running integration tests...'
+                // Run integration tests using test-compile goal to ensure fresh compilation
+                sh 'mvn test-compile'
+                sh 'mvn surefire:test -Dtest=TestFreelancerProjectApplicationTests -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    // Archive integration test results
+                    archiveArtifacts(
+                        artifacts: '**/target/surefire-reports/TEST-*TestFreelancerProjectApplicationTests.xml',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
