@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker-agent'
-    }
+    agent any
     tools {
         nodejs 'Node 21'
     }
@@ -124,7 +122,7 @@ pipeline {
             steps {
                 withEnv(["PATH+EXTRA=/usr/local/bin"]) {
                     dir('frontend') {
-                        sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
+                        sh "docker build -f ../docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
                     }
                 }
             }
