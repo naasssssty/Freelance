@@ -1,7 +1,8 @@
 import { getTokenAndDecode } from '../auth';
+import { jwtDecode } from 'jwt-decode';
 
 // Mock jwt-decode
-jest.mock('jwt-decode', () => jest.fn());
+jest.mock('jwt-decode');
 
 describe('Auth Utils', () => {
     beforeEach(() => {
@@ -10,10 +11,9 @@ describe('Auth Utils', () => {
     });
 
     describe('getTokenAndDecode', () => {
-        it('should return decoded token when valid token exists in localStorage', () => {
-            const jwtDecode = require('jwt-decode');
+        it('should return token and username when valid token exists in localStorage', () => {
             const mockDecodedToken = {
-                username: 'testuser',
+                sub: 'testuser',
                 role: 'CLIENT',
                 exp: Date.now() / 1000 + 3600 // 1 hour from now
             };
@@ -23,74 +23,73 @@ describe('Auth Utils', () => {
 
             const result = getTokenAndDecode();
 
-            expect(result).toEqual(mockDecodedToken);
+            expect(result).toEqual({
+                token: 'valid-jwt-token',
+                username: 'testuser'
+            });
             expect(jwtDecode).toHaveBeenCalledWith('valid-jwt-token');
         });
 
-        it('should return null when no token exists in localStorage', () => {
-            const result = getTokenAndDecode();
-
-            expect(result).toBeNull();
+        it('should throw error when no token exists in localStorage', () => {
+            expect(() => {
+                getTokenAndDecode();
+            }).toThrow('No token found');
         });
 
-        it('should return null when token is invalid', () => {
-            const jwtDecode = require('jwt-decode');
-            
+        it('should throw error when token is invalid', () => {            
             localStorage.setItem('token', 'invalid-token');
             jwtDecode.mockImplementation(() => {
                 throw new Error('Invalid token');
             });
 
-            const result = getTokenAndDecode();
-
-            expect(result).toBeNull();
+            expect(() => {
+                getTokenAndDecode();
+            }).toThrow();
         });
 
-        it('should return null when token is expired', () => {
-            const jwtDecode = require('jwt-decode');
+        it('should throw error when decoded token has no sub field', () => {
             const mockDecodedToken = {
-                username: 'testuser',
                 role: 'CLIENT',
-                exp: Date.now() / 1000 - 3600 // 1 hour ago (expired)
+                exp: Date.now() / 1000 + 3600
             };
 
-            localStorage.setItem('token', 'expired-jwt-token');
+            localStorage.setItem('token', 'no-sub-token');
             jwtDecode.mockReturnValue(mockDecodedToken);
 
-            const result = getTokenAndDecode();
-
-            expect(result).toBeNull();
+            expect(() => {
+                getTokenAndDecode();
+            }).toThrow('Invalid token');
         });
 
-        it('should handle localStorage errors gracefully', () => {
-            // Mock localStorage to throw an error
-            const originalGetItem = localStorage.getItem;
-            localStorage.getItem = jest.fn(() => {
-                throw new Error('localStorage error');
-            });
+        it('should throw error when decoded token has empty sub field', () => {
+            const mockDecodedToken = {
+                sub: '',
+                role: 'CLIENT',
+                exp: Date.now() / 1000 + 3600
+            };
 
-            const result = getTokenAndDecode();
+            localStorage.setItem('token', 'empty-sub-token');
+            jwtDecode.mockReturnValue(mockDecodedToken);
 
-            expect(result).toBeNull();
-
-            // Restore original localStorage
-            localStorage.getItem = originalGetItem;
+            expect(() => {
+                getTokenAndDecode();
+            }).toThrow('Invalid token');
         });
 
-        it('should return null for empty string token', () => {
+        it('should throw error for empty string token', () => {
             localStorage.setItem('token', '');
 
-            const result = getTokenAndDecode();
-
-            expect(result).toBeNull();
+            expect(() => {
+                getTokenAndDecode();
+            }).toThrow('No token found');
         });
 
-        it('should return null for null token in localStorage', () => {
-            localStorage.setItem('token', 'null');
+        it('should throw error for null token in localStorage', () => {
+            localStorage.removeItem('token');
 
-            const result = getTokenAndDecode();
-
-            expect(result).toBeNull();
+            expect(() => {
+                getTokenAndDecode();
+            }).toThrow('No token found');
         });
     });
 }); 
