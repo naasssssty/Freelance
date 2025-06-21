@@ -31,19 +31,19 @@ pipeline {
                         if (lockExists) {
                             echo '📦 Using npm ci with existing package-lock.json...'
                             try {
-                                // Use npm ci with better settings
-                                sh 'npm ci --prefer-offline --no-audit --maxsockets 3 --network-timeout 300000'
+                                // Use npm ci with proper settings - NO invalid flags
+                                sh 'npm ci --prefer-offline --no-audit --maxsockets 3'
                                 echo '✅ Dependencies installed successfully with npm ci'
                             } catch (Exception e) {
                                 echo "❌ npm ci failed: ${e.getMessage()}"
                                 echo '🔄 Falling back to npm install...'
                                 sh 'rm -f package-lock.json'
-                                sh 'npm install --no-audit --maxsockets 3 --network-timeout 300000'
+                                sh 'npm install --no-audit --maxsockets 3'
                                 echo '✅ Dependencies installed with npm install'
                             }
                         } else {
                             echo '📦 No package-lock.json found, using npm install...'
-                            sh 'npm install --no-audit --maxsockets 3 --network-timeout 300000'
+                            sh 'npm install --no-audit --maxsockets 3'
                             echo '✅ Dependencies installed successfully'
                         }
                     }
