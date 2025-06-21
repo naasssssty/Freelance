@@ -38,7 +38,8 @@ pipeline {
             steps {
                 echo '🔍 Running ESLint for code quality...'
                 dir('frontend') {
-                    sh 'npm run lint || true'
+                    // Since there's no lint script, we'll run eslint directly
+                    sh 'npx eslint src --ext .js,.jsx --max-warnings 0 || true'
                 }
             }
         }
@@ -52,35 +53,22 @@ pipeline {
             steps {
                 echo '🧪 Running unit tests...'
                 dir('frontend') {
-                    sh 'npm test -- --coverage --testResultsProcessor=jest-junit --coverageReporters=text-lcov --coverageReporters=html --coverageReporters=cobertura --passWithNoTests --watchAll=false'
+                    // Run tests without jest-junit for now, just with coverage
+                    sh 'npm test -- --coverage --coverageReporters=text-lcov --coverageReporters=html --passWithNoTests --watchAll=false'
                 }
             }
             post {
                 always {
-                    // Publish unit test results
+                    // Archive coverage reports as artifacts for now
                     script {
                         try {
-                            junit(
-                                allowEmptyResults: true,
-                                testResults: 'frontend/junit.xml'
+                            archiveArtifacts(
+                                artifacts: 'frontend/coverage/**/*',
+                                allowEmptyArchive: true
                             )
+                            echo "✅ Coverage reports archived successfully"
                         } catch (Exception e) {
-                            echo "Could not publish test results: ${e.getMessage()}"
-                        }
-                    }
-                    // Archive coverage reports
-                    script {
-                        try {
-                            publishHTML([
-                                allowMissing: true,
-                                alwaysLinkToLastBuild: true,
-                                keepAll: true,
-                                reportDir: 'frontend/coverage/lcov-report',
-                                reportFiles: 'index.html',
-                                reportName: 'Frontend Coverage Report'
-                            ])
-                        } catch (Exception e) {
-                            echo "Could not publish coverage report: ${e.getMessage()}"
+                            echo "Could not archive coverage reports: ${e.getMessage()}"
                         }
                     }
                 }
