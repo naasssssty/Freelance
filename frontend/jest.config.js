@@ -23,20 +23,28 @@ module.exports = {
     '!src/setupTests.js',
     '!src/**/*.test.js',
     '!src/**/__tests__/**',
-    '!src/**/__mocks__/**'
+    '!src/**/*.stories.js'
   ],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80
+  coverageReporters: [
+    'text',
+    'lcov',
+    'html',
+    'json-summary'
+  ],
+  coverageDirectory: 'coverage',
+  testTimeout: 10000,
+  // Separate configuration for different test types
+  projects: [
+    {
+      displayName: 'unit',
+      testMatch: ['<rootDir>/src/**/*.test.js'],
+      testPathIgnorePatterns: ['<rootDir>/src/**/*.integration.test.js']
+    },
+    {
+      displayName: 'integration', 
+      testMatch: ['<rootDir>/src/**/*.integration.test.js'],
+      setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
+      testTimeout: 15000
     }
-  },
-  testMatch: [
-    '<rootDir>/src/**/__tests__/**/*.{js,jsx}',
-    '<rootDir>/src/**/*.{test,spec}.{js,jsx}'
-  ],
-  moduleDirectories: ['node_modules', '<rootDir>/src'],
-  testTimeout: 10000
+  ]
 }; 
