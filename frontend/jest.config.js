@@ -13,6 +13,9 @@ module.exports = {
       ]
     }]
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(axios|jwt-decode)/)'
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx}',
     '!src/index.js',

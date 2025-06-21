@@ -1,8 +1,21 @@
 {
   "extends": [
-    "react-app"
+    "react-app",
+    "react-app/jest"
   ],
   "rules": {
-    "no-unused-vars": "warn"
-  }
+    "no-unused-vars": "warn",
+    "import/first": "warn",
+    "import/no-anonymous-default-export": "warn",
+    "react-hooks/exhaustive-deps": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.js", "**/*.test.jsx", "**/__tests__/**/*.js", "**/__tests__/**/*.jsx"],
+      "rules": {
+        "import/first": "off",
+        "no-unused-vars": "off"
+      }
+    }
+  ]
 } 

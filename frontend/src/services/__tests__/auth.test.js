@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { login, register, setAuthToken } from '../auth';
 
 // Mock axios.create BEFORE importing the auth module
 jest.mock('axios', () => {
@@ -16,7 +17,6 @@ jest.mock('axios', () => {
 });
 
 // Now import the auth module AFTER mocking axios
-import { login, register, setAuthToken } from '../auth';
 
 // Get the mocked apiClient instance
 const mockApiClient = axios.create();

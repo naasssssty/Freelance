@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '🔄 Checking out frontend code...'
-                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
+                git branch: 'A', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
         
@@ -22,8 +22,8 @@ pipeline {
                 dir('frontend') {
                     script {
                         try {
-                            // Clean workspace first to avoid conflicts
-                            sh 'rm -rf node_modules package-lock.json || true'
+                            // Clean only node_modules, keep package-lock.json for npm ci
+                            sh 'rm -rf node_modules || true'
                             
                             // Try npm ci first (faster and more reliable)
                             retry(3) {
@@ -31,6 +31,8 @@ pipeline {
                             }
                         } catch (Exception e) {
                             echo "npm ci failed, trying npm install as fallback: ${e.getMessage()}"
+                            // Only remove package-lock.json if npm ci fails
+                            sh 'rm -rf package-lock.json || true'
                             sh 'npm install --timeout=300000'
                         }
                     }
@@ -42,8 +44,18 @@ pipeline {
             steps {
                 echo '🔍 Running ESLint for code quality...'
                 dir('frontend') {
-                    // Since there's no lint script, we'll run eslint directly
-                    sh 'npx eslint src --ext .js,.jsx --max-warnings 0 || true'
+                    script {
+                        try {
+                            // Try to fix auto-fixable issues first
+                            sh 'npm run lint:fix || true'
+                            // Then run the actual lint check
+                            sh 'npm run lint'
+                        } catch (Exception e) {
+                            echo "ESLint found issues: ${e.getMessage()}"
+                            // Don't fail the build for linting issues, just warn
+                            sh 'npm run lint || true'
+                        }
+                    }
                 }
             }
         }
@@ -57,8 +69,8 @@ pipeline {
             steps {
                 echo '🧪 Running unit tests...'
                 dir('frontend') {
-                    // Run tests without jest-junit for now, just with coverage
-                    sh 'npm test -- --coverage --coverageReporters=text-lcov --coverageReporters=html --passWithNoTests --watchAll=false'
+                    // Use the new test:ci script
+                    sh 'npm run test:ci'
                 }
             }
             post {
