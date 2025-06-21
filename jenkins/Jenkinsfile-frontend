@@ -22,16 +22,19 @@ pipeline {
                 dir('frontend') {
                     script {
                         try {
-                            // Clean workspace first to avoid conflicts
-                            sh 'rm -rf node_modules package-lock.json || true'
+                            // Only clean node_modules, preserve package-lock.json
+                            sh 'rm -rf node_modules || true'
                             
                             // Try npm ci first (faster and more reliable)
-                            retry(3) {
-                                sh 'npm ci --prefer-offline --timeout=300000'
+                            echo 'Attempting npm ci with existing package-lock.json...'
+                            retry(2) {
+                                sh 'npm ci --prefer-offline --no-audit --timeout=600000'
                             }
                         } catch (Exception e) {
                             echo "npm ci failed, trying npm install as fallback: ${e.getMessage()}"
-                            sh 'npm install --timeout=300000'
+                            // If ci fails, remove lock file and do fresh install  
+                            sh 'rm -f package-lock.json || true'
+                            sh 'npm install --no-audit --timeout=600000'
                         }
                     }
                 }
