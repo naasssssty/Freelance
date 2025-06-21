@@ -22,13 +22,28 @@ pipeline {
                 dir('frontend') {
                     script {
                         try {
-                            retry(3) {
-                                sh 'npm ci --prefer-offline --no-audit --timeout=300000'
+                            // Clean workspace first
+                            echo '🧹 Cleaning workspace...'
+                            sh 'rm -rf node_modules package-lock.json .npm || true'
+                            sh 'npm cache clean --force || true'
+                            
+                            // Try npm ci first
+                            echo '📦 Attempting npm ci...'
+                            retry(2) {
+                                sh 'npm ci --no-optional --no-audit --no-fund --prefer-offline --timeout=600000'
                             }
                         } catch (Exception e) {
-                            echo "npm ci failed, trying npm install as fallback: ${e.getMessage()}"
-                            sh 'npm install --timeout=300000'
+                            echo "npm ci failed, trying clean install: ${e.getMessage()}"
+                            
+                            // Fallback to npm install with clean cache
+                            sh 'rm -rf node_modules package-lock.json .npm || true'
+                            sh 'npm cache clean --force'
+                            sh 'npm install --no-optional --no-audit --no-fund --timeout=600000'
                         }
+                        
+                        // Verify installation
+                        sh 'npm ls --depth=0 || true'
+                        echo '✅ Dependencies installed successfully!'
                     }
                 }
             }
