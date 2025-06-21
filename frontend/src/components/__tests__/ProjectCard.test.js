@@ -13,19 +13,19 @@ afterAll(() => {
 });
 
 describe('ProjectCard', () => {
-    const mockProject = {
-        id: 1,
-        title: 'Test Project',
-        description: 'This is a test project description',
-        budget: 1000,
-        client_username: 'testclient',
+const mockProject = {
+    id: 1,
+    title: 'Test Project',
+    description: 'This is a test project description',
+    budget: 1000,
+    client_username: 'testclient',
         projectStatus: 'PENDING'
-    };
+};
 
     const mockOnApprove = jest.fn();
     const mockOnDeny = jest.fn();
-    const mockDispatch = jest.fn();
-    const mockProjectsList = [mockProject];
+const mockDispatch = jest.fn();
+const mockProjectsList = [mockProject];
 
     const defaultProps = {
         project: mockProject,
@@ -200,4 +200,4 @@ describe('ProjectCard', () => {
         expect(screen.getByText('Budget:')).toBeInTheDocument();
         expect(screen.getByText('Client:')).toBeInTheDocument();
     });
-});
+}); 

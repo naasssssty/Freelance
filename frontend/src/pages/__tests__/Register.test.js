@@ -66,4 +66,4 @@ describe('Register', () => {
         expect(passwordInput).toHaveAttribute('type', 'password');
         expect(confirmPasswordInput).toHaveAttribute('type', 'password');
     });
-}); 
+});

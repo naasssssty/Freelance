@@ -3,12 +3,9 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY .npmrc ./
 
-# Install dependencies with error handling
-RUN npm cache clean --force && \
-    npm ci --no-optional --no-audit --no-fund --prefer-offline || \
-    npm install --no-optional --no-audit --no-fund
+# Install dependencies with simple approach
+RUN npm ci || npm install
 
 # Copy source code
 COPY . .
