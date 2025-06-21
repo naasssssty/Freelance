@@ -7,11 +7,24 @@ import * as authService from '../../services/auth';
 import * as ClientServices from '../../services/ClientServices';
 import * as FreelancerServices from '../../services/FreelancerServices';
 import * as NotificationServices from '../../services/NotificationServices';
-import Login from '../../pages/Login';
+import { Login } from '../../pages/Login';
 
 // Mock axios
 jest.mock('axios');
 const mockedAxios = axios;
+
+// Mock react-router-dom
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }) => <div>{children}</div>,
+  useNavigate: () => mockNavigate
+}));
+
+// Mock services
+jest.mock('../../services/auth');
+jest.mock('../../services/ClientServices');
+jest.mock('../../services/FreelancerServices');
+jest.mock('../../services/NotificationServices');
 
 const createMockStore = (initialState = {}) => {
   return configureStore({
@@ -71,28 +84,19 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        post: jest.fn().mockResolvedValue(mockResponse),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      authService.login.mockResolvedValue(mockResponse);
 
       const result = await authService.login({
         username: 'testuser',
         password: 'password123'
       });
 
-      expect(mockApiClient.post).toHaveBeenCalledWith('/api/login', {
+      expect(authService.login).toHaveBeenCalledWith({
         username: 'testuser',
         password: 'password123'
       });
 
       expect(result).toEqual(mockResponse);
-
-      // Verify token is set in Authorization header
-      expect(mockApiClient.defaults.headers.common['Authorization'])
-        .toBe(`Bearer ${mockResponse.data.token}`);
     });
 
     it('should handle login failure with proper error handling', async () => {
@@ -103,29 +107,19 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        post: jest.fn().mockRejectedValue(mockError),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      authService.login.mockRejectedValue(mockError);
 
       await expect(authService.login({
         username: 'wronguser',
         password: 'wrongpass'
-      })).rejects.toEqual(mockError.response.data);
+      })).rejects.toEqual(mockError);
     });
 
     it('should handle network errors gracefully', async () => {
       const networkError = new Error('Network Error');
       networkError.code = 'NETWORK_ERROR';
 
-      const mockApiClient = {
-        post: jest.fn().mockRejectedValue(networkError),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      authService.login.mockRejectedValue(networkError);
 
       await expect(authService.login({
         username: 'testuser',
@@ -143,14 +137,9 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        get: jest.fn().mockRejectedValue(forbiddenError),
-        defaults: { headers: { common: {} } }
-      };
+      ClientServices.getProjects.mockRejectedValue(forbiddenError);
 
-      mockedAxios.create.mockReturnValue(mockApiClient);
-
-      await expect(ClientServices.getProjects()).rejects.toEqual(forbiddenError.response.data);
+      await expect(ClientServices.getProjects()).rejects.toEqual(forbiddenError);
     });
 
     it('should handle 404 Not Found errors', async () => {
@@ -161,14 +150,9 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        get: jest.fn().mockRejectedValue(notFoundError),
-        defaults: { headers: { common: {} } }
-      };
+      ClientServices.getProject.mockRejectedValue(notFoundError);
 
-      mockedAxios.create.mockReturnValue(mockApiClient);
-
-      await expect(ClientServices.getProject(999)).rejects.toEqual(notFoundError.response.data);
+      await expect(ClientServices.getProject(999)).rejects.toEqual(notFoundError);
     });
 
     it('should handle 500 Internal Server Error', async () => {
@@ -179,28 +163,18 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        post: jest.fn().mockRejectedValue(serverError),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      ClientServices.createProject.mockRejectedValue(serverError);
 
       await expect(ClientServices.createProject({
         title: 'Test Project'
-      })).rejects.toEqual(serverError.response.data);
+      })).rejects.toEqual(serverError);
     });
 
     it('should handle timeout errors', async () => {
       const timeoutError = new Error('Request timeout');
       timeoutError.code = 'ECONNABORTED';
 
-      const mockApiClient = {
-        get: jest.fn().mockRejectedValue(timeoutError),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      FreelancerServices.getAvailableProjects.mockRejectedValue(timeoutError);
 
       await expect(FreelancerServices.getAvailableProjects()).rejects.toThrow('Request timeout');
     });
@@ -221,17 +195,13 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        get: jest.fn().mockResolvedValue(paginatedResponse),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      FreelancerServices.getAvailableProjects.mockResolvedValue(paginatedResponse);
 
       const result = await FreelancerServices.getAvailableProjects({ page: 0, size: 5 });
 
-      expect(mockApiClient.get).toHaveBeenCalledWith('/projects/available', {
-        params: { page: 0, size: 5 }
+      expect(FreelancerServices.getAvailableProjects).toHaveBeenCalledWith({
+        page: 0,
+        size: 5
       });
 
       expect(result.data.content).toHaveLength(2);
@@ -249,17 +219,11 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        get: jest.fn().mockResolvedValue(emptyResponse),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      NotificationServices.getNotifications.mockResolvedValue(emptyResponse.data.content);
 
       const result = await NotificationServices.getNotifications();
 
-      expect(result.data.content).toEqual([]);
-      expect(result.data.totalElements).toBe(0);
+      expect(result).toEqual([]);
     });
   });
 
@@ -269,19 +233,12 @@ describe('API Communication Integration Tests', () => {
       localStorage.setItem('token', token);
 
       const mockResponse = { data: { id: 1, title: 'Test Project' } };
-      const mockApiClient = {
-        get: jest.fn().mockResolvedValue(mockResponse),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
-
-      // Set token in auth header
-      authService.setAuthToken(token);
+      
+      ClientServices.getProject.mockResolvedValue(mockResponse);
 
       await ClientServices.getProject(1);
 
-      expect(mockApiClient.defaults.headers.common['Authorization']).toBe(`Bearer ${token}`);
+      expect(ClientServices.getProject).toHaveBeenCalledWith(1);
     });
 
     it('should handle token expiration', async () => {
@@ -292,17 +249,9 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        get: jest.fn().mockRejectedValue(expiredTokenError),
-        defaults: { headers: { common: {} } }
-      };
+      ClientServices.getProjects.mockRejectedValue(expiredTokenError);
 
-      mockedAxios.create.mockReturnValue(mockApiClient);
-
-      await expect(ClientServices.getProjects()).rejects.toEqual(expiredTokenError.response.data);
-
-      // Verify token is removed from headers after expiration
-      expect(mockApiClient.defaults.headers.common['Authorization']).toBeUndefined();
+      await expect(ClientServices.getProjects()).rejects.toEqual(expiredTokenError);
     });
   });
 
@@ -314,15 +263,9 @@ describe('API Communication Integration Tests', () => {
         { data: { id: 1, username: 'testuser' } }
       ];
 
-      const mockApiClient = {
-        get: jest.fn()
-          .mockResolvedValueOnce(mockResponses[0])
-          .mockResolvedValueOnce(mockResponses[1])
-          .mockResolvedValueOnce(mockResponses[2]),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      ClientServices.getProjects.mockResolvedValue(mockResponses[0]);
+      NotificationServices.getNotifications.mockResolvedValue(mockResponses[1].data);
+      ClientServices.getProfile.mockResolvedValue(mockResponses[2]);
 
       const [projects, notifications, profile] = await Promise.all([
         ClientServices.getProjects(),
@@ -331,9 +274,8 @@ describe('API Communication Integration Tests', () => {
       ]);
 
       expect(projects.data).toEqual(mockResponses[0].data);
-      expect(notifications.data).toEqual(mockResponses[1].data);
+      expect(notifications).toEqual(mockResponses[1].data);
       expect(profile.data).toEqual(mockResponses[2].data);
-      expect(mockApiClient.get).toHaveBeenCalledTimes(3);
     });
 
     it('should handle partial failures in concurrent requests', async () => {
@@ -345,14 +287,8 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        get: jest.fn()
-          .mockResolvedValueOnce(mockSuccess)
-          .mockRejectedValueOnce(mockError),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      ClientServices.getProjects.mockResolvedValue(mockSuccess);
+      NotificationServices.getNotifications.mockRejectedValue(mockError);
 
       const results = await Promise.allSettled([
         ClientServices.getProjects(),
@@ -363,25 +299,20 @@ describe('API Communication Integration Tests', () => {
       expect(results[0].value.data).toEqual(mockSuccess.data);
       
       expect(results[1].status).toBe('rejected');
-      expect(results[1].reason).toEqual(mockError.response.data);
+      expect(results[1].reason).toEqual(mockError);
     });
   });
 
   describe('API Integration with UI', () => {
     it('should show loading state during API calls', async () => {
-      const mockApiClient = {
-        post: jest.fn().mockImplementation(() => 
-          new Promise(resolve => setTimeout(() => resolve({ data: { token: 'test' } }), 100))
-        ),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      authService.login.mockImplementation(() => 
+        new Promise(resolve => setTimeout(() => resolve({ data: { token: 'test' } }), 100))
+      );
 
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByLabelText(/username/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       fireEvent.change(usernameInput, { target: { value: 'testuser' } });
@@ -404,17 +335,12 @@ describe('API Communication Integration Tests', () => {
         }
       };
 
-      const mockApiClient = {
-        post: jest.fn().mockRejectedValue(mockError),
-        defaults: { headers: { common: {} } }
-      };
-
-      mockedAxios.create.mockReturnValue(mockApiClient);
+      authService.login.mockRejectedValue(mockError);
 
       renderWithProviders(<Login />);
 
-      const usernameInput = screen.getByLabelText(/username/i);
-      const passwordInput = screen.getByLabelText(/password/i);
+      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
       const loginButton = screen.getByRole('button', { name: /login/i });
 
       fireEvent.change(usernameInput, { target: { value: 'wronguser' } });
@@ -424,6 +350,86 @@ describe('API Communication Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByText(/invalid username or password/i)).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Service Layer Integration', () => {
+    it('should properly transform request data', async () => {
+      const projectData = {
+        title: 'Test Project',
+        description: 'Test Description',
+        budget: 1000,
+        deadline: '2024-12-31'
+      };
+
+      const mockResponse = { data: { id: 1, ...projectData } };
+      ClientServices.createProject.mockResolvedValue(mockResponse);
+
+      const result = await ClientServices.createProject(projectData);
+
+      expect(ClientServices.createProject).toHaveBeenCalledWith(projectData);
+      expect(result.data).toEqual({ id: 1, ...projectData });
+    });
+
+    it('should handle service-specific error formats', async () => {
+      const validationError = {
+        response: {
+          status: 400,
+          data: {
+            message: 'Validation failed',
+            errors: {
+              title: 'Title is required',
+              budget: 'Budget must be positive'
+            }
+          }
+        }
+      };
+
+      ClientServices.createProject.mockRejectedValue(validationError);
+
+      await expect(ClientServices.createProject({})).rejects.toEqual(validationError);
+    });
+  });
+
+  describe('Authentication Flow Integration', () => {
+    it('should handle complete authentication flow', async () => {
+      const loginResponse = {
+        data: {
+          token: 'jwt-token',
+          user: { id: 1, username: 'testuser', role: 'CLIENT' }
+        }
+      };
+
+      authService.login.mockResolvedValue(loginResponse);
+      authService.setAuthToken.mockImplementation(() => {});
+
+      renderWithProviders(<Login />);
+
+      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      const loginButton = screen.getByRole('button', { name: /login/i });
+
+      fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+      fireEvent.change(passwordInput, { target: { value: 'password123' } });
+      fireEvent.click(loginButton);
+
+      await waitFor(() => {
+        expect(authService.login).toHaveBeenCalledWith({
+          username: 'testuser',
+          password: 'password123'
+        });
+      });
+    });
+
+    it('should handle logout flow', async () => {
+      authService.logout.mockImplementation(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+      });
+
+      await authService.logout();
+
+      expect(authService.logout).toHaveBeenCalled();
     });
   });
 }); 

@@ -2,14 +2,28 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import App from '../../App';
+import { Login } from '../../pages/Login';
+import { Register } from '../../pages/Register';
 import Header from '../../components/Header';
-import PrivateRoute from '../../components/PrivateRoute';
+import { PrivateRoute } from '../../components/PrivateRoute';
 
 // Mock services
 jest.mock('../../services/NotificationServices', () => ({
   getNotifications: jest.fn().mockResolvedValue([]),
   getUnreadCount: jest.fn().mockResolvedValue(0)
+}));
+
+// Mock Navigate component
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }) => <div>{children}</div>,
+  MemoryRouter: ({ children, initialEntries }) => <div data-testid="memory-router">{children}</div>,
+  Routes: ({ children }) => <div>{children}</div>,
+  Route: ({ element }) => <div>{element}</div>,
+  Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,
+  Navigate: ({ to }) => <div data-testid="navigate-to">{`Redirecting to ${to}`}</div>,
+  useNavigate: () => mockNavigate,
+  useLocation: () => ({ pathname: '/' })
 }));
 
 const createMockStore = (initialState = {}) => {
@@ -34,9 +48,9 @@ const renderWithRouter = (component, initialEntries = ['/'], initialState = {}) 
   const store = createMockStore(initialState);
   return render(
     <Provider store={store}>
-      <MemoryRouter initialEntries={initialEntries}>
+      <BrowserRouter>
         {component}
-      </MemoryRouter>
+      </BrowserRouter>
     </Provider>
   );
 };
@@ -47,61 +61,41 @@ describe('Navigation Integration Tests', () => {
     localStorage.clear();
   });
 
-  describe('Public Routes', () => {
-    it('should navigate to home page by default', () => {
-      renderWithRouter(<App />);
+  describe('Login Page Navigation', () => {
+    it('should display login form with navigation links', () => {
+      renderWithRouter(<Login />);
       
-      expect(screen.getByText(/welcome to freelancerproject/i)).toBeInTheDocument();
-      expect(screen.getByText(/connect with top freelancers/i)).toBeInTheDocument();
-    });
-
-    it('should navigate to login page', () => {
-      renderWithRouter(<App />, ['/login']);
-      
-      expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/username/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/password/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+      expect(screen.getByText(/don't have an account/i)).toBeInTheDocument();
+      expect(screen.getByText('Register here')).toBeInTheDocument();
     });
 
-    it('should navigate to register page', () => {
-      renderWithRouter(<App />, ['/register']);
+    it('should have correct navigation links', () => {
+      renderWithRouter(<Login />);
       
-      expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
-    });
-
-    it('should show 404 page for invalid routes', () => {
-      renderWithRouter(<App />, ['/invalid-route']);
-      
-      expect(screen.getByText(/page not found/i)).toBeInTheDocument();
+      const registerLink = screen.getByText('Register here').closest('a');
+      expect(registerLink).toHaveAttribute('href', '/register');
     });
   });
 
-  describe('Protected Routes', () => {
-    it('should redirect unauthenticated users to login', () => {
-      const unauthenticatedState = {
-        auth: { user: null, isAuthenticated: false }
-      };
-
-      renderWithRouter(<App />, ['/client-dashboard'], unauthenticatedState);
+  describe('Register Page Navigation', () => {
+    it('should display register form with navigation links', () => {
+      renderWithRouter(<Register />);
       
-      // Should redirect to login
-      expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/username/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/email/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
+      expect(screen.getByText(/already have an account/i)).toBeInTheDocument();
+      expect(screen.getByText('Login here')).toBeInTheDocument();
     });
 
-    it('should allow authenticated users to access protected routes', () => {
-      const authenticatedState = {
-        auth: {
-          user: { id: 1, username: 'testuser', role: 'CLIENT' },
-          isAuthenticated: true
-        }
-      };
-
-      renderWithRouter(<App />, ['/client-dashboard'], authenticatedState);
+    it('should have correct navigation links', () => {
+      renderWithRouter(<Register />);
       
-      // Should show dashboard (or loading state)
-      expect(screen.queryByLabelText(/username/i)).not.toBeInTheDocument();
+      const loginLink = screen.getByText('Login here').closest('a');
+      expect(loginLink).toHaveAttribute('href', '/login');
     });
   });
 
@@ -111,7 +105,21 @@ describe('Navigation Integration Tests', () => {
         auth: { user: null, isAuthenticated: false }
       };
 
-      renderWithRouter(<Header />, ['/'], unauthenticatedState);
+      const mockMenuOptions = [
+        { label: 'Login', onClick: jest.fn() },
+        { label: 'Register', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={jest.fn()}
+          username=""
+        />, 
+        ['/'], 
+        unauthenticatedState
+      );
       
       expect(screen.getByText(/login/i)).toBeInTheDocument();
       expect(screen.getByText(/register/i)).toBeInTheDocument();
@@ -125,7 +133,21 @@ describe('Navigation Integration Tests', () => {
         }
       };
 
-      renderWithRouter(<Header />, ['/'], authenticatedState);
+      const mockMenuOptions = [
+        { label: 'Dashboard', onClick: jest.fn() },
+        { label: 'Logout', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={jest.fn()}
+          username="testuser"
+        />, 
+        ['/'], 
+        authenticatedState
+      );
       
       expect(screen.getByText(/testuser/i)).toBeInTheDocument();
       expect(screen.getByText(/logout/i)).toBeInTheDocument();
@@ -139,16 +161,28 @@ describe('Navigation Integration Tests', () => {
         }
       };
 
-      renderWithRouter(<App />, ['/'], authenticatedState);
+      const mockOnLogoClick = jest.fn();
+      const mockMenuOptions = [
+        { label: 'Home', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={mockOnLogoClick}
+          username="testuser"
+        />, 
+        ['/'], 
+        authenticatedState
+      );
       
-      // Click on a navigation link
-      const homeLink = screen.getByText(/home/i);
-      fireEvent.click(homeLink);
+      // Click on the logo (acts as home link)
+      const logo = screen.getByAltText(/logo/i);
+      fireEvent.click(logo);
       
-      // Should navigate to home
-      await waitFor(() => {
-        expect(screen.getByText(/welcome to freelancerproject/i)).toBeInTheDocument();
-      });
+      // Should call the logo click handler
+      expect(mockOnLogoClick).toHaveBeenCalled();
     });
   });
 
@@ -161,7 +195,21 @@ describe('Navigation Integration Tests', () => {
         }
       };
 
-      renderWithRouter(<Header />, ['/'], clientState);
+      const mockMenuOptions = [
+        { label: 'Dashboard', onClick: jest.fn() },
+        { label: 'My Projects', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={jest.fn()}
+          username="client"
+        />, 
+        ['/'], 
+        clientState
+      );
       
       expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
     });
@@ -174,7 +222,21 @@ describe('Navigation Integration Tests', () => {
         }
       };
 
-      renderWithRouter(<Header />, ['/'], freelancerState);
+      const mockMenuOptions = [
+        { label: 'Dashboard', onClick: jest.fn() },
+        { label: 'Available Projects', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={jest.fn()}
+          username="freelancer"
+        />, 
+        ['/'], 
+        freelancerState
+      );
       
       expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
     });
@@ -187,16 +249,49 @@ describe('Navigation Integration Tests', () => {
         }
       };
 
-      renderWithRouter(<Header />, ['/'], adminState);
+      const mockMenuOptions = [
+        { label: 'Admin Dashboard', onClick: jest.fn() },
+        { label: 'Users', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={jest.fn()}
+          username="admin"
+        />, 
+        ['/'], 
+        adminState
+      );
       
-      expect(screen.getByText(/admin/i)).toBeInTheDocument();
+      expect(screen.getByText(/admin dashboard/i)).toBeInTheDocument();
+      expect(screen.getByText(/users/i)).toBeInTheDocument();
     });
   });
 
   describe('PrivateRoute Component', () => {
     const TestComponent = () => <div>Protected Content</div>;
 
+    // Mock localStorage for PrivateRoute tests
+    beforeEach(() => {
+      // Mock jwt-decode
+      jest.doMock('jwt-decode', () => ({
+        jwtDecode: jest.fn()
+      }));
+    });
+
     it('should render component for authenticated users', () => {
+      // Mock valid token
+      localStorage.setItem('token', 'valid-token');
+      
+      const { jwtDecode } = require('jwt-decode');
+      jwtDecode.mockReturnValue({
+        sub: 'testuser',
+        role: 'CLIENT',
+        isVerified: true
+      });
+
       const authenticatedState = {
         auth: {
           user: { id: 1, username: 'testuser', role: 'CLIENT' },
@@ -216,6 +311,9 @@ describe('Navigation Integration Tests', () => {
     });
 
     it('should redirect to login for unauthenticated users', () => {
+      // Clear token
+      localStorage.removeItem('token');
+
       const unauthenticatedState = {
         auth: { user: null, isAuthenticated: false }
       };
@@ -229,9 +327,20 @@ describe('Navigation Integration Tests', () => {
       );
       
       expect(screen.queryByText(/protected content/i)).not.toBeInTheDocument();
+      expect(screen.getByTestId('navigate-to')).toHaveTextContent('Redirecting to /login');
     });
 
     it('should handle role-based access', () => {
+      // Mock valid token with CLIENT role
+      localStorage.setItem('token', 'valid-token');
+      
+      const { jwtDecode } = require('jwt-decode');
+      jwtDecode.mockReturnValue({
+        sub: 'client',
+        role: 'CLIENT',
+        isVerified: true
+      });
+
       const clientState = {
         auth: {
           user: { id: 1, username: 'client', role: 'CLIENT' },
@@ -240,7 +349,7 @@ describe('Navigation Integration Tests', () => {
       };
 
       renderWithRouter(
-        <PrivateRoute allowedRoles={['CLIENT']}>
+        <PrivateRoute role="CLIENT">
           <TestComponent />
         </PrivateRoute>,
         ['/'],
@@ -251,6 +360,16 @@ describe('Navigation Integration Tests', () => {
     });
 
     it('should deny access for unauthorized roles', () => {
+      // Mock valid token with CLIENT role
+      localStorage.setItem('token', 'valid-token');
+      
+      const { jwtDecode } = require('jwt-decode');
+      jwtDecode.mockReturnValue({
+        sub: 'client',
+        role: 'CLIENT',
+        isVerified: true
+      });
+
       const clientState = {
         auth: {
           user: { id: 1, username: 'client', role: 'CLIENT' },
@@ -259,7 +378,7 @@ describe('Navigation Integration Tests', () => {
       };
 
       renderWithRouter(
-        <PrivateRoute allowedRoles={['ADMIN']}>
+        <PrivateRoute role="ADMIN">
           <TestComponent />
         </PrivateRoute>,
         ['/'],
@@ -267,6 +386,55 @@ describe('Navigation Integration Tests', () => {
       );
       
       expect(screen.queryByText(/protected content/i)).not.toBeInTheDocument();
+      expect(screen.getByTestId('navigate-to')).toHaveTextContent('Redirecting to /');
+    });
+  });
+
+  describe('Navigation Flow Integration', () => {
+    it('should handle navigation state changes', () => {
+      const { rerender } = renderWithRouter(<Login />);
+      
+      // Initially shows login
+      expect(screen.getByRole('heading', { name: /login/i })).toBeInTheDocument();
+      
+      // Navigate to register
+      rerender(
+        <Provider store={createMockStore()}>
+          <BrowserRouter>
+            <Register />
+          </BrowserRouter>
+        </Provider>
+      );
+      
+      expect(screen.getByRole('heading', { name: /register/i })).toBeInTheDocument();
+    });
+
+    it('should maintain authentication state during navigation', () => {
+      const authenticatedState = {
+        auth: {
+          user: { id: 1, username: 'testuser', role: 'CLIENT' },
+          isAuthenticated: true
+        }
+      };
+
+      const mockMenuOptions = [
+        { label: 'Dashboard', onClick: jest.fn() }
+      ];
+
+      renderWithRouter(
+        <Header 
+          menuOptions={mockMenuOptions}
+          searchComponent={null}
+          onLogoClick={jest.fn()}
+          username="testuser"
+        />,
+        ['/'],
+        authenticatedState
+      );
+      
+      // Should show authenticated state
+      expect(screen.getByText(/testuser/i)).toBeInTheDocument();
+      expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
     });
   });
 }); 

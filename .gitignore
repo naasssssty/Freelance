@@ -2,6 +2,8 @@
 target/
 **/target/
 
+deploy.sh
+
 # Node/React (frontend specific)
 frontend/node_modules/
 frontend/build/
