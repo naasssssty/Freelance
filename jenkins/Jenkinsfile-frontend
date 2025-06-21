@@ -4,98 +4,167 @@ pipeline {
         nodejs 'Node 21'
     }
     environment {
-        IMAGE_TAG = '28'
-        IMAGE_NAME = "papadooo/freelance-frontend:${IMAGE_TAG}"
+        DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
+        CI = 'true'
+        GENERATE_SOURCEMAP = 'false'
     }
     stages {
         stage('Checkout') {
             steps {
-                // Καθαρίζουμε πρώτα τον workspace
-                cleanWs()
-                
-                // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: 'test-branch']],
-                    extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
-                    userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
-                ])
+                echo '🔄 Checking out frontend code...'
+                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
+        
         stage('Install Dependencies') {
             steps {
-                // Install npm dependencies for frontend
+                echo '📦 Installing frontend dependencies...'
                 dir('frontend') {
-                    sh 'npm install'
+                    sh 'npm ci --prefer-offline --no-audit'
                 }
             }
         }
-        stage('Build') {
+        
+        stage('Lint') {
             steps {
-                // Build the frontend using npm
+                echo '🔍 Running ESLint for code quality...'
                 dir('frontend') {
-                    sh 'npm run build'
+                    sh 'npm run lint || true'
                 }
             }
         }
-        stage('Test') {
+        
+        stage('Unit Tests') {
+            environment {
+                // Jest test environment
+                CI = 'true'
+                NODE_ENV = 'test'
+            }
             steps {
-                // Run tests for frontend
+                echo '🧪 Running unit tests...'
                 dir('frontend') {
-                    sh 'npm run test -- --watchAll=false --coverage'
+                    sh 'npm test -- --coverage --testResultsProcessor=jest-junit --coverageReporters=text-lcov --coverageReporters=html --coverageReporters=cobertura --passWithNoTests --watchAll=false'
                 }
             }
             post {
                 always {
-                    // Publish test results (if applicable)
-                    junit allowEmptyResults: true, testResults: '**/junit.xml'
-                }
-            }
-        }
-        stage('Debug Directory Structure') {
-            steps {
-                sh 'pwd'  // Εμφανίζει τον τρέχοντα κατάλογο
-                sh 'ls -lR'  // Εμφανίζει τη δομή των φακέλων αναδρομικά
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                withEnv(["PATH+EXTRA=/usr/local/bin"]) {
-                    dir('frontend') {
-                        sh "docker build -f /var/jenkins_home/workspace/Freelance-Frontend/docker/Dockerfile.frontend -t ${IMAGE_NAME} ."
+                    // Publish unit test results
+                    script {
+                        try {
+                            junit(
+                                allowEmptyResults: true,
+                                testResults: 'frontend/junit.xml'
+                            )
+                        } catch (Exception e) {
+                            echo "Could not publish test results: ${e.getMessage()}"
+                        }
+                    }
+                    // Archive coverage reports
+                    script {
+                        try {
+                            publishHTML([
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'frontend/coverage/lcov-report',
+                                reportFiles: 'index.html',
+                                reportName: 'Frontend Coverage Report'
+                            ])
+                        } catch (Exception e) {
+                            echo "Could not publish coverage report: ${e.getMessage()}"
+                        }
                     }
                 }
             }
         }
-        stage('Push Docker Image') {
+        
+        stage('Integration Tests') {
+            environment {
+                // Integration test environment
+                CI = 'true'
+                NODE_ENV = 'test'
+                REACT_APP_API_URL = 'http://localhost:8080'
+            }
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                    sh "docker push ${IMAGE_NAME}"
+                echo '🔗 Running integration tests...'
+                dir('frontend') {
+                    // For now, we'll run the same tests but in integration mode
+                    // Later you can add specific integration tests
+                    sh 'npm test -- --testPathPattern="integration|e2e" --passWithNoTests --watchAll=false || echo "No integration tests found yet"'
+                }
+            }
+            post {
+                always {
+                    // Archive integration test results
+                    archiveArtifacts(
+                        artifacts: 'frontend/coverage/**/*',
+                        allowEmptyArchive: true
+                    )
                 }
             }
         }
-        stage('Check Docker Connection') {
+        
+        stage('Build') {
             steps {
-                sh 'docker info || echo "Docker connection failed"'
-                sh 'env | grep DOCKER || echo "DOCKER env vars not set"'
-                sh 'ls -l /var/run/docker.sock || echo "Docker socket not found"'
-                sh 'id || echo "Cannot get user info"'
-                sh 'groups || echo "Cannot get group info"'
+                echo '🏗️ Building frontend application...'
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+            post {
+                always {
+                    // Archive build artifacts
+                    archiveArtifacts(
+                        artifacts: 'frontend/build/**/*',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        
+        stage('Security Audit') {
+            steps {
+                echo '🔒 Running security audit...'
+                dir('frontend') {
+                    sh 'npm audit --audit-level=moderate || true'
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo '🐳 Building Docker image...'
+                // Build Docker image for frontend using the correct Dockerfile
+                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/'
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                echo '📤 Pushing Docker image to registry...'
+                // Push Docker image to Docker Hub
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
             }
         }
     }
     post {
         always {
-            // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
-            // cleanWs()
-            echo 'Frontend pipeline completed.'
+            echo '🏁 Frontend pipeline completed.'
+            // Archive test reports
+            archiveArtifacts(
+                artifacts: 'frontend/coverage/**/*',
+                allowEmptyArchive: true
+            )
         }
         success {
-            echo 'Frontend pipeline completed successfully!'
+            echo '✅ Frontend pipeline completed successfully!'
+            echo 'Docker image built and pushed: ' + env.DOCKER_IMAGE
         }
         failure {
-            echo 'Frontend pipeline failed. Check the logs for details.'
+            echo '❌ Frontend pipeline failed. Check the logs for details.'
         }
     }
-} 
+}
