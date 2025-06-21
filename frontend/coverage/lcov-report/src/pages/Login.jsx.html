@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">2.7% </span>
+                <span class="strong">24.32% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/37</span>
+                <span class='fraction'>9/37</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">16.66% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>2/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">2.7% </span>
+                <span class="strong">24.32% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/37</span>
+                <span class='fraction'>9/37</span>
             </div>
         
             
@@ -184,7 +184,25 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -197,24 +215,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -246,7 +246,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -295,20 +295,20 @@ import {Link, useNavigate} from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import Footer from '../components/Footer';
 &nbsp;
-export const Login = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-    const [formData, setFormData] = <span class="cstat-no" title="statement not covered" >useState({ username: "", password: "" });</span>
-    const [error, setError] = <span class="cstat-no" title="statement not covered" >useState("");</span>
-    const navigate = <span class="cstat-no" title="statement not covered" >useNavigate();</span>
-    const dispatch = <span class="cstat-no" title="statement not covered" >useDispatch();</span>
+export const Login = () =&gt; {
+    const [formData, setFormData] = useState({ username: "", password: "" });
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 &nbsp;
-    const handleChange = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(e</span>) =&gt; {</span>
+    const handleChange = <span class="fstat-no" title="function not covered" >(e</span>) =&gt; {
         const { name, value } = <span class="cstat-no" title="statement not covered" >e.target;</span>
 <span class="cstat-no" title="statement not covered" >        setFormData({ ...formData, [name]: value });</span>
     };
 &nbsp;
-    const [loading, setLoading] = <span class="cstat-no" title="statement not covered" >useState(false);</span>
+    const [loading, setLoading] = useState(false);
 &nbsp;
-    const handleSubmit = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (e) =&gt; {</span>
+    const handleSubmit = <span class="fstat-no" title="function not covered" >as</span>ync (e) =&gt; {
 <span class="cstat-no" title="statement not covered" >        e.preventDefault();</span>
 <span class="cstat-no" title="statement not covered" >        setLoading(true);</span>
 <span class="cstat-no" title="statement not covered" >        setError("");</span>
@@ -357,12 +357,12 @@ export const Login = <span class="fstat-no" title="function not covered" >()</sp
         }
     };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return (</span>
+    return (
         &lt;div className="auth-container"&gt;
             &lt;div className="wrapper"&gt;
                 &lt;form onSubmit={handleSubmit}&gt;
                     &lt;h1&gt;Login&lt;/h1&gt;
-                    {error &amp;&amp; &lt;p style={{ color: "red" }}&gt;{error}&lt;/p&gt;}
+                    {error &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p style={{ color: "red" }}&gt;{error}&lt;/p&gt;}</span>
                     &lt;div className="input-box"&gt;
                         &lt;input
                             type="text"
@@ -384,7 +384,7 @@ export const Login = <span class="fstat-no" title="function not covered" >()</sp
                         /&gt;
                     &lt;/div&gt;
                     &lt;button type="submit" disabled={loading}&gt;
-                        {loading ? "Loading..." : "Login"}
+                        {loading ? <span class="branch-0 cbranch-no" title="branch not covered" >"Loading..." </span>: "Login"}
                     &lt;/button&gt;
 &nbsp;
                     {/* Login Link */}
@@ -403,7 +403,7 @@ export const Login = <span class="fstat-no" title="function not covered" >()</sp
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-20T19:34:47.052Z
+                at 2025-06-21T11:23:50.058Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

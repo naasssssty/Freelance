@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">11.11% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/9</span>
+                <span class='fraction'>9/9</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">11.11% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/9</span>
+                <span class='fraction'>9/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -194,10 +194,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -218,7 +218,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -236,7 +236,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -253,7 +253,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -261,7 +261,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -274,7 +274,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -293,7 +293,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">45x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -318,10 +318,10 @@ import { FaBriefcase, FaUserTie, FaShieldAlt, FaSearch, FaFileContract, FaCheckC
 &nbsp;
 import '../styles/homePage.css';
 &nbsp;
-const HomePage = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
-    const navigate = <span class="cstat-no" title="statement not covered" >useNavigate();</span>
+const HomePage = () =&gt; {
+    const navigate = useNavigate();
 &nbsp;
-    const features = <span class="cstat-no" title="statement not covered" >[</span>
+    const features = [
         {
             icon: &lt;FaBriefcase /&gt;,
             title: "Post Projects",
@@ -342,7 +342,7 @@ const HomePage = <span class="fstat-no" title="function not covered" >()</span> 
         }
     ];
 &nbsp;
-    const howItWorks = <span class="cstat-no" title="statement not covered" >[</span>
+    const howItWorks = [
         {
             icon: &lt;FaFileContract /&gt;,
             title: "1. Project Submission",
@@ -360,7 +360,7 @@ const HomePage = <span class="fstat-no" title="function not covered" >()</span> 
         }
     ];
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return (</span>
+    return (
         &lt;div className="home-page"&gt;
             &lt;div className="background-overlay" /&gt;
             &lt;div className="background-pattern" /&gt;
@@ -377,7 +377,7 @@ const HomePage = <span class="fstat-no" title="function not covered" >()</span> 
                 &lt;div className="cta-buttons"&gt;
                     &lt;motion.button
                         className="cta-button primary"
-                        onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >navigate('/register')}</span>
+                        onClick={() =&gt; navigate('/register')}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     &gt;
@@ -385,7 +385,7 @@ const HomePage = <span class="fstat-no" title="function not covered" >()</span> 
                     &lt;/motion.button&gt;
                     &lt;motion.button
                         className="cta-button secondary"
-                        onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >navigate('/login')}</span>
+                        onClick={() =&gt; navigate('/login')}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     &gt;
@@ -397,8 +397,8 @@ const HomePage = <span class="fstat-no" title="function not covered" >()</span> 
             &lt;section className="features-section"&gt;
                 &lt;h2&gt;Platform Features&lt;/h2&gt;
                 &lt;div className="features-grid"&gt;
-                    {features.map(<span class="fstat-no" title="function not covered" >(f</span>eature, index) =&gt; (
-<span class="cstat-no" title="statement not covered" >                        &lt;motion.div</span>
+                    {features.map((feature, index) =&gt; (
+                        &lt;motion.div
                             key={index}
                             className="feature-card"
                             initial={{ opacity: 0, y: 20 }}
@@ -416,8 +416,8 @@ const HomePage = <span class="fstat-no" title="function not covered" >()</span> 
             &lt;section className="how-it-works-section"&gt;
                 &lt;h2&gt;How It Works&lt;/h2&gt;
                 &lt;div className="process-grid"&gt;
-                    {howItWorks.map(<span class="fstat-no" title="function not covered" >(s</span>tep, index) =&gt; (
-<span class="cstat-no" title="statement not covered" >                        &lt;motion.div</span>
+                    {howItWorks.map((step, index) =&gt; (
+                        &lt;motion.div
                             key={index}
                             className="process-card"
                             initial={{ opacity: 0, x: -20 }}
@@ -442,7 +442,7 @@ export default HomePage;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-20T19:34:47.052Z
+                at 2025-06-21T11:23:50.058Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

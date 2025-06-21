@@ -4,92 +4,143 @@ import { jwtDecode } from 'jwt-decode';
 // Mock jwt-decode
 jest.mock('jwt-decode');
 
-describe('Auth Utils', () => {
+// Mock localStorage
+const localStorageMock = {
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
+};
+Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock
+});
+
+describe('auth utils', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-        localStorage.clear();
     });
 
     describe('getTokenAndDecode', () => {
-        it('should return token and username when valid token exists in localStorage', () => {
+        it('should successfully decode a valid token and return token and username', () => {
+            const mockToken = 'valid.jwt.token';
             const mockDecodedToken = {
                 sub: 'testuser',
                 role: 'CLIENT',
-                exp: Date.now() / 1000 + 3600 // 1 hour from now
+                isVerified: true
             };
 
-            localStorage.setItem('token', 'valid-jwt-token');
+            localStorageMock.getItem.mockReturnValue(mockToken);
             jwtDecode.mockReturnValue(mockDecodedToken);
 
             const result = getTokenAndDecode();
 
+            expect(localStorageMock.getItem).toHaveBeenCalledWith('token');
+            expect(jwtDecode).toHaveBeenCalledWith(mockToken);
             expect(result).toEqual({
-                token: 'valid-jwt-token',
+                token: mockToken,
                 username: 'testuser'
             });
-            expect(jwtDecode).toHaveBeenCalledWith('valid-jwt-token');
         });
 
-        it('should throw error when no token exists in localStorage', () => {
-            expect(() => {
-                getTokenAndDecode();
-            }).toThrow('No token found');
+        it('should throw error when no token is found in localStorage', () => {
+            localStorageMock.getItem.mockReturnValue(null);
+
+            expect(() => getTokenAndDecode()).toThrow('No token found');
+            expect(localStorageMock.getItem).toHaveBeenCalledWith('token');
+            expect(jwtDecode).not.toHaveBeenCalled();
         });
 
-        it('should throw error when token is invalid', () => {            
-            localStorage.setItem('token', 'invalid-token');
-            jwtDecode.mockImplementation(() => {
-                throw new Error('Invalid token');
-            });
+        it('should throw error when token exists but is empty string', () => {
+            localStorageMock.getItem.mockReturnValue('');
 
-            expect(() => {
-                getTokenAndDecode();
-            }).toThrow();
+            expect(() => getTokenAndDecode()).toThrow('No token found');
+            expect(localStorageMock.getItem).toHaveBeenCalledWith('token');
+            expect(jwtDecode).not.toHaveBeenCalled();
         });
 
-        it('should throw error when decoded token has no sub field', () => {
+        it('should throw error when decoded token has no username in sub field', () => {
+            const mockToken = 'valid.jwt.token';
             const mockDecodedToken = {
                 role: 'CLIENT',
-                exp: Date.now() / 1000 + 3600
+                isVerified: true
+                // missing sub field
             };
 
-            localStorage.setItem('token', 'no-sub-token');
+            localStorageMock.getItem.mockReturnValue(mockToken);
             jwtDecode.mockReturnValue(mockDecodedToken);
 
-            expect(() => {
-                getTokenAndDecode();
-            }).toThrow('Invalid token');
+            expect(() => getTokenAndDecode()).toThrow('Invalid token');
+            expect(jwtDecode).toHaveBeenCalledWith(mockToken);
         });
 
-        it('should throw error when decoded token has empty sub field', () => {
+        it('should throw error when decoded token has empty username in sub field', () => {
+            const mockToken = 'valid.jwt.token';
             const mockDecodedToken = {
                 sub: '',
                 role: 'CLIENT',
-                exp: Date.now() / 1000 + 3600
+                isVerified: true
             };
 
-            localStorage.setItem('token', 'empty-sub-token');
+            localStorageMock.getItem.mockReturnValue(mockToken);
             jwtDecode.mockReturnValue(mockDecodedToken);
 
-            expect(() => {
-                getTokenAndDecode();
-            }).toThrow('Invalid token');
+            expect(() => getTokenAndDecode()).toThrow('Invalid token');
+            expect(jwtDecode).toHaveBeenCalledWith(mockToken);
         });
 
-        it('should throw error for empty string token', () => {
-            localStorage.setItem('token', '');
+        it('should throw error when decoded token has null username in sub field', () => {
+            const mockToken = 'valid.jwt.token';
+            const mockDecodedToken = {
+                sub: null,
+                role: 'CLIENT',
+                isVerified: true
+            };
 
-            expect(() => {
-                getTokenAndDecode();
-            }).toThrow('No token found');
+            localStorageMock.getItem.mockReturnValue(mockToken);
+            jwtDecode.mockReturnValue(mockDecodedToken);
+
+            expect(() => getTokenAndDecode()).toThrow('Invalid token');
+            expect(jwtDecode).toHaveBeenCalledWith(mockToken);
         });
 
-        it('should throw error for null token in localStorage', () => {
-            localStorage.removeItem('token');
+        it('should throw error when jwtDecode throws an error', () => {
+            const mockToken = 'invalid.jwt.token';
+            
+            localStorageMock.getItem.mockReturnValue(mockToken);
+            jwtDecode.mockImplementation(() => {
+                throw new Error('Invalid token format');
+            });
 
-            expect(() => {
-                getTokenAndDecode();
-            }).toThrow('No token found');
+            expect(() => getTokenAndDecode()).toThrow('Invalid token format');
+            expect(jwtDecode).toHaveBeenCalledWith(mockToken);
+        });
+
+        it('should handle token with different username formats', () => {
+            const testCases = [
+                'user123',
+                'test.user@example.com',
+                'user_with_underscores',
+                'user-with-dashes'
+            ];
+
+            testCases.forEach(username => {
+                const mockToken = 'valid.jwt.token';
+                const mockDecodedToken = {
+                    sub: username,
+                    role: 'FREELANCER',
+                    isVerified: false
+                };
+
+                localStorageMock.getItem.mockReturnValue(mockToken);
+                jwtDecode.mockReturnValue(mockDecodedToken);
+
+                const result = getTokenAndDecode();
+
+                expect(result).toEqual({
+                    token: mockToken,
+                    username: username
+                });
+            });
         });
     });
-}); 
+});

@@ -1,50 +1,39 @@
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-    '\\.(gif|ttf|eot|svg|png|jpg|jpeg)$': '<rootDir>/src/__mocks__/fileMock.js'
+    '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 'identity-obj-proxy'
+  },
+  transform: {
+    '^.+\\.(js|jsx)$': ['babel-jest', {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
+        ['@babel/preset-react', { runtime: 'automatic' }]
+      ]
+    }]
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx}',
     '!src/index.js',
     '!src/reportWebVitals.js',
     '!src/setupTests.js',
-    '!src/**/*.test.{js,jsx}',
+    '!src/**/*.test.js',
     '!src/**/__tests__/**',
-    '!src/assets/**',
-    '!src/styles/**'
+    '!src/**/__mocks__/**'
   ],
   coverageThreshold: {
     global: {
-      branches: 0.5,
-      functions: 0.5,
-      lines: 5,
-      statements: 5
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
     }
   },
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx}'
   ],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '<rootDir>/src/components/__tests__/Header.test.js',
-    '<rootDir>/src/pages/__tests__/Login.test.js'
-  ],
-  transformIgnorePatterns: [
-    'node_modules/(?!(axios|react-router-dom)/)'
-  ],
-  moduleFileExtensions: ['js', 'jsx', 'json'],
-  reporters: [
-    'default',
-    ['jest-junit', {
-      outputDirectory: '<rootDir>',
-      outputName: 'junit.xml',
-      classNameTemplate: '{classname}',
-      titleTemplate: '{title}',
-      ancestorSeparator: ' › ',
-      usePathForSuiteName: true
-    }]
-  ]
+  moduleDirectories: ['node_modules', '<rootDir>/src'],
+  testTimeout: 10000
 }; 

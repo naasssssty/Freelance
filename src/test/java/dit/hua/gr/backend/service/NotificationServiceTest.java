@@ -191,9 +191,14 @@ public class NotificationServiceTest {
             assertEquals(testNotification.getMessage(), dto.getMessage());
             assertEquals(testNotification.isRead(), dto.isRead());
             assertEquals(testNotification.getType(), dto.getType());
-            // Flexible timestamp comparison - check if it contains the date part
+            // Flexible timestamp comparison - check if timestamp has correct format and current date
             assertNotNull(dto.getTimestamp());
-            assertTrue(dto.getTimestamp().contains("2025-06-19"));
+            String expectedDatePattern = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            assertTrue(dto.getTimestamp().contains(expectedDatePattern), 
+                "Expected timestamp to contain current date " + expectedDatePattern + " but was: " + dto.getTimestamp());
+            // Also verify the format is correct (should be "yyyy-MM-dd HH:mm:ss")
+            assertTrue(dto.getTimestamp().matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"),
+                "Timestamp should match format 'yyyy-MM-dd HH:mm:ss' but was: " + dto.getTimestamp());
         } catch (Exception e) {
             fail("Exception thrown while testing convertToDTO: " + e.getMessage());
         }

@@ -4,87 +4,110 @@ pipeline {
         nodejs 'Node 21'
     }
     environment {
-        IMAGE_TAG = '28'
-        IMAGE_NAME = "papadooo/freelance-frontend:${IMAGE_TAG}"
+        DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
         CI = 'true'
         GENERATE_SOURCEMAP = 'false'
     }
     stages {
         stage('Checkout') {
             steps {
-                // Καθαρίζουμε πρώτα τον workspace
-                cleanWs()
-                
-                // Checkout code from GitHub repository με περισσότερες λεπτομέρειες
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: 'A']],
-                    extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
-                    userRemoteConfigs: [[url: 'https://github.com/naasssssty/Freelance.git']]
-                ])
+                echo '🔄 Checking out frontend code...'
+                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
+        
         stage('Install Dependencies') {
             steps {
-                // Install npm dependencies for frontend
-                dir('frontend') {
-                    sh 'npm ci --prefer-offline --no-audit'
-                }
-            }
-        }
-        stage('Lint') {
-            steps {
-                // Run ESLint for code quality
-                dir('frontend') {
-                    sh 'npm run lint || true'
-                }
-            }
-        }
-        stage('Unit Tests') {
-            steps {
-                // Run unit tests with coverage - allow failures to not break the build
+                echo '📦 Installing frontend dependencies...'
                 dir('frontend') {
                     script {
                         try {
-                            sh 'npm test -- --coverage --testResultsProcessor=jest-junit --coverageReporters=text-lcov --coverageReporters=html --coverageReporters=cobertura --passWithNoTests || true'
+                            // Clean workspace first to avoid conflicts
+                            sh 'rm -rf node_modules package-lock.json || true'
+                            
+                            // Try npm ci first (faster and more reliable)
+                            retry(3) {
+                                sh 'npm ci --prefer-offline --timeout=300000'
+                            }
                         } catch (Exception e) {
-                            echo "Some tests failed, but continuing with build: ${e.getMessage()}"
-                            currentBuild.result = 'UNSTABLE'
+                            echo "npm ci failed, trying npm install as fallback: ${e.getMessage()}"
+                            sh 'npm install --timeout=300000'
                         }
                     }
+                }
+            }
+        }
+        
+        stage('Lint') {
+            steps {
+                echo '🔍 Running ESLint for code quality...'
+                dir('frontend') {
+                    // Since there's no lint script, we'll run eslint directly
+                    sh 'npx eslint src --ext .js,.jsx --max-warnings 0 || true'
+                }
+            }
+        }
+        
+        stage('Unit Tests') {
+            environment {
+                // Jest test environment
+                CI = 'true'
+                NODE_ENV = 'test'
+            }
+            steps {
+                echo '🧪 Running unit tests...'
+                dir('frontend') {
+                    // Run tests without jest-junit for now, just with coverage
+                    sh 'npm test -- --coverage --coverageReporters=text-lcov --coverageReporters=html --passWithNoTests --watchAll=false'
                 }
             }
             post {
                 always {
-                    // Publish test results
+                    // Archive coverage reports as artifacts for now
                     script {
                         try {
-                            publishTestResults testResultsPattern: 'frontend/junit.xml', allowEmptyResults: true
+                            archiveArtifacts(
+                                artifacts: 'frontend/coverage/**/*',
+                                allowEmptyArchive: true
+                            )
+                            echo "✅ Coverage reports archived successfully"
                         } catch (Exception e) {
-                            echo "Could not publish test results: ${e.getMessage()}"
-                        }
-                    }
-                    // Publish coverage reports
-                    script {
-                        try {
-                            publishHTML([
-                                allowMissing: true,
-                                alwaysLinkToLastBuild: true,
-                                keepAll: true,
-                                reportDir: 'frontend/coverage/lcov-report',
-                                reportFiles: 'index.html',
-                                reportName: 'Coverage Report'
-                            ])
-                        } catch (Exception e) {
-                            echo "Could not publish coverage report: ${e.getMessage()}"
+                            echo "Could not archive coverage reports: ${e.getMessage()}"
                         }
                     }
                 }
             }
         }
+        
+        stage('Integration Tests') {
+            environment {
+                // Integration test environment
+                CI = 'true'
+                NODE_ENV = 'test'
+                REACT_APP_API_URL = 'http://localhost:8080'
+            }
+            steps {
+                echo '🔗 Running integration tests...'
+                dir('frontend') {
+                    // For now, we'll run the same tests but in integration mode
+                    // Later you can add specific integration tests
+                    sh 'npm test -- --testPathPattern="integration|e2e" --passWithNoTests --watchAll=false || echo "No integration tests found yet"'
+                }
+            }
+            post {
+                always {
+                    // Archive integration test results
+                    archiveArtifacts(
+                        artifacts: 'frontend/coverage/**/*',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        
         stage('Build') {
             steps {
-                // Build the frontend using npm
+                echo '🏗️ Building frontend application...'
                 dir('frontend') {
                     sh 'npm run build'
                 }
@@ -92,132 +115,57 @@ pipeline {
             post {
                 always {
                     // Archive build artifacts
-                    archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true, allowEmptyArchive: true
+                    archiveArtifacts(
+                        artifacts: 'frontend/build/**/*',
+                        allowEmptyArchive: true
+                    )
                 }
             }
         }
+        
         stage('Security Audit') {
             steps {
-                // Run npm audit for security vulnerabilities
+                echo '🔒 Running security audit...'
                 dir('frontend') {
                     sh 'npm audit --audit-level=moderate || true'
                 }
             }
         }
-        stage('Check Docker Access') {
-            steps {
-                // Check if Docker is accessible
-                script {
-                    try {
-                        sh 'docker info'
-                        echo 'Docker is accessible'
-                    } catch (Exception e) {
-                        echo "Docker access failed: ${e.getMessage()}"
-                        echo "Skipping Docker stages"
-                        env.SKIP_DOCKER = 'true'
-                    }
-                }
-            }
-        }
+        
         stage('Build Docker Image') {
-            when {
-                not { environment name: 'SKIP_DOCKER', value: 'true' }
-            }
             steps {
-                script {
-                    try {
-                        dir('.') {
-                            sh "docker build -f docker/Dockerfile.frontend -t ${IMAGE_NAME} frontend/"
-                        }
-                    } catch (Exception e) {
-                        echo "Docker build failed: ${e.getMessage()}"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
+                echo '🐳 Building Docker image...'
+                // Build Docker image for frontend using the correct Dockerfile
+                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/'
             }
         }
+        
         stage('Push Docker Image') {
-            when {
-                not { environment name: 'SKIP_DOCKER', value: 'true' }
-            }
             steps {
-                script {
-                    try {
-                        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                            sh "docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}"
-                            sh "docker push ${IMAGE_NAME}"
-                        }
-                    } catch (Exception e) {
-                        echo "Docker push failed: ${e.getMessage()}"
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
-            }
-        }
-        stage('Cleanup') {
-            steps {
-                script {
-                    try {
-                        // Clean up Docker images to save space
-                        sh "docker rmi ${IMAGE_NAME} || true"
-                        sh 'docker system prune -f || true'
-                    } catch (Exception e) {
-                        echo "Docker cleanup failed: ${e.getMessage()}"
-                    }
+                echo '📤 Pushing Docker image to registry...'
+                // Push Docker image to Docker Hub
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker push $DOCKER_IMAGE'
                 }
             }
         }
     }
     post {
         always {
-            // Clean workspace
-            cleanWs()
-            echo 'Frontend pipeline completed.'
+            echo '🏁 Frontend pipeline completed.'
+            // Archive test reports
+            archiveArtifacts(
+                artifacts: 'frontend/coverage/**/*',
+                allowEmptyArchive: true
+            )
         }
         success {
-            echo 'Frontend pipeline completed successfully!'
-            // Send notification on success
-            script {
-                try {
-                    emailext (
-                        subject: "✅ Frontend Pipeline Success - Build #${env.BUILD_NUMBER}",
-                        body: "The frontend pipeline has completed successfully.\n\nBuild: ${env.BUILD_URL}",
-                        to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
-                    )
-                } catch (Exception e) {
-                    echo "Could not send email notification: ${e.getMessage()}"
-                }
-            }
+            echo '✅ Frontend pipeline completed successfully!'
+            echo 'Docker image built and pushed: ' + env.DOCKER_IMAGE
         }
         failure {
-            echo 'Frontend pipeline failed. Check the logs for details.'
-            // Send notification on failure
-            script {
-                try {
-                    emailext (
-                        subject: "❌ Frontend Pipeline Failed - Build #${env.BUILD_NUMBER}",
-                        body: "The frontend pipeline has failed.\n\nBuild: ${env.BUILD_URL}\n\nPlease check the logs for details.",
-                        to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
-                    )
-                } catch (Exception e) {
-                    echo "Could not send email notification: ${e.getMessage()}"
-                }
-            }
-        }
-        unstable {
-            echo 'Frontend pipeline completed with warnings.'
-            // Send notification on unstable build
-            script {
-                try {
-                    emailext (
-                        subject: "⚠️ Frontend Pipeline Unstable - Build #${env.BUILD_NUMBER}",
-                        body: "The frontend pipeline completed with warnings.\n\nBuild: ${env.BUILD_URL}",
-                        to: "${env.CHANGE_AUTHOR_EMAIL ?: 'admin@example.com'}"
-                    )
-                } catch (Exception e) {
-                    echo "Could not send email notification: ${e.getMessage()}"
-                }
-            }
+            echo '❌ Frontend pipeline failed. Check the logs for details.'
         }
     }
 }

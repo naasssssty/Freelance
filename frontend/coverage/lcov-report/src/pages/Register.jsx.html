@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>6/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">41.66% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/12</span>
+                <span class='fraction'>5/12</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>1/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">8.33% </span>
+                <span class="strong">50% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/12</span>
+                <span class='fraction'>6/12</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -205,32 +205,32 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -334,21 +334,21 @@ import { MdAlternateEmail } from "react-icons/md";
 import { register } from "../services/auth"; // Import the register API function
 import Footer from '../components/Footer';
 &nbsp;
-export const Register = <span class="fstat-no" title="function not covered" >()</span> =&gt; {
+export const Register = () =&gt; {
     const {
         register: formRegister,
         handleSubmit,
         formState: { errors },
         watch,
-    } = <span class="cstat-no" title="statement not covered" >useForm();</span>
+    } = useForm();
 &nbsp;
-    const navigate = <span class="cstat-no" title="statement not covered" >useNavigate();</span> // To redirect after successful registration
+    const navigate = useNavigate(); // To redirect after successful registration
 &nbsp;
     // Watch password field for confirm password validation
-    const password = <span class="cstat-no" title="statement not covered" >watch("password", "");</span>
+    const password = watch("password", "");
 &nbsp;
     // Form submission handler
-    const onSubmit = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >as</span>ync (data) =&gt; {</span>
+    const onSubmit = <span class="fstat-no" title="function not covered" >as</span>ync (data) =&gt; {
 <span class="cstat-no" title="statement not covered" >        try {</span>
             const response = <span class="cstat-no" title="statement not covered" >await register(data);</span> // Call the register function from AdminServices.jsx
 <span class="cstat-no" title="statement not covered" >            console.log("Registration Successful:", response);</span>
@@ -359,7 +359,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
         }
     };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    return (</span>
+    return (
         &lt;div className="auth-container"&gt;
             &lt;div className="wrapper"&gt;
                 &lt;form onSubmit={handleSubmit(onSubmit)}&gt;
@@ -373,7 +373,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
                             {...formRegister("username", { required: "Username is required" })}
                         /&gt;
                         &lt;FaUser className="icon" /&gt;
-                        {errors.username &amp;&amp; &lt;p className="error"&gt;{errors.username.message}&lt;/p&gt;}
+                        {errors.username &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p className="error"&gt;{errors.username.message}&lt;/p&gt;}</span>
                     &lt;/div&gt;
 &nbsp;
                     {/* Email Field */}
@@ -390,7 +390,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
                             })}
                         /&gt;
                         &lt;MdAlternateEmail className="icon" /&gt;
-                        {errors.email &amp;&amp; &lt;p className="error"&gt;{errors.email.message}&lt;/p&gt;}
+                        {errors.email &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p className="error"&gt;{errors.email.message}&lt;/p&gt;}</span>
                     &lt;/div&gt;
 &nbsp;
                     {/* Role Field */}
@@ -402,7 +402,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
                             &lt;option value="FREELANCER"&gt;Freelancer&lt;/option&gt;
                         &lt;/select&gt;
                         &lt;AiOutlineUser className="icon" /&gt;
-                        {errors.role &amp;&amp; &lt;p className="error"&gt;{errors.role.message}&lt;/p&gt;}
+                        {errors.role &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p className="error"&gt;{errors.role.message}&lt;/p&gt;}</span>
                     &lt;/div&gt;
 &nbsp;
                     {/* Password Field */}
@@ -419,7 +419,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
                             })}
                         /&gt;
                         &lt;FaLock className="icon" /&gt;
-                        {errors.password &amp;&amp; &lt;p className="error"&gt;{errors.password.message}&lt;/p&gt;}
+                        {errors.password &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p className="error"&gt;{errors.password.message}&lt;/p&gt;}</span>
                     &lt;/div&gt;
 &nbsp;
                     {/* Confirm Password Field */}
@@ -434,7 +434,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
                             })}
                         /&gt;
                         &lt;FaLock className="icon" /&gt;
-                        {errors.confirmPassword &amp;&amp; &lt;p className="error"&gt;{errors.confirmPassword.message}&lt;/p&gt;}
+                        {errors.confirmPassword &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >&lt;p className="error"&gt;{errors.confirmPassword.message}&lt;/p&gt;}</span>
                     &lt;/div&gt;
 &nbsp;
                     {/* Submit Button */}
@@ -457,7 +457,7 @@ export const Register = <span class="fstat-no" title="function not covered" >()<
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-20T19:34:47.052Z
+                at 2025-06-21T11:23:50.058Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

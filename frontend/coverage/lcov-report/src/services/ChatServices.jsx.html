@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>2/14</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">14.28% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>2/14</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -105,10 +105,10 @@
 <a name='L40'></a><a href='#L40'>40</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -118,36 +118,36 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">10x</span>
+<span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import axios from 'axios';
 import { getTokenAndDecode } from '../utils/auth';
 &nbsp;
-export const sendMessage = <span class="fstat-no" title="function not covered" >as</span>ync (projectId, content) =&gt; {
-<span class="cstat-no" title="statement not covered" >    try {</span>
-        const { token } = <span class="cstat-no" title="statement not covered" >getTokenAndDecode();</span>
-        const response = <span class="cstat-no" title="statement not covered" >await axios.post(</span>
+export const sendMessage = async (projectId, content) =&gt; {
+    try {
+        const { token } = getTokenAndDecode();
+        const response = await axios.post(
             `/chat/${projectId}/send`,
             { content },
             {
@@ -157,17 +157,17 @@ export const sendMessage = <span class="fstat-no" title="function not covered" >
                 },
             }
         );
-<span class="cstat-no" title="statement not covered" >        return response.data;</span>
+        return response.data;
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error("Error sending message:", error);</span>
-<span class="cstat-no" title="statement not covered" >        throw error;</span>
+        console.error("Error sending message:", error);
+        throw error;
     }
 };
 &nbsp;
-export const getMessages = <span class="fstat-no" title="function not covered" >as</span>ync (projectId) =&gt; {
-<span class="cstat-no" title="statement not covered" >    try {</span>
-        const { token } = <span class="cstat-no" title="statement not covered" >getTokenAndDecode();</span>
-        const response = <span class="cstat-no" title="statement not covered" >await axios.get(</span>
+export const getMessages = async (projectId) =&gt; {
+    try {
+        const { token } = getTokenAndDecode();
+        const response = await axios.get(
             `/chat/${projectId}/messages`,
             {
                 headers: {
@@ -175,10 +175,10 @@ export const getMessages = <span class="fstat-no" title="function not covered" >
                 },
             }
         );
-<span class="cstat-no" title="statement not covered" >        return response.data;</span>
+        return response.data;
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >        console.error("Error fetching messages:", error);</span>
-<span class="cstat-no" title="statement not covered" >        throw error;</span>
+        console.error("Error fetching messages:", error);
+        throw error;
     }
 }; </pre></td></tr></table></pre>
 
@@ -187,7 +187,7 @@ export const getMessages = <span class="fstat-no" title="function not covered" >
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-06-20T19:34:47.052Z
+                at 2025-06-21T11:23:50.058Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
