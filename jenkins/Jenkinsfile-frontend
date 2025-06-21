@@ -20,7 +20,16 @@ pipeline {
             steps {
                 echo '📦 Installing frontend dependencies...'
                 dir('frontend') {
-                    sh 'npm ci --prefer-offline --no-audit'
+                    script {
+                        try {
+                            retry(3) {
+                                sh 'npm ci --prefer-offline --no-audit --timeout=300000'
+                            }
+                        } catch (Exception e) {
+                            echo "npm ci failed, trying npm install as fallback: ${e.getMessage()}"
+                            sh 'npm install --timeout=300000'
+                        }
+                    }
                 }
             }
         }
