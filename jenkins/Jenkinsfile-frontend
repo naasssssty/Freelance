@@ -21,20 +21,29 @@ pipeline {
                 echo '📦 Installing frontend dependencies...'
                 dir('frontend') {
                     script {
-                        try {
-                            // Only clean node_modules, preserve package-lock.json
-                            sh 'rm -rf node_modules || true'
-                            
-                            // Try npm ci first (faster and more reliable)
-                            echo 'Attempting npm ci with existing package-lock.json...'
-                            retry(2) {
-                                sh 'npm ci --prefer-offline --no-audit --timeout=600000'
+                        // Enhanced npm installation with better error handling
+                        echo '🧹 Cleaning previous installations...'
+                        sh 'rm -rf node_modules || true'
+                        
+                        // Check if package-lock.json exists
+                        def lockExists = sh(script: 'test -f package-lock.json', returnStatus: true) == 0
+                        
+                        if (lockExists) {
+                            echo '📦 Using npm ci with existing package-lock.json...'
+                            try {
+                                retry(2) {
+                                    sh 'npm ci --prefer-offline --no-audit'
+                                }
+                                echo '✅ Dependencies installed successfully with npm ci'
+                            } catch (Exception e) {
+                                echo "❌ npm ci failed: ${e.getMessage()}"
+                                echo '🔄 Falling back to npm install...'
+                                sh 'rm -f package-lock.json'
+                                sh 'npm install --no-audit'
                             }
-                        } catch (Exception e) {
-                            echo "npm ci failed, trying npm install as fallback: ${e.getMessage()}"
-                            // If ci fails, remove lock file and do fresh install  
-                            sh 'rm -f package-lock.json || true'
-                            sh 'npm install --no-audit --timeout=600000'
+                        } else {
+                            echo '📦 No package-lock.json found, using npm install...'
+                            sh 'npm install --no-audit'
                         }
                     }
                 }
