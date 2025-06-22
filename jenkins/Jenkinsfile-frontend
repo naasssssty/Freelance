@@ -169,6 +169,19 @@ pipeline {
                 }
             }
         }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo '🚀 Deploying to Kubernetes using Ansible...'
+                // Deploy using Ansible playbook
+                sh '''
+                    cd ansible
+                    ansible-playbook -i inventory.yml deploy-kubernetes.yml \
+                        --extra-vars "frontend_image=$DOCKER_IMAGE" \
+                        --extra-vars "backend_image=papadooo/freelance-backend:latest"
+                '''
+            }
+        }
     }
     post {
         always {

@@ -1,0 +1,255 @@
+---
+- name: Deploy Freelance Application to Kubernetes
+  hosts: kubernetes
+  gather_facts: false
+  vars:
+    k8s_manifests_dir: "../kubernetes"
+    
+  tasks:
+    - name: Check if kubectl is available
+      command: kubectl version --client
+      register: kubectl_check
+      failed_when: false
+      changed_when: false
+      
+    - name: Fail if kubectl is not available
+      fail:
+        msg: "kubectl is not available. Please install kubectl first."
+      when: kubectl_check.rc != 0
+      
+    - name: Check if Kubernetes cluster is accessible
+      command: kubectl cluster-info
+      register: cluster_check
+      failed_when: false
+      changed_when: false
+      
+    - name: Fail if cluster is not accessible
+      fail:
+        msg: "Cannot access Kubernetes cluster. Please check your kubeconfig."
+      when: cluster_check.rc != 0
+      
+    - name: Create namespace
+      kubernetes.core.k8s:
+        name: "{{ app_namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+        
+    - name: Apply ConfigMap
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: freelance-config
+            namespace: "{{ app_namespace }}"
+          data:
+            POSTGRES_DB: "{{ postgres_db }}"
+            POSTGRES_USER: "{{ postgres_user }}"
+            SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-service:5432/{{ postgres_db }}"
+            SPRING_DATASOURCE_USERNAME: "{{ postgres_user }}"
+            SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+            MINIO_ENDPOINT: "http://minio-service:9000"
+            MINIO_ACCESS_KEY: "{{ minio_access_key }}"
+            MINIO_BUCKET_NAME: "{{ minio_bucket }}"
+            SPRING_PROFILES_ACTIVE: "dev"
+            SPRING_MAIL_HOST: "mailhog-service"
+            SPRING_MAIL_PORT: "1025"
+            SPRING_MAIL_USERNAME: ""
+            SPRING_MAIL_PASSWORD: ""
+            SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+            SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+            SPRING_MAIL_PROPERTIES_MAIL_DEBUG: "true"
+            
+    - name: Apply Secrets
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: freelance-secrets
+            namespace: "{{ app_namespace }}"
+          type: Opaque
+          data:
+            POSTGRES_PASSWORD: "{{ postgres_password | b64encode }}"
+            MINIO_SECRET_KEY: "{{ minio_secret_key | b64encode }}"
+            MINIO_ROOT_USER: "{{ minio_access_key | b64encode }}"
+            MINIO_ROOT_PASSWORD: "{{ minio_secret_key | b64encode }}"
+            
+    - name: Deploy PostgreSQL
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ k8s_manifests_dir }}/postgres-deployment.yml"
+        
+    - name: Deploy MinIO
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ k8s_manifests_dir }}/minio-deployment.yml"
+        
+    - name: Deploy MailHog
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ k8s_manifests_dir }}/mailhog-deployment.yml"
+        
+    - name: Wait for databases to be ready
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: "{{ item }}"
+        namespace: "{{ app_namespace }}"
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+      loop:
+        - postgres
+        - minio
+        
+    - name: Update Backend deployment with current image
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: backend
+            namespace: "{{ app_namespace }}"
+            labels:
+              app: backend
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: backend
+            template:
+              metadata:
+                labels:
+                  app: backend
+              spec:
+                containers:
+                - name: backend
+                  image: "{{ backend_image }}"
+                  ports:
+                  - containerPort: 8080
+                  envFrom:
+                  - configMapRef:
+                      name: freelance-config
+                  - secretRef:
+                      name: freelance-secrets
+                  resources:
+                    requests:
+                      memory: "512Mi"
+                      cpu: "500m"
+                    limits:
+                      memory: "1Gi"
+                      cpu: "1000m"
+                      
+    - name: Create Backend Service
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: backend-service
+            namespace: "{{ app_namespace }}"
+          spec:
+            selector:
+              app: backend
+            ports:
+            - port: 8080
+              targetPort: 8080
+            type: ClusterIP
+            
+    - name: Wait for backend to be ready
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: backend
+        namespace: "{{ app_namespace }}"
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+        
+    - name: Update Frontend deployment with current image
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: frontend
+            namespace: "{{ app_namespace }}"
+            labels:
+              app: frontend
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: frontend
+            template:
+              metadata:
+                labels:
+                  app: frontend
+              spec:
+                containers:
+                - name: frontend
+                  image: "{{ frontend_image }}"
+                  ports:
+                  - containerPort: 80
+                  resources:
+                    requests:
+                      memory: "128Mi"
+                      cpu: "100m"
+                    limits:
+                      memory: "256Mi"
+                      cpu: "200m"
+                      
+    - name: Create Frontend Service
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: frontend-service
+            namespace: "{{ app_namespace }}"
+          spec:
+            selector:
+              app: frontend
+            ports:
+            - port: 80
+              targetPort: 80
+            type: ClusterIP
+            
+    - name: Apply Ingress
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ k8s_manifests_dir }}/ingress.yml"
+        
+    - name: Display deployment status
+      debug:
+        msg: |
+          🎉 Deployment completed successfully!
+          
+          To access the application:
+          1. Run: minikube tunnel (in a separate terminal)
+          2. Add to /etc/hosts: 127.0.0.1 freelance.local
+          3. Visit: http://freelance.local
+          
+    - name: Get pods status
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ app_namespace }}"
+      register: pods_status
+      
+    - name: Show pods
+      debug:
+        msg: "Pod {{ item.metadata.name }}: {{ item.status.phase }}"
+      loop: "{{ pods_status.resources }}" 

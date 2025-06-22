@@ -1,0 +1,40 @@
+all:
+  children:
+    local:
+      hosts:
+        localhost:
+          ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"
+    
+    kubernetes:
+      hosts:
+        k8s-cluster:
+          ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"
+          kubeconfig_path: ~/.kube/config
+          
+    docker_hosts:
+      hosts:
+        docker-host:
+          ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"
+          
+  vars:
+    # Application Configuration
+    app_name: freelance
+    app_namespace: freelance
+    docker_registry: papadooo
+    
+    # Docker Images (will be updated by Jenkins)
+    backend_image: "{{ docker_registry }}/freelance-backend:latest"
+    frontend_image: "{{ docker_registry }}/freelance-frontend:latest"
+    
+    # Database Configuration
+    postgres_db: freelancer_db
+    postgres_user: freelancer_user
+    postgres_password: freelancer_pass
+    
+    # MinIO Configuration
+    minio_access_key: iRb4jDOLKvmbfkQ
+    minio_secret_key: OskbMSsFLoKw41d
+    minio_bucket: freelancer-cvs 
