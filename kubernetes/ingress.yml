@@ -6,21 +6,16 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 spec:
   ingressClassName: nginx
   rules:
   - host: freelance.local
     http:
       paths:
-      # Static files and frontend - more specific paths first
-      - path: /static
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
-            port:
-              number: 80
-      # API endpoints
+      # API endpoints - route to backend service (correct service name)
       - path: /api
         pathType: Prefix
         backend:
@@ -28,7 +23,15 @@ spec:
             name: backend-service
             port:
               number: 8080
-      # Frontend root - catches remaining paths
+      # Static files and frontend - route to frontend service
+      - path: /static
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80
+      # Frontend root - catches remaining paths (React Router)
       - path: /
         pathType: Prefix
         backend:

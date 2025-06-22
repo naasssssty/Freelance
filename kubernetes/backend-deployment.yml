@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: papadooo/freelance-backend:fixed  # Updated to use the fixed image
+        image: freelance-backend:latest  # Use local image built with docker build
         imagePullPolicy: Never  # Use local image, don't pull from registry
         ports:
         - containerPort: 8080
@@ -120,6 +120,8 @@ spec:
   selector:
     app: backend
   ports:
-  - port: 8080
+  - name: http
+    port: 8080
     targetPort: 8080
+    protocol: TCP
   type: ClusterIP 
