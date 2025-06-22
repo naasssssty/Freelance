@@ -45,7 +45,7 @@ describe('ChatServices', () => {
 
             expect(authUtils.getTokenAndDecode).toHaveBeenCalled();
             expect(axios.post).toHaveBeenCalledWith(
-                '/chat/123/send',
+                '/api/chat/123/send',
                 { content: content },
                 {
                     headers: {
@@ -131,7 +131,7 @@ describe('ChatServices', () => {
 
             expect(authUtils.getTokenAndDecode).toHaveBeenCalled();
             expect(axios.get).toHaveBeenCalledWith(
-                '/chat/123/messages',
+                '/api/chat/123/messages',
                 {
                     headers: {
                         'Authorization': 'Bearer mock.jwt.token',

@@ -5,7 +5,7 @@ export const sendMessage = async (projectId, content) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.post(
-            `/chat/${projectId}/send`,
+            `/api/chat/${projectId}/send`,
             { content },
             {
                 headers: {
@@ -25,7 +25,7 @@ export const getMessages = async (projectId) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.get(
-            `/chat/${projectId}/messages`,
+            `/api/chat/${projectId}/messages`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,

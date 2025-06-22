@@ -10,7 +10,7 @@ export const loadUsersList = async (dispatch) => {
         
         const token = localStorage.getItem('token');
         const response = await axios.get(
-            '/user/all',
+            '/api/user/all',
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -41,7 +41,7 @@ export const loadProjectsList = async (dispatch) => {
         
         const token = localStorage.getItem('token');
         const response = await axios.get(
-            '/project/allProjects',
+            '/api/project/allProjects',
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -69,7 +69,7 @@ export const handleVerify = async (username, verify) => {
     try {
         const token = localStorage.getItem('token');
         const response = await axios.put(
-            `/user/${username}/verify`,
+            `/api/user/${username}/verify`,
             verify,
             {
                 headers: {
@@ -89,7 +89,7 @@ export const handleApproveProject = async (id) => {
     try {
         const token = localStorage.getItem('token');
         const response = await axios.put(
-            `/project/${id}/approve`,
+            `/api/project/${id}/approve`,
             true,
             {
                 headers: {
@@ -109,7 +109,7 @@ export const handleDenyProject = async (id) => {
     try {
         const token = localStorage.getItem('token');
         const response = await axios.put(
-            `/project/${id}/deny`,
+            `/api/project/${id}/deny`,
             false,
             {
                 headers: {

@@ -52,7 +52,7 @@ describe('ClientServices', () => {
             const result = await ClientServices.handlePostProject(mockProject);
 
             expect(axios.post).toHaveBeenCalledWith(
-                '/project/post',
+                '/api/project/post',
                 mockProject,
                 {
                     headers: {
@@ -86,7 +86,7 @@ describe('ClientServices', () => {
             const result = await ClientServices.loadMyApplications();
 
             expect(axios.get).toHaveBeenCalledWith(
-                '/client/testuser/my-applications',
+                '/api/client/testuser/my-applications',
                 {
                     headers: {
                         'Authorization': 'Bearer mock.jwt.token',
@@ -116,7 +116,7 @@ describe('ClientServices', () => {
             const result = await ClientServices.loadMyProjects();
 
             expect(axios.get).toHaveBeenCalledWith(
-                '/project/my-projects',
+                '/api/project/my-projects',
                 {
                     headers: {
                         'Authorization': 'Bearer mock.jwt.token',
@@ -138,7 +138,7 @@ describe('ClientServices', () => {
             const result = await ClientServices.handleAcceptApplication(applicationId);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/application/123/approve',
+                '/api/application/123/approve',
                 null,
                 {
                     headers: {
@@ -173,7 +173,7 @@ describe('ClientServices', () => {
             const result = await ClientServices.handleRejectApplication(applicationId);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/application/123/reject',
+                '/api/application/123/reject',
                 null,
                 {
                     headers: {
@@ -197,7 +197,7 @@ describe('ClientServices', () => {
 
             const result = await ClientServices.downloadCV(applicationId);
 
-            expect(mockOpen).toHaveBeenCalledWith('/application/123/download-cv', '_blank');
+            expect(mockOpen).toHaveBeenCalledWith('/api/application/123/download-cv', '_blank');
             expect(result).toBe(true);
         });
 
@@ -223,7 +223,7 @@ describe('ClientServices', () => {
             const result = await ClientServices.getClientStats();
 
             expect(axios.get).toHaveBeenCalledWith(
-                '/project/client/stats',
+                '/api/project/client/stats',
                 {
                     headers: {
                         'Authorization': 'Bearer mock.jwt.token',

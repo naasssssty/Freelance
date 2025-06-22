@@ -17,7 +17,7 @@ export const handlePostProject = async (project) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.post(
-            `/project/post`,
+            `/api/project/post`,
             project,
             {
                 headers: {
@@ -38,7 +38,7 @@ export const loadMyApplications = async () => {
     try {
         const { token, username } = getTokenAndDecode();
         const response = await axios.get(
-            `/client/${username}/my-applications`,
+            `/api/client/${username}/my-applications`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -57,7 +57,7 @@ export const loadMyProjects = async () => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.get(
-            `/project/my-projects`,
+            `/api/project/my-projects`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -76,7 +76,7 @@ export const handleAcceptApplication = async (applicationId) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.put(
-            `/application/${applicationId}/approve`,
+            `/api/application/${applicationId}/approve`,
             null,
             {
                 headers: {
@@ -96,7 +96,7 @@ export const handleRejectApplication = async (applicationId) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.put(
-            `/application/${applicationId}/reject`,
+            `/api/application/${applicationId}/reject`,
             null,
             {
                 headers: {
@@ -116,7 +116,7 @@ export const handleRejectApplication = async (applicationId) => {
 export const downloadCV = async (applicationId) => {
     try {
         // Απλά ανοίγουμε το URL σε νέο tab
-        window.open(`/application/${applicationId}/download-cv`, '_blank');
+        window.open(`/api/application/${applicationId}/download-cv`, '_blank');
         return true;
     } catch (error) {
         console.error("Error downloading CV:", error);
@@ -130,7 +130,7 @@ export const getClientStats = async () => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.get(
-            `/project/client/stats`,
+            `/api/project/client/stats`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,

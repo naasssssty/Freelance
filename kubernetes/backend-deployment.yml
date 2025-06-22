@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: backend
-        image: papadooo/freelance-backend:latest  # You'll need to build and push this
+        image: papadooo/freelance-backend:fixed  # Updated to use the fixed image
+        imagePullPolicy: Never  # Use local image, don't pull from registry
         ports:
         - containerPort: 8080
         env:
@@ -108,18 +109,6 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 10
 
 ---
 apiVersion: v1

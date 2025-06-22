@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RestController
-@RequestMapping("/project")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/project")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
 public class ProjectController {
 
     private final ProjectService projectService;

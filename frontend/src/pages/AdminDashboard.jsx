@@ -313,7 +313,7 @@ const AdminDashboard = () => {
     const handleVerifyUser = async (username, verify) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(`/user/${username}/verify`, verify, {
+            const response = await axios.put(`/api/user/${username}/verify`, verify, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'

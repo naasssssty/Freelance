@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/chat")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/chat")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
 public class ChatController {
     private final ChatService chatService;
     private final NotificationService notificationService;

@@ -46,7 +46,7 @@ describe('FreelancerServices', () => {
 
             const result = await FreelancerServices.loadAvailableProjects();
 
-            expect(axios.get).toHaveBeenCalledWith('/project/available', {
+            expect(axios.get).toHaveBeenCalledWith('/api/project/available', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ describe('FreelancerServices', () => {
             const result = await FreelancerServices.applyForProject(projectId, coverLetter);
 
             expect(axios.post).toHaveBeenCalledWith(
-                '/project/123/apply/testfreelancer',
+                '/api/project/123/apply/testfreelancer',
                 coverLetter,
                 {
                     headers: {
@@ -117,7 +117,7 @@ describe('FreelancerServices', () => {
 
             const result = await FreelancerServices.searchProjectsByTitle(title);
 
-            expect(axios.get).toHaveBeenCalledWith('/project/title/React', {
+            expect(axios.get).toHaveBeenCalledWith('/api/project/title/React', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ describe('FreelancerServices', () => {
 
             const result = await FreelancerServices.getAssignedProjects();
 
-            expect(axios.get).toHaveBeenCalledWith('/project/freelancer/testfreelancer', {
+            expect(axios.get).toHaveBeenCalledWith('/api/project/freelancer/testfreelancer', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ describe('FreelancerServices', () => {
 
             const result = await FreelancerServices.loadMyProjects();
 
-            expect(axios.get).toHaveBeenCalledWith('/project/freelancer/my-projects', {
+            expect(axios.get).toHaveBeenCalledWith('/api/project/freelancer/my-projects', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ describe('FreelancerServices', () => {
 
             const result = await FreelancerServices.loadMyApplications();
 
-            expect(axios.get).toHaveBeenCalledWith('/freelancer/testfreelancer/my-applications', {
+            expect(axios.get).toHaveBeenCalledWith('/api/freelancer/testfreelancer/my-applications', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ describe('FreelancerServices', () => {
             const result = await FreelancerServices.handleCompleteProject(projectId);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/project/123/complete',
+                '/api/project/123/complete',
                 null,
                 {
                     headers: {
@@ -218,7 +218,7 @@ describe('FreelancerServices', () => {
             const result = await FreelancerServices.createReport(projectId, description);
 
             expect(axios.post).toHaveBeenCalledWith(
-                '/report',
+                '/api/report',
                 {
                     projectId: 123,
                     description: description
@@ -249,7 +249,7 @@ describe('FreelancerServices', () => {
             const result = await FreelancerServices.applyForProjectWithCV(projectId, coverLetter, cvFile);
 
             expect(fetch).toHaveBeenCalledWith(
-                '/project/123/apply/testfreelancer/with-cv',
+                '/api/project/123/apply/testfreelancer/with-cv',
                 expect.objectContaining({
                     method: 'POST',
                     headers: {

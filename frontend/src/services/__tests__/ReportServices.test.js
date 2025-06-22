@@ -58,7 +58,7 @@ describe('ReportServices', () => {
             const result = await ReportServices.fetchReports();
 
             expect(localStorageMock.getItem).toHaveBeenCalledWith('token');
-            expect(axios.get).toHaveBeenCalledWith('/report', {
+            expect(axios.get).toHaveBeenCalledWith('/api/report', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -84,7 +84,7 @@ describe('ReportServices', () => {
 
             await ReportServices.fetchReports();
 
-            expect(axios.get).toHaveBeenCalledWith('/report', {
+            expect(axios.get).toHaveBeenCalledWith('/api/report', {
                 headers: {
                     'Authorization': 'Bearer null',
                     'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ describe('ReportServices', () => {
             const result = await ReportServices.updateReportStatus(reportId, status, adminResponse);
 
             expect(localStorageMock.getItem).toHaveBeenCalledWith('token');
-            expect(axios.put).toHaveBeenCalledWith('/report/123', {
+            expect(axios.put).toHaveBeenCalledWith('/api/report/123', {
                 status: status,
                 adminResponse: adminResponse
             }, {
@@ -190,7 +190,7 @@ describe('ReportServices', () => {
 
             const result = await ReportServices.updateReportStatus(reportId, status, adminResponse);
 
-            expect(axios.put).toHaveBeenCalledWith('/report/123', {
+            expect(axios.put).toHaveBeenCalledWith('/api/report/123', {
                 status: status,
                 adminResponse: ''
             }, expect.any(Object));
@@ -207,7 +207,7 @@ describe('ReportServices', () => {
 
             const result = await ReportServices.updateReportStatus(reportId, status, adminResponse);
 
-            expect(axios.put).toHaveBeenCalledWith('/report/123', {
+            expect(axios.put).toHaveBeenCalledWith('/api/report/123', {
                 status: status,
                 adminResponse: null
             }, expect.any(Object));
@@ -270,7 +270,7 @@ describe('ReportServices', () => {
 
                 await ReportServices.fetchReports();
 
-                expect(axios.get).toHaveBeenCalledWith('/report', {
+                expect(axios.get).toHaveBeenCalledWith('/api/report', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json',

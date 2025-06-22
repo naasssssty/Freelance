@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const fetchReports = async () => {
     try {
-        const response = await axios.get('/report', {
+        const response = await axios.get('/api/report', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ export const fetchReports = async () => {
 
 export const updateReportStatus = async (reportId, status, adminResponse) => {
     try {
-        const response = await axios.put(`/report/${reportId}`, {
+        const response = await axios.put(`/api/report/${reportId}`, {
             status: status,
             adminResponse: adminResponse
         }, {

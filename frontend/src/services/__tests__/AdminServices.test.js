@@ -49,7 +49,7 @@ describe('AdminServices', () => {
             const result = await AdminServices.loadUsersList(mockDispatch);
 
             expect(mockDispatch).toHaveBeenCalledWith({ type: "USERS_LOADING" });
-            expect(axios.get).toHaveBeenCalledWith('/user/all', {
+            expect(axios.get).toHaveBeenCalledWith('/api/user/all', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ describe('AdminServices', () => {
 
             const result = await AdminServices.loadUsersList();
 
-            expect(axios.get).toHaveBeenCalledWith('/user/all', {
+            expect(axios.get).toHaveBeenCalledWith('/api/user/all', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ describe('AdminServices', () => {
             const result = await AdminServices.loadProjectsList(mockDispatch);
 
             expect(mockDispatch).toHaveBeenCalledWith({ type: "PROJECTS_LOADING" });
-            expect(axios.get).toHaveBeenCalledWith('/project/allProjects', {
+            expect(axios.get).toHaveBeenCalledWith('/api/project/allProjects', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json',
@@ -162,7 +162,7 @@ describe('AdminServices', () => {
             const result = await AdminServices.handleVerify(username, verify);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/user/testuser/verify',
+                '/api/user/testuser/verify',
                 true,
                 {
                     headers: {
@@ -184,7 +184,7 @@ describe('AdminServices', () => {
             const result = await AdminServices.handleVerify(username, verify);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/user/testuser/verify',
+                '/api/user/testuser/verify',
                 false,
                 {
                     headers: {
@@ -229,7 +229,7 @@ describe('AdminServices', () => {
             const result = await AdminServices.handleApproveProject(projectId);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/project/123/approve',
+                '/api/project/123/approve',
                 true,
                 {
                     headers: {
@@ -262,7 +262,7 @@ describe('AdminServices', () => {
             const result = await AdminServices.handleDenyProject(projectId);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/project/123/deny',
+                '/api/project/123/deny',
                 false,
                 {
                     headers: {

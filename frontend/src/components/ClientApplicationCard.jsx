@@ -54,7 +54,7 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
 
         try {
             const response = await axios.post(
-                `/report`,
+                `/api/report`,
                 {
                     projectId: application.project_id,
                     description: reportDescription
@@ -161,7 +161,7 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
         const token = localStorage.getItem("token");
         if (!token) return;
         
-        window.open(`http://localhost:8080/application/${applicationId}/download-cv`, '_blank');
+        window.open(`http://freelance.local/api/application/${applicationId}/download-cv`, '_blank');
     };
 
     return (

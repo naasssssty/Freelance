@@ -9,7 +9,7 @@ export const getNotifications = async () => {
 
         console.log('Fetching notifications...');
         
-        const response = await axios.get('/notifications', {
+        const response = await axios.get('/api/notifications', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -49,7 +49,7 @@ export const getUnreadCount = async () => {
 
         console.log('Fetching unread count...');
         
-        const response = await axios.get('/notifications/unread-count', {
+        const response = await axios.get('/api/notifications/unread-count', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -83,7 +83,7 @@ export const markAsRead = async (notificationId) => {
 
         console.log('Marking notification as read:', notificationId);
         
-        await axios.put(`/notifications/${notificationId}/read`, null, {
+        await axios.put(`/api/notifications/${notificationId}/read`, null, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -107,7 +107,7 @@ export const markAllAsRead = async () => {
 
         console.log('Marking all notifications as read...');
         
-        await axios.put('/notifications/mark-all-read', null, {
+        await axios.put('/api/notifications/mark-all-read', null, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

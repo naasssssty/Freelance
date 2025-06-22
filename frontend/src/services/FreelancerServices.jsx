@@ -25,7 +25,7 @@ const getAuthHeaders = () => {
 // Load available projects for freelancers
 export const loadAvailableProjects = async () => {
     try {
-        const response = await axios.get(`/project/available`, {
+        const response = await axios.get(`/api/project/available`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -44,7 +44,7 @@ export const applyForProject = async (projectId, coverLetter) => {
         }
 
         const response = await axios.post(
-            `/project/${projectId}/apply/${username}`,
+            `/api/project/${projectId}/apply/${username}`,
             coverLetter,
             { headers: getAuthHeaders() }
         );
@@ -58,7 +58,7 @@ export const applyForProject = async (projectId, coverLetter) => {
 // Search projects by title
 export const searchProjectsByTitle = async (title) => {
     try {
-        const response = await axios.get(`/project/title/${title}`, {
+        const response = await axios.get(`/api/project/title/${title}`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -72,7 +72,7 @@ export const searchProjectsByTitle = async (title) => {
 export const getAssignedProjects = async () => {
     try {
         const { username } = getTokenAndDecode();
-        const response = await axios.get(`/project/freelancer/${username}`, {
+        const response = await axios.get(`/api/project/freelancer/${username}`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -85,7 +85,7 @@ export const getAssignedProjects = async () => {
 // Load freelancer's projects
 export const loadMyProjects = async () => {
     try {
-        const response = await axios.get(`/project/freelancer/my-projects`, {
+        const response = await axios.get(`/api/project/freelancer/my-projects`, {
             headers: getAuthHeaders(),
         });
         return response.data;
@@ -99,7 +99,7 @@ export const loadMyProjects = async () => {
 export const loadMyApplications = async () => {
     try {
         const { token, username } = getTokenAndDecode();
-        const response = await axios.get(`/freelancer/${username}/my-applications`,
+        const response = await axios.get(`/api/freelancer/${username}/my-applications`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -117,7 +117,7 @@ export const handleCompleteProject = async (projectId) => {
     try {
         const { token } = getTokenAndDecode();
         const response = await axios.put(
-            `/project/${projectId}/complete`,
+            `/api/project/${projectId}/complete`,
             null,  // Request body (null since we don't need to send data)
             {
                 headers: {
@@ -136,10 +136,10 @@ export const handleCompleteProject = async (projectId) => {
 export const createReport = async (projectId, description) => {
     try {
         console.log('Creating report with:', { projectId, description });
-        console.log('Making request to: /report');
+        console.log('Making request to: /api/report');
         
         const response = await axios.post(
-            `/report`,
+            `/api/report`,
             {
                 projectId: parseInt(projectId),
                 description: description
@@ -174,7 +174,7 @@ export const applyForProjectWithCV = async (projectId, coverLetter, cvFile) => {
             formData.append('cvFile', cvFile);
         }
 
-        const response = await fetch(`/project/${projectId}/apply/${username}/with-cv`, {
+        const response = await fetch(`/api/project/${projectId}/apply/${username}/with-cv`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -204,13 +204,13 @@ export const getDashboardStats = async () => {
 
         // Get all data in parallel using axios with relative URLs
         const [availableProjectsResponse, applicationsResponse, projectsResponse] = await Promise.allSettled([
-            axios.get('/project/available', {
+            axios.get('/api/project/available', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            axios.get(`/freelancer/${username}/my-applications`, {
+            axios.get(`/api/freelancer/${username}/my-applications`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            axios.get('/project/freelancer/my-projects', {
+            axios.get('/api/project/freelancer/my-projects', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
