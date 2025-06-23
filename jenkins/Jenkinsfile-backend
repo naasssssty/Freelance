@@ -98,11 +98,17 @@ pipeline {
         
         stage('Deploy to Kubernetes') {
             steps {
-                ansiblePlaybook(
-                    playbook: 'ansible/deploy-kubernetes.yml',
-                    credentialsId: 'kubeconfig-secret',
-                    inventory: 'ansible/inventory.yml'
-                )
+                script {
+                    withCredentials([secretFile(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // This is the definitive solution.
+                        // 1. `withCredentials` correctly creates the secret file and exports its path to the $KUBECONFIG environment variable.
+                        // 2. The `sh` step is called with SINGLE QUOTES ('...').
+                        // 3. This prevents the Jenkins/Groovy interpreter from tampering with the command string.
+                        // 4. The command is passed to the native shell, which correctly understands the $KUBECONFIG variable set by the step above.
+                        // Ansible will then automatically detect and use this environment variable.
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                    }
+                }
             }
         }
     }
