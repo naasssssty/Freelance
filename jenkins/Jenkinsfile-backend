@@ -9,13 +9,6 @@ pipeline {
         SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout code from GitHub repository
-                git branch: env.BRANCH_NAME, url: 'https://github.com/naasssssty/Freelance.git'
-            }
-        }
-        
         stage('Compile') {
             steps {
                 echo 'Compiling the backend application...'
