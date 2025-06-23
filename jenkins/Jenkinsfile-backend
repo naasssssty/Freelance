@@ -96,13 +96,13 @@ pipeline {
             }
         }
         
-        stage('Deploy to Kubernetes via Ansible') {
+        stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    // This syntax calls the credentials helper directly inside the shell command string.
-                    // It avoids creating an intermediate variable, which was causing issues with the Jenkins shell interpreter.
-                    sh "KUBECONFIG=${credentials('kubeconfig-secret')} ansible-playbook ansible/deploy-kubernetes.yml"
-                }
+                ansiblePlaybook(
+                    playbook: 'ansible/deploy-kubernetes.yml',
+                    credentialsId: 'kubeconfig-secret',
+                    inventory: 'ansible/inventory.yml'
+                )
             }
         }
     }
