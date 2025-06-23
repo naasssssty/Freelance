@@ -15,8 +15,13 @@ RUN if ! getent group docker >/dev/null; then \
         groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null || groupadd docker; \
     fi
 
-# Εγκατάσταση εργαλείων για debugging και sudo
-RUN apt-get install -y iputils-ping net-tools sudo
+# Εγκατάσταση εργαλείων για debugging, sudo και Ansible
+RUN apt-get install -y iputils-ping net-tools sudo ansible
+
+# Εγκατάσταση του kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+    rm kubectl
 
 # Ρυθμίζουμε το Git για να επιτρέπει ασφαλή καταλόγους
 RUN git config --global --add safe.directory '*'

@@ -106,13 +106,16 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying to Kubernetes using Ansible...'
-                // Deploy using Ansible playbook
-                sh '''
-                    cd ansible
-                    ansible-playbook -i inventory.yml deploy-kubernetes.yml \
-                        --extra-vars "backend_image=$DOCKER_IMAGE" \
-                        --extra-vars "frontend_image=papadooo/freelance-frontend:latest"
-                '''
+                // Deploy using the Ansible plugin
+                ansiblePlaybook(
+                    playbook: 'ansible/deploy-kubernetes.yml',
+                    inventory: 'ansible/inventory.yml',
+                    installation: 'DefaultAnsible', // The name we configured in Jenkins Tools
+                    extraVars: [
+                        backend_image: "$DOCKER_IMAGE",
+                        frontend_image: 'papadooo/freelance-frontend:latest' // Assuming frontend is static for now
+                    ]
+                )
             }
         }
         // stage('Build Docker Image') {
