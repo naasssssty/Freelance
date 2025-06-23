@@ -23,9 +23,8 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
     rm kubectl
 
-# Εγκατάσταση των Python dependencies για το Ansible (Kubernetes client)
-RUN apt-get install -y python3-pip && \
-    pip3 install kubernetes
+# Εγκατάσταση των Python dependencies για το Ansible (Kubernetes client) με τον σωστό τρόπο (apt)
+RUN apt-get install -y python3-kubernetes
 
 # Ρυθμίζουμε το Git για να επιτρέπει ασφαλή καταλόγους
 RUN git config --global --add safe.directory '*'
