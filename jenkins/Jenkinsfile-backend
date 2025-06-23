@@ -103,36 +103,15 @@ pipeline {
             }
         }
         
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes via Ansible') {
             steps {
-                echo 'Deploying to Kubernetes using Ansible...'
-                // Deploy using the Ansible plugin
-                ansiblePlaybook(
-                    playbook: 'ansible/deploy-kubernetes.yml',
-                    inventory: 'ansible/inventory.yml',
-                    installation: 'DefaultAnsible', // The name we configured in Jenkins Tools
-                    extraVars: [
-                        backend_image: "$DOCKER_IMAGE",
-                        frontend_image: 'papadooo/freelance-frontend:latest' // Assuming frontend is static for now
-                    ]
-                )
+                withCredentials([secretFile(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                    // The KUBECONFIG environment variable is now set to the path of the secret file
+                    // and will be used automatically by ansible/kubectl
+                    sh 'ansible-playbook ansible/deploy-kubernetes.yml'
+                }
             }
         }
-        // stage('Build Docker Image') {
-        //     steps {
-        //         // Build Docker image for backend
-        //         sh 'docker build -t $DOCKER_IMAGE .'
-        //     }
-        // }
-        // stage('Push Docker Image') {
-        //     steps {
-        //         // Push Docker image to Docker Hub
-        //         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-        //             sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-        //             sh 'docker push $DOCKER_IMAGE'
-        //         }
-        //     }
-        // }
     }
     post {
         always {
