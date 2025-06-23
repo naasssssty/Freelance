@@ -5,7 +5,7 @@
   gather_facts: false
   
   environment:
-    KUBECONFIG: "{{ playbook_dir }}/.kubeconfig"
+    KUBECONFIG: "{{ playbook_dir }}/kubeconfig"
 
   vars:
     namespace: "freelance"
