@@ -98,10 +98,12 @@ pipeline {
         
         stage('Deploy to Kubernetes via Ansible') {
             steps {
-                withCredentials([secretFile(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                    // The KUBECONFIG environment variable is now set to the path of the secret file
-                    // and will be used automatically by ansible/kubectl
-                    sh 'ansible-playbook ansible/deploy-kubernetes.yml'
+                script {
+                    withCredentials([secretFile(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // The KUBECONFIG environment variable is now set to the path of the secret file
+                        // and will be used automatically by ansible/kubectl
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml'
+                    }
                 }
             }
         }
