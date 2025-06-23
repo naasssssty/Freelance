@@ -99,11 +99,10 @@ pipeline {
         stage('Deploy to Kubernetes via Ansible') {
             steps {
                 script {
-                    withCredentials([secretFile(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                        // The KUBECONFIG environment variable is now set to the path of the secret file
-                        // and will be used automatically by ansible/kubectl
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml'
-                    }
+                    // Use the credentials() helper to get the path to the kubeconfig file.
+                    // This is an alternative syntax that can avoid some Jenkins DSL issues.
+                    def kubeconfigFile = credentials('kubeconfig-secret')
+                    sh "KUBECONFIG=${kubeconfigFile} ansible-playbook ansible/deploy-kubernetes.yml"
                 }
             }
         }
