@@ -99,7 +99,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    withCredentials([secretFile(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
                         // This is the definitive solution.
                         // 1. `withCredentials` correctly creates the secret file and exports its path to the $KUBECONFIG environment variable.
                         // 2. The `sh` step is called with SINGLE QUOTES ('...').
