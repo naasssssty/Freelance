@@ -4,6 +4,9 @@
   connection: local
   gather_facts: false
   
+  environment:
+    KUBECONFIG: "{{ lookup('env', 'PWD') }}/.kubeconfig"
+
   vars:
     namespace: "freelance"
   
