@@ -106,7 +106,11 @@ pipeline {
                         // 3. This prevents the Jenkins/Groovy interpreter from tampering with the command string.
                         // 4. The command is passed to the native shell, which correctly understands the $KUBECONFIG variable set by the step above.
                         // Ansible will then automatically detect and use this environment variable.
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                        sh '''
+                          # αντικατάσταση του localhost μέσα στο kubeconfig ώστε να είναι ορατό από το container
+                          sed -i "s/https:\/\/127.0.0.1/https:\/\/host.docker.internal/" "$KUBECONFIG"
+                          ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml
+                        '''
                     }
                 }
             }
