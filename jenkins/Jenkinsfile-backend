@@ -105,8 +105,10 @@ pipeline {
                         // 2. The `sh` step is called with SINGLE QUOTES ('...').
                         // 3. This prevents the Jenkins/Groovy interpreter from tampering with the command string.
                         // 4. The command is passed to the native shell, which correctly understands the $KUBECONFIG variable set by the step above.
-                        // Ansible will then automatically detect and use this environment variable.
-                        sh 'sed -i "s#https://127.0.0.1#https://host.docker.internal#" "$KUBECONFIG" && ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                        // No need to rewrite the API server URL anymore. Ensure the kubeconfig stored in
+                        // Jenkins credential `kubeconfig-secret` already points to https://127.0.0.1:50412
+                        // and contains the embedded certificate-authority-data (flattened & minified).
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
                     }
                 }
             }
