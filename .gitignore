@@ -4,6 +4,8 @@ target/
 
 deploy.sh
 
+/ansible/.kubeconfig
+
 # Node/React (frontend specific)
 frontend/node_modules/
 frontend/build/
