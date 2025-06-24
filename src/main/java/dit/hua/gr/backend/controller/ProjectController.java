@@ -6,6 +6,7 @@ import dit.hua.gr.backend.model.Project;
 import dit.hua.gr.backend.model.ProjectStatus;
 import dit.hua.gr.backend.model.User;
 import dit.hua.gr.backend.model.NotificationType;
+import dit.hua.gr.backend.model.ApplicationStatus;
 import dit.hua.gr.backend.service.ProjectService;
 import dit.hua.gr.backend.service.UserService;
 import dit.hua.gr.backend.service.NotificationService;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
-@RequestMapping("/project")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/project")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -245,6 +248,43 @@ public class ProjectController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // Client Statistics Endpoint
+    @GetMapping("/client/stats")
+    @PreAuthorize("hasRole('CLIENT')")
+    public ResponseEntity<Map<String, Object>> getClientStats(Authentication authentication) {
+        String username = authentication.getName();
+        User client = userService.findUserByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Client not found with username: " + username));
+        
+        List<Project> clientProjects = projectService.findProjectsByClient(client);
+        
+        // Calculate statistics
+        long activeProjects = clientProjects.stream()
+                .filter(p -> p.getProjectStatus() == ProjectStatus.PENDING || 
+                           p.getProjectStatus() == ProjectStatus.APPROVED || 
+                           p.getProjectStatus() == ProjectStatus.IN_PROGRESS)
+                .count();
+        
+        long completedProjects = clientProjects.stream()
+                .filter(p -> p.getProjectStatus() == ProjectStatus.COMPLETED)
+                .count();
+        
+        // Get pending applications count
+        long pendingApplications = 0;
+        for (Project project : clientProjects) {
+            pendingApplications += project.getApplications().stream()
+                    .filter(app -> app.getApplicationStatus() == ApplicationStatus.WAITING)
+                    .count();
+        }
+        
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("activeProjects", activeProjects);
+        stats.put("completedProjects", completedProjects);
+        stats.put("pendingApplications", pendingApplications);
+        
+        return ResponseEntity.ok(stats);
     }
 
 }

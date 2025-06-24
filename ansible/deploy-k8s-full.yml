@@ -1,0 +1,406 @@
+---
+- name: Deploy Complete Freelance platform to Kubernetes
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
+
+  tasks:
+    - name: Create namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        name: freelance
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    # Infrastructure Services
+    - name: Create PostgreSQL deployment
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: postgres
+            namespace: freelance
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: postgres
+            template:
+              metadata:
+                labels:
+                  app: postgres
+              spec:
+                containers:
+                - name: postgres
+                  image: postgres:15
+                  env:
+                  - name: POSTGRES_DB
+                    value: freelancer_db
+                  - name: POSTGRES_USER
+                    value: freelancer_user
+                  - name: POSTGRES_PASSWORD
+                    value: freelancer_pass
+                  ports:
+                  - containerPort: 5432
+
+    - name: Create PostgreSQL service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: postgres
+            namespace: freelance
+          spec:
+            selector:
+              app: postgres
+            ports:
+            - port: 5432
+              targetPort: 5432
+
+    - name: Create MailHog deployment
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: mailhog
+            namespace: freelance
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: mailhog
+            template:
+              metadata:
+                labels:
+                  app: mailhog
+              spec:
+                containers:
+                - name: mailhog
+                  image: mailhog/mailhog:latest
+                  ports:
+                  - containerPort: 1025
+                  - containerPort: 8025
+
+    - name: Create MailHog service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: mailhog
+            namespace: freelance
+          spec:
+            selector:
+              app: mailhog
+            ports:
+            - name: smtp
+              port: 1025
+              targetPort: 1025
+            - name: http
+              port: 8025
+              targetPort: 8025
+
+    - name: Create MinIO deployment
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: minio
+            namespace: freelance
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: minio
+            template:
+              metadata:
+                labels:
+                  app: minio
+              spec:
+                containers:
+                - name: minio
+                  image: minio/minio:latest
+                  args:
+                  - server
+                  - /data
+                  - --console-address
+                  - ":9001"
+                  env:
+                  - name: MINIO_ACCESS_KEY
+                    value: iRb4jDOLKvmbfkQ
+                  - name: MINIO_SECRET_KEY
+                    value: OskbMSsFLoKw41d
+                  ports:
+                  - containerPort: 9000
+                  - containerPort: 9001
+
+    - name: Create MinIO service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: minio
+            namespace: freelance
+          spec:
+            selector:
+              app: minio
+            ports:
+            - name: api
+              port: 9000
+              targetPort: 9000
+            - name: console
+              port: 9001
+              targetPort: 9001
+
+    # Add nginx configuration for SPA routing
+    - name: Create nginx ConfigMap
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: nginx-config
+            namespace: freelance
+          data:
+            default.conf: |
+              server {
+                  listen 80;
+                  server_name localhost;
+                  root /usr/share/nginx/html;
+                  index index.html;
+
+                  # Handle SPA routing - fallback to index.html for unknown routes
+                  location / {
+                      try_files $uri $uri/ /index.html;
+                  }
+
+                  # Error pages
+                  error_page 500 502 503 504 /50x.html;
+                  location = /50x.html {
+                      root /usr/share/nginx/html;
+                  }
+              }
+
+    # Application Services
+    - name: Create Backend deployment
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: backend
+            namespace: freelance
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: backend
+            template:
+              metadata:
+                labels:
+                  app: backend
+              spec:
+                containers:
+                - name: backend
+                  image: freelance-backend:latest
+                  imagePullPolicy: Never
+                  ports:
+                  - containerPort: 8080
+                  env:
+                  - name: SPRING_PROFILES_ACTIVE
+                    value: dev
+                  - name: SPRING_DATASOURCE_URL
+                    value: jdbc:postgresql://postgres:5432/freelancer_db
+                  - name: SPRING_DATASOURCE_USERNAME
+                    value: freelancer_user
+                  - name: SPRING_DATASOURCE_PASSWORD
+                    value: freelancer_pass
+                  - name: SPRING_MAIL_HOST
+                    value: mailhog
+                  - name: MINIO_ENDPOINT
+                    value: http://minio:9000
+                  - name: MINIO_ACCESS_KEY
+                    value: iRb4jDOLKvmbfkQ
+                  - name: MINIO_SECRET_KEY
+                    value: OskbMSsFLoKw41d
+
+    - name: Create Backend service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: backend
+            namespace: freelance
+          spec:
+            selector:
+              app: backend
+            ports:
+            - port: 8080
+              targetPort: 8080
+
+    - name: Create Frontend deployment
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: frontend
+            namespace: freelance
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: frontend
+            template:
+              metadata:
+                labels:
+                  app: frontend
+              spec:
+                volumes:
+                - name: nginx-config
+                  configMap:
+                    name: nginx-config
+                containers:
+                - name: frontend
+                  image: freelance-frontend:latest
+                  imagePullPolicy: Never
+                  ports:
+                  - containerPort: 80
+                  env:
+                  - name: REACT_APP_API_URL
+                    value: http://backend:8080
+                  volumeMounts:
+                  - name: nginx-config
+                    mountPath: /etc/nginx/conf.d
+                    readOnly: true
+
+    - name: Create Frontend service
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: frontend
+            namespace: freelance
+          spec:
+            selector:
+              app: frontend
+            ports:
+            - port: 80
+              targetPort: 80
+
+    # Ingress for external access
+    - name: Create Ingress
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: freelance-ingress
+            namespace: freelance
+            annotations:
+              nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+              nginx.ingress.kubernetes.io/proxy-buffering: "off"
+          spec:
+            ingressClassName: nginx
+            rules:
+            - host: freelance.local
+              http:
+                paths:
+                - path: /api
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: backend
+                      port:
+                        number: 8080
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: frontend
+                      port:
+                        number: 80
+
+    - name: Wait for PostgreSQL to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Pod
+        namespace: freelance
+        label_selectors:
+          - app=postgres
+        wait: true
+        wait_condition:
+          type: Ready
+          status: True
+        wait_timeout: 300
+
+    - name: Show all pods
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Pod
+        namespace: freelance
+      register: pods_info
+
+    - name: Display pods status
+      debug:
+        msg: "Pod {{ item.metadata.name }} is {{ item.status.phase }}"
+      loop: "{{ pods_info.resources }}"
+
+    - name: Show all services
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Service
+        namespace: freelance
+      register: services_info
+
+    - name: Display services
+      debug:
+        msg: "Service {{ item.metadata.name }} on port {{ item.spec.ports[0].port }}"
+      loop: "{{ services_info.resources }}"
+
+    - name: Show Ingress info
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        kind: Ingress
+        namespace: freelance
+      register: ingress_info
+
+    - name: Display Ingress endpoints
+      debug:
+        msg: "Access at: http://{{ item.spec.rules[0].host }}"
+      loop: "{{ ingress_info.resources }}"
+      when: ingress_info.resources | length > 0 

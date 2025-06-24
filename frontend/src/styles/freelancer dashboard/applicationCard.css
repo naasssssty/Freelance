@@ -27,6 +27,27 @@
     font-weight: 600;
 }
 
+.download-cv-button {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background-color: transparent;
+    text-decoration: none;
+    color: #2b85c2;
+    border: 1px solid #2b85c2;
+    border-radius: 15px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.download-cv-button:hover {
+    background-color: #2b86c23e;
+    color: #2b85c2;
+}
+
 .status-badge {
     padding: 6px 12px;
     border-radius: 15px;

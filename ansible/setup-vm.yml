@@ -1,1 +1,194 @@
-
+---
+- name: Setup VM and Deploy Freelance Application
+  hosts: local
+  become: yes
+  gather_facts: true
+  vars:
+    java_version: "21"
+    node_version: "18"
+    postgres_version: "15"
+    app_user: "freelance"
+    app_dir: "/opt/freelance"
+    
+  tasks:
+    - name: Update system packages
+      package:
+        name: "*"
+        state: latest
+      when: ansible_os_family == "RedHat"
+      
+    - name: Update system packages (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: ansible_os_family == "Debian"
+      
+    - name: Install required system packages
+      package:
+        name:
+          - curl
+          - wget
+          - git
+          - unzip
+          - nginx
+        state: present
+        
+    - name: Install Docker
+      shell: |
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sh get-docker.sh
+      args:
+        creates: /usr/bin/docker
+        
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+        
+    - name: Install Docker Compose
+      shell: |
+        curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+      args:
+        creates: /usr/local/bin/docker-compose
+        
+    - name: Install Java {{ java_version }}
+      package:
+        name: "openjdk-{{ java_version }}-jdk"
+        state: present
+      when: ansible_os_family == "Debian"
+      
+    - name: Install Java {{ java_version }} (RedHat)
+      package:
+        name: "java-{{ java_version }}-openjdk-devel"
+        state: present
+      when: ansible_os_family == "RedHat"
+      
+    - name: Install Node.js {{ node_version }}
+      shell: |
+        curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+        apt-get install -y nodejs
+      when: ansible_os_family == "Debian"
+      
+    - name: Install PostgreSQL {{ postgres_version }}
+      package:
+        name: 
+          - "postgresql-{{ postgres_version }}"
+          - "postgresql-client-{{ postgres_version }}"
+          - python3-psycopg2
+        state: present
+      when: ansible_os_family == "Debian"
+      
+    - name: Start and enable PostgreSQL
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes
+        
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        shell: /bin/bash
+        home: "{{ app_dir }}"
+        create_home: yes
+        
+    - name: Add application user to docker group
+      user:
+        name: "{{ app_user }}"
+        groups: docker
+        append: yes
+        
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+        
+    - name: Clone application repository
+      git:
+        repo: "https://github.com/naasssssty/Freelance.git"
+        dest: "{{ app_dir }}/app"
+        version: "A"
+        force: yes
+      become_user: "{{ app_user }}"
+      
+    - name: Create PostgreSQL database and user
+      postgresql_db:
+        name: "{{ postgres_db }}"
+        state: present
+      become_user: postgres
+      
+    - name: Create PostgreSQL user
+      postgresql_user:
+        name: "{{ postgres_user }}"
+        password: "{{ postgres_password }}"
+        priv: "{{ postgres_db }}:ALL"
+        state: present
+      become_user: postgres
+      
+    - name: Configure Nginx for reverse proxy
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/freelance
+        backup: yes
+      notify: restart nginx
+      
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/freelance
+        dest: /etc/nginx/sites-enabled/freelance
+        state: link
+      notify: restart nginx
+      
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: restart nginx
+      
+    - name: Build backend application
+      shell: |
+        cd {{ app_dir }}/app
+        ./mvnw clean package -DskipTests
+      become_user: "{{ app_user }}"
+      
+    - name: Build frontend application
+      shell: |
+        cd {{ app_dir }}/app/frontend
+        npm install
+        npm run build
+      become_user: "{{ app_user }}"
+      
+    - name: Create systemd service for backend
+      template:
+        src: freelance-backend.service.j2
+        dest: /etc/systemd/system/freelance-backend.service
+      notify: 
+        - reload systemd
+        - restart backend
+        
+    - name: Start and enable backend service
+      systemd:
+        name: freelance-backend
+        state: started
+        enabled: yes
+        daemon_reload: yes
+        
+  handlers:
+    - name: restart nginx
+      systemd:
+        name: nginx
+        state: restarted
+        
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
+        
+    - name: restart backend
+      systemd:
+        name: freelance-backend
+        state: restarted

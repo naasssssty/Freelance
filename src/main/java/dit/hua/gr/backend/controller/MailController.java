@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/mail")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/mail")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
 public class MailController {
 
     private final MailRepository mailRepository;

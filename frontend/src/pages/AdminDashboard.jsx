@@ -32,7 +32,8 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const username = localStorage.getItem('username');
-    const { usersList, projectsList } = useSelector((state) => state.admin);
+    const admin = useSelector((state) => state.admin) || { usersList: [], projectsList: [] };
+    const { usersList, projectsList } = admin;
     const [users, setUsers] = useState([]);
     const [projects, setProjects] = useState([]);
     // eslint-disable-next-line
@@ -43,13 +44,85 @@ const AdminDashboard = () => {
     // projectsLoading δεν χρησιμοποιείται, οπότε το σχολιάζουμε
     // const projectsLoading = useSelector((state) => state.admin.projectsLoading);
     const projectsError = useSelector((state) => state.admin.projectsError);
-    const [showUsersList, setShowUsersList] = useState(true);
-    const [showProjectsList, setShowProjectsList] = useState(true);
+    const [showUsersList, setShowUsersList] = useState(false);
+    const [showProjectsList, setShowProjectsList] = useState(false);
     const [searchedUser, setSearchedUser] = useState(null);
     // eslint-disable-next-line
     const [activeTab, setActiveTab] = useState('users');
     const [showReports, setShowReports] = useState(false);
     const [showDashboard, setShowDashboard] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);
+
+    // Restore previous view state from localStorage after refresh, but ensure welcome is default for fresh login
+    useEffect(() => {
+        const initializeAdminDashboard = async () => {
+            const savedView = localStorage.getItem('adminDashboardView');
+            const isReturningUser = localStorage.getItem('adminReturningUser');
+            
+            // If this is a fresh login (not a returning user), always show welcome
+            if (!isReturningUser) {
+                setShowDashboard(true);
+                setShowUsersList(false);
+                setShowProjectsList(false);
+                setShowReports(false);
+                localStorage.setItem('adminReturningUser', 'true');
+            } else if (savedView) {
+                // Only restore saved view if user is returning (refresh case)
+                try {
+                    const viewState = JSON.parse(savedView);
+                    
+                    // Set the view state
+                    setShowUsersList(viewState.showUsersList || false);
+                    setShowProjectsList(viewState.showProjectsList || false);
+                    setShowReports(viewState.showReports || false);
+                    setShowDashboard(viewState.showDashboard !== false);
+                    
+                    // Load data if needed after restoring view
+                    if (viewState.showUsersList && (!usersList || usersList.length === 0)) {
+                        await loadUsersList(dispatch).then(usersData => setUsers(usersData));
+                    }
+                    if (viewState.showProjectsList && (!projectsList || projectsList.length === 0)) {
+                        await loadProjectsList(dispatch).then(projectsData => setProjects(projectsData));
+                    }
+                } catch (error) {
+                    console.error('Error parsing saved view state:', error);
+                    // If there's an error, default to dashboard view
+                    setShowDashboard(true);
+                    setShowUsersList(false);
+                    setShowProjectsList(false);
+                    setShowReports(false);
+                }
+            }
+            
+            // Load initial data if not already loaded
+            if (!usersList || usersList.length === 0 || !projectsList || projectsList.length === 0) {
+                try {
+                    await loadUsersList(dispatch);
+                    await loadProjectsList(dispatch);
+                } catch (error) {
+                    console.error("Error loading initial data:", error);
+                }
+            }
+            
+            // Mark initialization as complete
+            setIsInitializing(false);
+        };
+        
+        initializeAdminDashboard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Empty dependency array to run only once
+
+    // Save current view state to localStorage whenever it changes
+    useEffect(() => {
+        const viewState = {
+            showUsersList,
+            showProjectsList,
+            showReports,
+            showDashboard
+        };
+        localStorage.setItem('adminDashboardView', JSON.stringify(viewState));
+    }, [showUsersList, showProjectsList, showReports, showDashboard]);
 
     // eslint-disable-next-line
     // getUsername δεν χρησιμοποιείται, οπότε το σχολιάζουμε
@@ -106,35 +179,41 @@ const AdminDashboard = () => {
     };
 
     const handleLoadUsers = async () => {
+        setIsLoading(true);
         try {
-            const usersData = await loadUsersList();
+            const usersData = await loadUsersList(dispatch);
             setUsers(usersData);
-            dispatch({ type: "SET_USERS_LIST", payload: usersData });
             setShowUsersList(true);
             setShowProjectsList(false);
             setShowReports(false);
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading users:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleLoadProjects = async () => {
+        setIsLoading(true);
         try {
-            const projectsData = await loadProjectsList();
+            const projectsData = await loadProjectsList(dispatch);
             setProjects(projectsData);
-            dispatch({ type: "SET_PROJECTS_LIST", payload: projectsData });
             setShowProjectsList(true);
             setShowUsersList(false);
             setShowReports(false);
             setShowDashboard(false);
         } catch (error) {
             console.error("Error loading projects:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleLogout = () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('adminDashboardView');
+        localStorage.removeItem('adminReturningUser');
         navigate('/login');
     };
 
@@ -231,25 +310,24 @@ const AdminDashboard = () => {
         );
     };
 
-    const handleVerifyUser = async (userId, verify) => {
+    const handleVerifyUser = async (username, verify) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.put(`/user/${userId}/verify`, { verify }, {
+            const response = await axios.put(`/api/user/${username}/verify`, verify, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
             if (response.status === 200) {
-                alert(`User ${verify ? 'verified' : 'unverified'} successfully`);
                 // Ενημερώνουμε το state για να αντικατοπτρίζει την αλλαγή
                 setUsers(users.map(user => 
-                    user.id === userId ? { ...user, verified: verify } : user
+                    user.username === username ? { ...user, verified: verify } : user
                 ));
                 dispatch({
                     type: "SET_USERS_LIST",
                     payload: usersList.map(user => 
-                        user.id === userId ? { ...user, verified: verify } : user
+                        user.username === username ? { ...user, verified: verify } : user
                     )
                 });
             }
@@ -319,6 +397,55 @@ const AdminDashboard = () => {
         }
     };
 
+    if (isLoading || isInitializing) {
+        return (
+            <div className="dashboard">
+                <Header
+                    menuOptions={menuOptions}
+                    searchComponent={
+                        <AdminSearchComponent onSearchResult={handleSearchResult}/>
+                    }
+                    onLogoClick={handleLogoClick}
+                    username={username}
+                />
+                
+                <div className="dashboard-content">
+                    <div style={{ 
+                        padding: '20px', 
+                        textAlign: 'center',
+                        minHeight: '400px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}>
+                        <div>
+                            <div style={{
+                                width: '40px',
+                                height: '40px',
+                                border: '4px solid #f3f3f3',
+                                borderTop: '4px solid #3498db',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite',
+                                margin: '0 auto 20px'
+                            }}></div>
+                            <h3 style={{ color: '#666', fontWeight: 'normal' }}>
+                                {isInitializing ? 'Initializing Admin Dashboard...' : 'Loading...'}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+                
+                <Footer />
+                <style>{`
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                `}</style>
+            </div>
+        );
+    }
+
     return (
         <div className="dashboard">
             <Header
@@ -330,7 +457,10 @@ const AdminDashboard = () => {
                 username={username}
             />
             
-            <div className="dashboard-content">
+            <div className="dashboard-content" style={{
+                opacity: isInitializing ? 0 : 1,
+                transition: 'opacity 0.3s ease-in-out'
+            }}>
                 {showDashboard && (
                     <div className="dashboard-stats">
                         {renderWelcomeDashboard()}
@@ -387,7 +517,7 @@ const AdminDashboard = () => {
                                         {!user.verified && user.role !== 'ADMIN' && (
                                             <button 
                                                 className="card-button verify-button"
-                                                onClick={() => handleVerifyUser(user.id, true)}
+                                                onClick={() => handleVerifyUser(user.username, true)}
                                             >
                                                 Verify
                                             </button>

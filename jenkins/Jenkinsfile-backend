@@ -2,64 +2,133 @@ pipeline {
     agent any
     tools {
         maven 'Maven 3'
-        jdk 'JDK 21'
-        nodejs 'Node 21'
+        jdk 'JDK 21 Linux'
     }
     environment {
         DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
+        SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
-        stage('Checkout') {
+        stage('Compile') {
             steps {
-                // Checkout code from GitHub repository
-                git branch: 'test-branch', url: 'https://github.com/naasssssty/Freelance.git'
+                echo 'Compiling the backend application...'
+                sh 'mvn clean compile -DskipTests'
             }
         }
-        stage('Build') {
-            steps {
-                // Build the backend using Maven
-                sh 'mvn clean install -DskipTests'
+        
+        stage('Unit Tests') {
+            environment {
+                // Ensure tests use an in-memory database and test profile
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
             }
-        }
-        stage('Test') {
             steps {
-                // Temporarily skip tests until configuration issue is resolved
-                sh 'mvn test -DskipTests'
+                echo 'Running unit tests...'
+                sh 'mvn test -Dspring.profiles.active=test'
             }
             post {
                 always {
-                    // Publish test results, allow empty results since tests are skipped
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                    // Publish unit test results
+                    junit(
+                        allowEmptyResults: true,
+                        testResults: '**/target/surefire-reports/*.xml'
+                    )
                 }
             }
         }
-        // stage('Build Docker Image') {
-        //     steps {
-        //         // Build Docker image for backend
-        //         sh 'docker build -t $DOCKER_IMAGE .'
-        //     }
-        // }
-        // stage('Push Docker Image') {
-        //     steps {
-        //         // Push Docker image to Docker Hub
-        //         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-        //             sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-        //             sh 'docker push $DOCKER_IMAGE'
-        //         }
-        //     }
-        // }
+        
+        stage('Integration Tests') {
+            environment {
+                // Same test environment as unit tests
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:integrationtestdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+            }
+            steps {
+                echo 'Running integration tests...'
+                // Run integration tests using test-compile goal to ensure fresh compilation
+                sh 'mvn test-compile'
+                sh 'mvn surefire:test -Dtest=TestFreelancerProjectApplicationTests -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    // Archive integration test results
+                    archiveArtifacts(
+                        artifacts: '**/target/surefire-reports/TEST-*TestFreelancerProjectApplicationTests.xml',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                echo 'Packaging the application...'
+                sh 'mvn package -DskipTests'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image...'
+                // Build Docker image for backend using the correct Dockerfile
+                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend .'
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                echo 'Pushing Docker image to registry...'
+                // Push Docker image to Docker Hub
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+        
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // This is the definitive solution.
+                        // 1. `withCredentials` correctly creates the secret file and exports its path to the $KUBECONFIG environment variable.
+                        // 2. The `sh` step is called with SINGLE QUOTES ('...').
+                        // 3. This prevents the Jenkins/Groovy interpreter from tampering with the command string.
+                        // 4. The command is passed to the native shell, which correctly understands the $KUBECONFIG variable set by the step above.
+                        // No need to rewrite the API server URL anymore. Ensure the kubeconfig stored in
+                        // Jenkins credential `kubeconfig-secret` already points to https://127.0.0.1:50412
+                        // and contains the embedded certificate-authority-data (flattened & minified).
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                    }
+                }
+            }
+        }
     }
     post {
         always {
-            // Σχολιάζουμε το cleanWs μέχρι να εγκατασταθεί το Workspace Cleanup Plugin
-            // cleanWs()
             echo 'Backend pipeline completed.'
+            // Archive test reports
+            archiveArtifacts(
+                artifacts: '**/target/surefire-reports/*.xml',
+                allowEmptyArchive: true
+            )
         }
         success {
-            echo 'Backend pipeline completed successfully!'
+            echo '✅ Backend pipeline completed successfully!'
+            echo 'Docker image built and pushed: ' + env.DOCKER_IMAGE
         }
         failure {
-            echo 'Backend pipeline failed. Check the logs for details.'
+            echo '❌ Backend pipeline failed. Check the logs for details.'
         }
     }
 } 

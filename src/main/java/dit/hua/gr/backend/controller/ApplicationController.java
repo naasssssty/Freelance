@@ -25,7 +25,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
 public class ApplicationController {
 
     private final ApplicationService applicationService;

@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: freelance
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: freelance-backend:latest  # Use local image built with docker build
+        imagePullPolicy: Never  # Use local image, don't pull from registry
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_DATASOURCE_URL
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_DATASOURCE_USERNAME
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: freelance-secrets
+              key: POSTGRES_PASSWORD
+        - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        - name: MINIO_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: MINIO_ENDPOINT
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: MINIO_ACCESS_KEY
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: freelance-secrets
+              key: MINIO_SECRET_KEY
+        - name: MINIO_BUCKET_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: MINIO_BUCKET_NAME
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_PROFILES_ACTIVE
+        - name: SPRING_MAIL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_HOST
+        - name: SPRING_MAIL_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_PORT
+        - name: SPRING_MAIL_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_USERNAME
+        - name: SPRING_MAIL_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_PASSWORD
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH
+        - name: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE
+        - name: SPRING_MAIL_PROPERTIES_MAIL_DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: freelance-config
+              key: SPRING_MAIL_PROPERTIES_MAIL_DEBUG
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: freelance
+spec:
+  selector:
+    app: backend
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP 

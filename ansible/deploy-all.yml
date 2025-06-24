@@ -1,0 +1,27 @@
+---
+- name: Deploy Freelance Application to Multiple Environments
+  hosts: localhost
+  gather_facts: false
+  vars:
+    deployment_env: "{{ deploy_env | default('kubernetes') }}"
+    
+  tasks:
+    - name: Display deployment environment
+      debug:
+        msg: "Deploying to {{ deployment_env }} environment"
+        
+    - name: Deploy to Kubernetes
+      include: deploy-kubernetes.yml
+      when: deployment_env == "kubernetes"
+      
+    - name: Deploy to Docker
+      include: deploy-docker.yml
+      when: deployment_env == "docker"
+      
+    - name: Setup VM and Deploy
+      include: setup-vm.yml
+      when: deployment_env == "vm"
+      
+    - name: Deployment completed
+      debug:
+        msg: "✅ Deployment to {{ deployment_env }} completed successfully!" 

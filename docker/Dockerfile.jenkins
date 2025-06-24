@@ -1,14 +1,43 @@
 # Χρησιμοποιούμε την επίσημη εικόνα του Jenkins ως βάση
 FROM jenkins/jenkins:lts
 
-# Εγκατάσταση του Docker CLI
+# Εγκατάσταση του Docker CLI, Docker daemon και Git
 USER root
 RUN apt-get update && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release && \
+    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release git && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
     apt-get update && \
-    apt-get install -y docker-ce-cli
+    apt-get install -y docker-ce-cli docker-ce
 
-# Επιστροφή στον χρήστη jenkins
-USER jenkins
+# Ελέγχουμε αν η ομάδα docker υπάρχει ήδη, αλλιώς τη δημιουργούμε
+RUN if ! getent group docker >/dev/null; then \
+        groupadd -g 999 docker 2>/dev/null || groupadd -g 1000 docker 2>/dev/null || groupadd docker; \
+    fi
+
+# Εγκατάσταση εργαλείων για debugging, sudo και Ansible
+RUN apt-get install -y iputils-ping net-tools sudo ansible
+
+# Εγκατάσταση του kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && \
+    rm kubectl
+
+# Εγκατάσταση των Python dependencies για το Ansible (Kubernetes client) με τον σωστό τρόπο (apt)
+RUN apt-get install -y python3-kubernetes
+
+# Ρυθμίζουμε το Git για να επιτρέπει ασφαλή καταλόγους
+RUN git config --global --add safe.directory '*'
+
+# Copy entrypoint script για να ελέγχει το socket
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Παραμένουμε ως root (δεν επιστρέφουμε σε άλλον χρήστη)
+
+# Χρήση custom ENTRYPOINT για να ελέγξουμε το Docker socket και να ξεκινήσουμε τον Jenkins
+# Αφαιρούμε το /sbin/tini καθώς δεν είναι διαθέσιμο
+ENTRYPOINT ["/entrypoint.sh", "/usr/local/bin/jenkins.sh"]
+
+# Εκκίνηση του Jenkins
+CMD ["java", "-jar", "/usr/share/jenkins/jenkins.war"]

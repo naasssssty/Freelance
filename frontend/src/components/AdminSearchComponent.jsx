@@ -14,7 +14,7 @@ const AdminSearchComponent = ({ onSearchResult }) => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`/user/username/${searchUsername}`, {
+            const response = await axios.get(`/api/user/username/${searchUsername}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

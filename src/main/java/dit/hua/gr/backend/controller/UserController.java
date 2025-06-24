@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/user")
-@CrossOrigin(origins = "http://localhost:3000") // Επιτρέπει CORS από React
+@RequestMapping("/api/user")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"}) // Επιτρέπει CORS από React
 public class UserController {
 
     private final UserService userService;

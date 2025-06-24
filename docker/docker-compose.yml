@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   postgres:
@@ -74,19 +74,25 @@ services:
   mailhog:
     image: mailhog/mailhog
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "8032:8025"
+      - "8031:1025"
     networks:
       - freelancer_network
 
   jenkins:
-    image: custom-jenkins-with-docker:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    user: "0:0"
+    privileged: true
     ports:
       - "8081:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
-      - ~/.docker/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
     networks:
       - freelancer_network
 

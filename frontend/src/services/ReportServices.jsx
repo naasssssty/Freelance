@@ -1,36 +1,34 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
-
 export const fetchReports = async () => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/reports`, {
+        const response = await axios.get('/api/report', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+            },
         });
         return response.data;
     } catch (error) {
-        console.error('Error fetching reports:', error);
+        console.error("Error fetching reports:", error);
         throw error;
     }
 };
 
 export const updateReportStatus = async (reportId, status, adminResponse) => {
     try {
-        const response = await axios.put(
-            `${API_BASE_URL}/reports/${reportId}`,
-            null,
-            {
-                params: { status, adminResponse },
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            }
-        );
+        const response = await axios.put(`/api/report/${reportId}`, {
+            status: status,
+            adminResponse: adminResponse
+        }, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json',
+            },
+        });
         return response.data;
     } catch (error) {
-        console.error('Error updating report:', error);
+        console.error("Error updating report status:", error);
         throw error;
     }
 }; 

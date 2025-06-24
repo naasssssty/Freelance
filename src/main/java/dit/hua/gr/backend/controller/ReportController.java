@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/reports")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("/api/report")
+@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
 public class ReportController {
     private final ReportService reportService;
     private final ProjectService projectService;

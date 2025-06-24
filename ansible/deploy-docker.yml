@@ -1,0 +1,78 @@
+---
+- name: Deploy Freelance Application with Docker Compose
+  hosts: docker_hosts
+  gather_facts: false
+  vars:
+    docker_compose_dir: "../docker"
+    
+  tasks:
+    - name: Check if Docker is available
+      command: docker --version
+      register: docker_check
+      failed_when: false
+      changed_when: false
+      
+    - name: Fail if Docker is not available
+      fail:
+        msg: "Docker is not available. Please install Docker first."
+      when: docker_check.rc != 0
+      
+    - name: Check if Docker Compose is available
+      command: docker compose version
+      register: compose_check
+      failed_when: false
+      changed_when: false
+      
+    - name: Fail if Docker Compose is not available
+      fail:
+        msg: "Docker Compose is not available. Please install Docker Compose first."
+      when: compose_check.rc != 0
+      
+    - name: Stop existing containers
+      command: docker compose down
+      args:
+        chdir: "{{ docker_compose_dir }}"
+      ignore_errors: true
+      
+    - name: Pull latest images
+      command: docker compose pull
+      args:
+        chdir: "{{ docker_compose_dir }}"
+      ignore_errors: true
+      
+    - name: Build and start all services
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ docker_compose_dir }}"
+      register: compose_result
+      
+    - name: Wait for services to be healthy
+      command: docker compose ps
+      args:
+        chdir: "{{ docker_compose_dir }}"
+      register: services_status
+      until: "'unhealthy' not in services_status.stdout"
+      retries: 10
+      delay: 30
+      
+    - name: Display deployment status
+      debug:
+        msg: |
+          🎉 Docker deployment completed successfully!
+          
+          Services are running:
+          - Frontend: http://localhost:3000
+          - Backend: http://localhost:8080
+          - MinIO Console: http://localhost:9003
+          - MailHog: http://localhost:8032
+          - Jenkins: http://localhost:8081
+          
+    - name: Show running containers
+      command: docker compose ps
+      args:
+        chdir: "{{ docker_compose_dir }}"
+      register: containers_status
+      
+    - name: Display containers
+      debug:
+        var: containers_status.stdout_lines 

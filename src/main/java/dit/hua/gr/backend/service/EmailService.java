@@ -33,6 +33,7 @@ public class EmailService {
         
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("noreply@freelanceplatform.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(content);
@@ -66,6 +67,7 @@ public class EmailService {
         
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("noreply@freelanceplatform.com");
             message.setTo(to);
             message.setSubject(subject);
             message.setText(content);
@@ -82,6 +84,7 @@ public class EmailService {
 
     public void sendSimpleEmail(String to, String subject, String content) {
         SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("noreply@freelanceplatform.com");
         message.setTo(to);
         message.setSubject(subject);
         message.setText(content);

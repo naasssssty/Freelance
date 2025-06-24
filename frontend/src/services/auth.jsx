@@ -2,9 +2,8 @@
 
 import axios from "axios";
 
-// Create an instance of Axios with default configuration
+// Create an instance of Axios with default configuration for relative paths
 const apiClient = axios.create({
-    baseURL: "http://localhost:8080", // Replace with your backend URL
     headers: {
         "Content-Type": "application/json",
     },
@@ -13,7 +12,7 @@ const apiClient = axios.create({
 // Login API call
 export const login = async (credentials) => {
     try {
-        const response = await apiClient.post("/login", credentials);
+        const response = await apiClient.post("/api/login", credentials);
         return response; // Return the entire response object
     } catch (error) {
         throw error.response ? error.response.data : error; // Throw the error message from the server
@@ -23,7 +22,7 @@ export const login = async (credentials) => {
 // Register API call
 export const register = async (userData) => {
     try {
-        const response = await apiClient.post("/register", userData);
+        const response = await apiClient.post("/api/register", userData);
         return response.data; // Return the response data
     } catch (error) {
         throw error.response ? error.response.data : error;
