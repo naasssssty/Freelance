@@ -95,7 +95,7 @@ describe('ChatServices', () => {
                 const result = await ChatServices.sendMessage(testCase.projectId, testCase.content);
 
                 expect(axios.post).toHaveBeenCalledWith(
-                    `/chat/${testCase.projectId}/send`,
+                    `/api/chat/${testCase.projectId}/send`,
                     { content: testCase.content },
                     expect.any(Object)
                 );
@@ -172,7 +172,7 @@ describe('ChatServices', () => {
                 const result = await ChatServices.getMessages(projectId);
 
                 expect(axios.get).toHaveBeenCalledWith(
-                    `/chat/${projectId}/messages`,
+                    `/api/chat/${projectId}/messages`,
                     expect.any(Object)
                 );
                 expect(result).toEqual(mockResponse.data);

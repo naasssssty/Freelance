@@ -172,7 +172,7 @@ describe('ReportServices', () => {
 
                 const result = await ReportServices.updateReportStatus(reportId, status, adminResponse);
 
-                expect(axios.put).toHaveBeenCalledWith(`/report/${reportId}`, {
+                expect(axios.put).toHaveBeenCalledWith(`/api/report/${reportId}`, {
                     status: status,
                     adminResponse: adminResponse
                 }, expect.any(Object));
@@ -225,7 +225,7 @@ describe('ReportServices', () => {
 
                 await ReportServices.updateReportStatus(reportId, status, adminResponse);
 
-                expect(axios.put).toHaveBeenCalledWith(`/report/${reportId}`, expect.any(Object), expect.any(Object));
+                expect(axios.put).toHaveBeenCalledWith(`/api/report/${reportId}`, expect.any(Object), expect.any(Object));
             }
         });
 

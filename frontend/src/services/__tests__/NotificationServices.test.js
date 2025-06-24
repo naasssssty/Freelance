@@ -50,7 +50,7 @@ describe('NotificationServices', () => {
 
             const result = await NotificationServices.getNotifications();
 
-            expect(axios.get).toHaveBeenCalledWith('/notifications', {
+            expect(axios.get).toHaveBeenCalledWith('/api/notifications', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json'
@@ -114,7 +114,7 @@ describe('NotificationServices', () => {
 
             const result = await NotificationServices.getUnreadCount();
 
-            expect(axios.get).toHaveBeenCalledWith('/notifications/unread-count', {
+            expect(axios.get).toHaveBeenCalledWith('/api/notifications/unread-count', {
                 headers: {
                     'Authorization': 'Bearer mock.jwt.token',
                     'Content-Type': 'application/json'
@@ -172,7 +172,7 @@ describe('NotificationServices', () => {
             const result = await NotificationServices.markAsRead(notificationId);
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/notifications/123/read',
+                '/api/notifications/123/read',
                 null,
                 {
                     headers: {
@@ -211,7 +211,7 @@ describe('NotificationServices', () => {
             const result = await NotificationServices.markAllAsRead();
 
             expect(axios.put).toHaveBeenCalledWith(
-                '/notifications/mark-all-read',
+                '/api/notifications/mark-all-read',
                 null,
                 {
                     headers: {
