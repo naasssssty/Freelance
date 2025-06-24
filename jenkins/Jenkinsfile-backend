@@ -9,13 +9,6 @@ pipeline {
         SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout code from GitHub repository
-                git branch: 'A', url: 'https://github.com/naasssssty/Freelance.git'
-            }
-        }
-        
         stage('Compile') {
             steps {
                 echo 'Compiling the backend application...'
@@ -105,34 +98,21 @@ pipeline {
         
         stage('Deploy to Kubernetes') {
             steps {
-                echo 'Deploying to Kubernetes using Ansible...'
-                // Deploy using the Ansible plugin
-                ansiblePlaybook(
-                    playbook: 'ansible/deploy-kubernetes.yml',
-                    inventory: 'ansible/inventory.yml',
-                    installation: 'DefaultAnsible', // The name we configured in Jenkins Tools
-                    extraVars: [
-                        backend_image: "$DOCKER_IMAGE",
-                        frontend_image: 'papadooo/freelance-frontend:latest' // Assuming frontend is static for now
-                    ]
-                )
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // This is the definitive solution.
+                        // 1. `withCredentials` correctly creates the secret file and exports its path to the $KUBECONFIG environment variable.
+                        // 2. The `sh` step is called with SINGLE QUOTES ('...').
+                        // 3. This prevents the Jenkins/Groovy interpreter from tampering with the command string.
+                        // 4. The command is passed to the native shell, which correctly understands the $KUBECONFIG variable set by the step above.
+                        // No need to rewrite the API server URL anymore. Ensure the kubeconfig stored in
+                        // Jenkins credential `kubeconfig-secret` already points to https://127.0.0.1:50412
+                        // and contains the embedded certificate-authority-data (flattened & minified).
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                    }
+                }
             }
         }
-        // stage('Build Docker Image') {
-        //     steps {
-        //         // Build Docker image for backend
-        //         sh 'docker build -t $DOCKER_IMAGE .'
-        //     }
-        // }
-        // stage('Push Docker Image') {
-        //     steps {
-        //         // Push Docker image to Docker Hub
-        //         withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-        //             sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-        //             sh 'docker push $DOCKER_IMAGE'
-        //         }
-        //     }
-        // }
     }
     post {
         always {

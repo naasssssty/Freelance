@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '🔄 Checking out frontend code...'
-                git branch: 'A', url: 'https://github.com/naasssssty/Freelance.git'
+                git branch: 'konstantinos-local-dev', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
         
@@ -172,14 +172,13 @@ pipeline {
         
         stage('Deploy to Kubernetes') {
             steps {
-                echo '🚀 Deploying to Kubernetes using Ansible...'
-                // Deploy using Ansible playbook with current working images  
-                sh '''
-                    cd ansible
-                    ansible-playbook deploy-kubernetes.yml \
-                        --extra-vars "frontend_image=freelance-frontend:latest" \
-                        --extra-vars "backend_image=freelance-backend:latest"
-                '''
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        echo '🚀 Deploying to Kubernetes using Ansible...'
+                        // Deploy using Ansible playbook
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                    }
+                }
             }
         }
     }
