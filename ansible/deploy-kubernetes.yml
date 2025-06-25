@@ -6,9 +6,18 @@
   
   vars:
     namespace: "freelance"
-    kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
+    kubeconfig_path: "{{ kubeconfig_path | default(lookup('env', 'KUBECONFIG') | default('~/.kube/config', true)) }}"
   
   tasks:
+    - name: Debug deployment parameters
+      debug:
+        msg: |
+          🚀 Starting Kubernetes deployment
+          - Backend image: {{ backend_image | default('freelance-backend:latest') }}
+          - Frontend image: {{ frontend_image | default('freelance-frontend:latest') }}
+          - Kubeconfig: {{ kubeconfig_path }}
+          - Namespace: {{ namespace }}
+        
     - name: Create namespace
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
@@ -83,8 +92,8 @@
               spec:
                 containers:
                 - name: backend
-                  image: "{{ backend_image | default('freelance-backend:latest') }}"
-                  imagePullPolicy: IfNotPresent
+                  image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
+                  imagePullPolicy: Always
                   ports:
                   - containerPort: 8080
                   envFrom:
@@ -111,6 +120,26 @@
                       port: 8080
                     initialDelaySeconds: 30
                     periodSeconds: 10
+                    
+    - name: Ensure backend service exists
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: backend-service
+            namespace: "{{ namespace }}"
+          spec:
+            selector:
+              app: backend
+            ports:
+            - name: http
+              port: 8080
+              targetPort: 8080
+              protocol: TCP
+            type: ClusterIP
         
     - name: Update frontend deployment with new image
       kubernetes.core.k8s:
@@ -134,8 +163,8 @@
               spec:
                 containers:
                 - name: frontend
-                  image: "{{ frontend_image | default('freelance-frontend:latest') }}"
-                  imagePullPolicy: IfNotPresent
+                  image: "{{ frontend_image | default('papadooo/freelance-frontend:latest') }}"
+                  imagePullPolicy: Always
                   ports:
                   - containerPort: 80
                   resources:
@@ -165,18 +194,26 @@
                 - name: nginx-config
                   configMap:
                     name: nginx-config
-        
-    - name: Ensure backend service exists
-      kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
-        src: ../kubernetes/backend-deployment.yml
-        state: present
-        
+                    
     - name: Ensure frontend service exists
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
-        src: ../kubernetes/frontend-deployment.yml
         state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: frontend-service
+            namespace: "{{ namespace }}"
+          spec:
+            selector:
+              app: frontend
+            ports:
+            - name: http
+              port: 80
+              targetPort: 80
+              protocol: TCP
+            type: ClusterIP
         
     - name: Wait for application services to be ready
       kubernetes.core.k8s_info:
@@ -214,8 +251,8 @@
           ✅ Deployment completed successfully!
           
           🐳 Images used:
-          - Backend: {{ backend_image | default('freelance-backend:latest') }}
-          - Frontend: {{ frontend_image | default('freelance-frontend:latest') }}
+          - Backend: {{ backend_image | default('papadooo/freelance-backend:latest') }}
+          - Frontend: {{ frontend_image | default('papadooo/freelance-frontend:latest') }}
           
           📊 Pod Status:
           {% for pod in pods.resources %}

@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: freelance-frontend:latest  # Use local image built with docker build
-        imagePullPolicy: Never  # Use local image, don't pull from registry
+        image: papadooo/freelance-frontend:latest  # Use registry image by default
+        imagePullPolicy: Always  # Always pull the latest image
         ports:
         - containerPort: 80
         resources:

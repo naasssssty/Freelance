@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '🔄 Checking out frontend code...'
-                git branch: 'main', url: 'https://github.com/naasssssty/Freelance.git'
+                git branch: 'test', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
         
@@ -156,6 +156,8 @@ pipeline {
                 echo '🐳 Building Docker image...'
                 // Build Docker image for frontend using the correct Dockerfile
                 sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/'
+                // Tag with latest for local use
+                sh 'docker tag $DOCKER_IMAGE papadooo/freelance-frontend:latest'
             }
         }
         
@@ -166,6 +168,7 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                     sh 'docker push $DOCKER_IMAGE'
+                    sh 'docker push papadooo/freelance-frontend:latest'
                 }
             }
         }
@@ -174,20 +177,61 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                        echo '🚀 Deploying to Kubernetes using Ansible...'
-                        // Patch kubeconfig so that it is accessible from within the Jenkins container
+                        echo '🚀 Preparing for Kubernetes deployment...'
+                        
+                        // Create properly patched kubeconfig
                         sh '''
+                            # Copy original kubeconfig
+                            cp "$KUBECONFIG" /tmp/kubeconfig_original.yaml
+                            
+                            # Create patched version for container access
                             cp "$KUBECONFIG" /tmp/kubeconfig_patched.yaml
-                            sed -i 's#127.0.0.1#host.docker.internal#g' /tmp/kubeconfig_patched.yaml
-                            echo "After patching, server line:" && grep -n "server:" -A1 -B0 /tmp/kubeconfig_patched.yaml
+                            
+                            # Replace all instances of 127.0.0.1 with host.docker.internal
+                            sed -i 's#127\\.0\\.0\\.1#host.docker.internal#g' /tmp/kubeconfig_patched.yaml
+                            sed -i 's#localhost#host.docker.internal#g' /tmp/kubeconfig_patched.yaml
+                            
+                            echo "✅ Kubeconfig patched successfully"
+                            echo "📄 Server configuration:"
+                            grep -n "server:" /tmp/kubeconfig_patched.yaml || echo "No server found"
                         '''
+                        
+                        // Set the patched kubeconfig
                         env.KUBECONFIG = '/tmp/kubeconfig_patched.yaml'
 
-                        // Optional debug
-                        sh 'echo "Using patched kubeconfig:" && head -10 $KUBECONFIG'
+                        // Test connectivity with timeout
+                        sh '''
+                            echo "🔍 Testing Kubernetes connectivity..."
+                            timeout 60s kubectl cluster-info --kubeconfig=$KUBECONFIG || {
+                                echo "❌ Kubernetes connectivity failed"
+                                echo "📋 Kubeconfig content:"
+                                cat $KUBECONFIG
+                                exit 1
+                            }
+                            echo "✅ Kubernetes connectivity confirmed"
+                        '''
+                        
+                        // Ensure namespace exists
+                        sh '''
+                            echo "📁 Ensuring namespace exists..."
+                            kubectl create namespace freelance --kubeconfig=$KUBECONFIG --dry-run=client -o yaml | kubectl apply --kubeconfig=$KUBECONFIG -f -
+                        '''
 
-                        // Deploy using Ansible playbook with correct image tag
-                        sh "ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml --extra-vars frontend_image=$DOCKER_IMAGE"
+                        // Deploy using Ansible with correct image tag
+                        sh """
+                            echo "🚀 Deploying frontend with image: $DOCKER_IMAGE"
+                            ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml \\
+                                --extra-vars "frontend_image=$DOCKER_IMAGE" \\
+                                --extra-vars "kubeconfig_path=$KUBECONFIG" \\
+                                -v
+                        """
+                        
+                        // Verify deployment
+                        sh '''
+                            echo "🔍 Verifying deployment..."
+                            kubectl get pods -n freelance --kubeconfig=$KUBECONFIG
+                            kubectl get services -n freelance --kubeconfig=$KUBECONFIG
+                        '''
                     }
                 }
             }
@@ -201,6 +245,8 @@ pipeline {
                 artifacts: 'frontend/coverage/**/*',
                 allowEmptyArchive: true
             )
+            // Clean up temporary files
+            sh 'rm -f /tmp/kubeconfig_*.yaml || true'
         }
         success {
             echo '✅ Frontend pipeline completed successfully!'
