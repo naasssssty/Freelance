@@ -103,7 +103,8 @@ pipeline {
                         // Patch kubeconfig for container access
                         sh '''
                             cp "$KUBECONFIG" /tmp/kubeconfig_patched.yaml
-                            sed -i 's/127\\.0\\.0\\.1/host.docker.internal/' /tmp/kubeconfig_patched.yaml
+                            sed -i 's#127.0.0.1#host.docker.internal#g' /tmp/kubeconfig_patched.yaml
+                            echo "After patching, server line:" && grep -n "server:" -A1 -B0 /tmp/kubeconfig_patched.yaml
                         '''
                         env.KUBECONFIG = '/tmp/kubeconfig_patched.yaml'
                         
