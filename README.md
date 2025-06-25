@@ -40,29 +40,48 @@
 Αρχικά, κλωνοποιήστε το αποθετήριο στον τοπικό σας υπολογιστή:
 ```bash
 git clone https://github.com/naasssssty/Freelance.git
-
 ```
 
-# Jenkins CI/CD Pipeline
+## 🔧 Jenkins CI/CD Pipeline
 
-## Jenkins Setup
+### Σημαντικό: Εκκίνηση kubectl proxy
+**Πριν τρέξετε οποιοδήποτε Jenkins pipeline, πρέπει να εκκινήσετε το kubectl proxy:**
 
-### Option 1: Standard Docker Setup (Current)
 ```bash
-# Start kubectl proxy (required for container access)
-kubectl proxy --port=8080 --address=0.0.0.0 --accept-hosts='^.*' &
+# Εκκίνηση kubectl proxy για Jenkins integration
+./scripts/start-kubectl-proxy.sh
 
-# Jenkins will auto-detect Docker gateway IP
+# Ή χειροκίνητα:
+nohup kubectl proxy --port=8080 --address='0.0.0.0' --accept-hosts='^.*' > kubectl-proxy.log 2>&1 &
 ```
 
-### Option 2: Host Network Mode (Alternative)
-If you want to run Jenkins with direct host network access:
+### Γιατί χρειάζεται το kubectl proxy;
+- Το Jenkins container δεν έχει άμεση πρόσβαση στο Kubernetes cluster
+- Το kubectl proxy δημιουργεί ένα HTTP endpoint στο `http://172.17.0.1:8080`
+- Αυτό επιτρέπει στο Jenkins να επικοινωνεί με το Kubernetes API
+
+### Jenkins Setup
+
+#### Option 1: Standard Docker Setup (Current)
+```bash
+# 1. Εκκίνηση kubectl proxy (ΑΠΑΡΑΙΤΗΤΟ)
+./scripts/start-kubectl-proxy.sh
+
+# 2. Εκκίνηση Jenkins
+cd docker
+docker-compose -f docker-compose-jenkins.yml up -d
+
+# Το Jenkins θα εντοπίσει αυτόματα το Docker gateway IP
+```
+
+#### Option 2: Host Network Mode (Alternative)
+Αν θέλετε να τρέξετε το Jenkins με άμεση πρόσβαση στο host network:
 
 ```bash
-# Stop existing Jenkins container
+# Σταμάτημα υπάρχοντος Jenkins container
 docker stop jenkins
 
-# Run Jenkins with host network
+# Εκτέλεση Jenkins με host network
 docker run -d \
   --name jenkins \
   --network host \
@@ -70,37 +89,61 @@ docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
   jenkins/jenkins:lts
 
-# With host network, you can use localhost directly
-# Update kubeconfig to use: http://localhost:8080
+# Με host network, μπορείτε να χρησιμοποιήσετε localhost απευθείας
+# Ενημερώστε το kubeconfig να χρησιμοποιεί: http://localhost:8080
 ```
 
 ### Cross-Machine Deployment
 
-For deploying across different machines:
+Για deployment σε διαφορετικές μηχανές:
 
-1. **Ensure kubectl proxy is running** on each target machine:
+1. **Βεβαιωθείτε ότι kubectl proxy τρέχει** σε κάθε target μηχανή:
    ```bash
    kubectl proxy --port=8080 --address=0.0.0.0 --accept-hosts='^.*' &
    ```
 
-2. **The pipeline automatically detects** the Docker gateway IP on each machine
+2. **Το pipeline εντοπίζει αυτόματα** το Docker gateway IP σε κάθε μηχανή
 
-3. **Alternative**: Use a service discovery mechanism or environment variables to configure the Kubernetes endpoint
+3. **Εναλλακτικά**: Χρησιμοποιήστε service discovery ή environment variables για να ρυθμίσετε το Kubernetes endpoint
 
 ### Environment Variable Configuration
 
-You can override the Kubernetes server URL by setting the `KUBE_SERVER_URL` environment variable in Jenkins:
+Μπορείτε να παρακάμψετε το Kubernetes server URL ορίζοντας τη μεταβλητή περιβάλλοντος `KUBE_SERVER_URL` στο Jenkins:
 
 ```bash
-# In Jenkins System Configuration > Global Properties > Environment Variables
-KUBE_SERVER_URL=http://localhost:8080        # For host network mode
-KUBE_SERVER_URL=http://192.168.1.100:8080    # For specific machine IP
-KUBE_SERVER_URL=https://k8s.example.com:6443 # For external cluster
+# Στο Jenkins System Configuration > Global Properties > Environment Variables
+KUBE_SERVER_URL=http://localhost:8080        # Για host network mode
+KUBE_SERVER_URL=http://192.168.1.100:8080    # Για συγκεκριμένη IP μηχανής
+KUBE_SERVER_URL=https://k8s.example.com:6443 # Για εξωτερικό cluster
 ```
 
-**Priority Order:**
-1. `KUBE_SERVER_URL` environment variable (if set)
-2. Auto-detected Docker gateway IP (fallback)
+**Σειρά Προτεραιότητας:**
+1. `KUBE_SERVER_URL` environment variable (αν οριστεί)
+2. Αυτόματα εντοπισμένο Docker gateway IP (fallback)
+
+### Troubleshooting
+
+#### Αν το deployment αποτυγχάνει με "Connection refused":
+1. Ελέγξτε αν το kubectl proxy τρέχει:
+   ```bash
+   ps aux | grep "kubectl proxy"
+   ```
+
+2. Εκκινήστε το kubectl proxy αν δεν τρέχει:
+   ```bash
+   ./scripts/start-kubectl-proxy.sh
+   ```
+
+3. Ελέγξτε τη σύνδεση:
+   ```bash
+   curl http://localhost:8080/api/v1/namespaces
+   ```
+
+#### Αν το Minikube δεν τρέχει:
+```bash
+minikube status
+minikube start  # αν δεν τρέχει
+```
 
 ## Kubernetes Access Methods
 
