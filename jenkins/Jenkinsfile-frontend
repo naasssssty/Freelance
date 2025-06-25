@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo '🔄 Checking out frontend code...'
-                git branch: 'konstantinos-local-dev', url: 'https://github.com/naasssssty/Freelance.git'
+                git branch: 'main', url: 'https://github.com/naasssssty/Freelance.git'
             }
         }
         

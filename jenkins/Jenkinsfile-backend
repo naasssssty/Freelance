@@ -100,6 +100,16 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // Debug: Check what kubeconfig is being used
+                        sh 'echo "KUBECONFIG path: $KUBECONFIG"'
+                        sh 'echo "Kubeconfig content (first 10 lines):"'
+                        sh 'head -10 $KUBECONFIG'
+                        sh 'echo "Server URL from kubeconfig:"'
+                        sh 'grep -A 1 -B 1 "server:" $KUBECONFIG || echo "No server found"'
+                        
+                        // Test kubectl connectivity
+                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG || echo "kubectl failed"'
+                        
                         // This is the definitive solution.
                         // 1. `withCredentials` correctly creates the secret file and exports its path to the $KUBECONFIG environment variable.
                         // 2. The `sh` step is called with SINGLE QUOTES ('...').
