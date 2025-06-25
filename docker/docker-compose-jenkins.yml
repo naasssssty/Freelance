@@ -14,6 +14,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - ../:/workspace:rw
       - ~/.kube:/root/.kube:ro
+      - ~/.minikube:/root/.minikube:ro
+      - ../kubernetes/kubeconfig-jenkins:/root/.kube/config:ro
     environment:
       - JENKINS_OPTS=--httpPort=8080
       - DOCKER_HOST=unix:///var/run/docker.sock
