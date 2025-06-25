@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    container_name: freelance-jenkins
+    user: "0:0"
+    privileged: true
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - KUBECONFIG=/root/.kube/config
+      - JAVA_OPTS=-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      # Mount the stable kubeconfig
+      - ../kubernetes/kubeconfig-jenkins-final:/root/.kube/config:ro
+      # Mount the entire project for Ansible access
+      - ..:/workspace:rw
+    working_dir: /workspace
+    networks:
+      - jenkins_network
+    extra_hosts:
+      # Stable mapping for Kubernetes API access
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  jenkins_home:
+    name: jenkins_home
+
+networks:
+  jenkins_network:
+    name: jenkins_network
+    driver: bridge 
