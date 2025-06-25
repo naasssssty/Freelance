@@ -18,7 +18,8 @@ services:
     environment:
       - JENKINS_OPTS=--httpPort=8080
       - DOCKER_HOST=unix:///var/run/docker.sock
-    network_mode: "host"
+    networks:
+      - jenkins-network
     restart: unless-stopped
     user: root
     privileged: true
