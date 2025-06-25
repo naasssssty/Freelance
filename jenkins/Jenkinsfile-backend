@@ -100,6 +100,49 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // Check if KUBE_SERVER_URL is provided as environment variable
+                        def kubeServerUrl = env.KUBE_SERVER_URL
+                        
+                        if (!kubeServerUrl) {
+                            // Dynamically find Docker gateway IP for cross-machine compatibility
+                            def dockerGatewayIP = sh(
+                                script: "docker network inspect bridge | grep 'Gateway' | head -1 | sed 's/.*\"Gateway\": \"\\([^\"]*\\)\".*/\\1/'",
+                                returnStdout: true
+                            ).trim()
+                            
+                            kubeServerUrl = "http://${dockerGatewayIP}:8080"
+                            echo "Auto-detected Docker Gateway IP: ${dockerGatewayIP}"
+                        } else {
+                            echo "Using provided KUBE_SERVER_URL: ${kubeServerUrl}"
+                        }
+                        
+                        // Create a dynamic kubeconfig that uses the detected/provided server URL
+                        sh """
+                            cat > /tmp/dynamic-kubeconfig.yaml << EOF
+apiVersion: v1
+clusters:
+- cluster:
+    server: ${kubeServerUrl}
+    insecure-skip-tls-verify: true
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user: {}
+EOF
+                        """
+                        
+                        // Export the dynamic kubeconfig
+                        env.KUBECONFIG = '/tmp/dynamic-kubeconfig.yaml'
+                        
                         // Debug: Check what kubeconfig is being used
                         sh 'echo "KUBECONFIG path: $KUBECONFIG"'
                         sh 'echo "Kubeconfig content (first 10 lines):"'
@@ -110,14 +153,7 @@ pipeline {
                         // Test kubectl connectivity
                         sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG || echo "kubectl failed"'
                         
-                        // This is the definitive solution.
-                        // 1. `withCredentials` correctly creates the secret file and exports its path to the $KUBECONFIG environment variable.
-                        // 2. The `sh` step is called with SINGLE QUOTES ('...').
-                        // 3. This prevents the Jenkins/Groovy interpreter from tampering with the command string.
-                        // 4. The command is passed to the native shell, which correctly understands the $KUBECONFIG variable set by the step above.
-                        // No need to rewrite the API server URL anymore. Ensure the kubeconfig stored in
-                        // Jenkins credential `kubeconfig-secret` already points to https://127.0.0.1:50412
-                        // and contains the embedded certificate-authority-data (flattened & minified).
+                        // Run the deployment
                         sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
                     }
                 }
