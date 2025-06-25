@@ -12,10 +12,11 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
+  # Main application domain
   - host: freelance.local
     http:
       paths:
-      # API endpoints - route to backend service (correct service name)
+      # API endpoints - route to backend service (highest priority)
       - path: /api
         pathType: Prefix
         backend:
@@ -23,27 +24,33 @@ spec:
             name: backend-service
             port:
               number: 8080
-      # MinIO Console - route to minio service
-      - path: /minio
-        pathType: Prefix
-        backend:
-          service:
-            name: minio-service
-            port:
-              number: 9001
-      # Static files and frontend - route to frontend service
-      - path: /static
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
-            port:
-              number: 80
-      # Frontend root - catches remaining paths (React Router)
+      # Frontend - catches ALL remaining paths (React Router + static files)
       - path: /
         pathType: Prefix
         backend:
           service:
             name: frontend-service
             port:
-              number: 80 
+              number: 80
+  # MailHog subdomain
+  - host: mailhog.freelance.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mailhog-service
+            port:
+              number: 8025
+  # MinIO subdomain
+  - host: minio.freelance.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9001 
