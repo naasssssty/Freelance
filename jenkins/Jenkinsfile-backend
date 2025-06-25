@@ -100,48 +100,12 @@ pipeline {
             steps {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                        // Check if KUBE_SERVER_URL is provided as environment variable
-                        def kubeServerUrl = env.KUBE_SERVER_URL
-                        
-                        if (!kubeServerUrl) {
-                            // Dynamically find Docker gateway IP for cross-machine compatibility
-                            def dockerGatewayIP = sh(
-                                script: "docker network inspect bridge | grep 'Gateway' | head -1 | sed 's/.*\"Gateway\": \"\\([^\"]*\\)\".*/\\1/'",
-                                returnStdout: true
-                            ).trim()
-                            
-                            kubeServerUrl = "http://${dockerGatewayIP}:8080"
-                            echo "Auto-detected Docker Gateway IP: ${dockerGatewayIP}"
-                        } else {
-                            echo "Using provided KUBE_SERVER_URL: ${kubeServerUrl}"
-                        }
-                        
-                        // Create a dynamic kubeconfig that uses the detected/provided server URL
-                        sh """
-                            cat > /tmp/dynamic-kubeconfig.yaml << EOF
-apiVersion: v1
-clusters:
-- cluster:
-    server: ${kubeServerUrl}
-    insecure-skip-tls-verify: true
-  name: minikube
-contexts:
-- context:
-    cluster: minikube
-    namespace: default
-    user: minikube
-  name: minikube
-current-context: minikube
-kind: Config
-preferences: {}
-users:
-- name: minikube
-  user: {}
-EOF
-                        """
-                        
-                        // Export the dynamic kubeconfig
-                        env.KUBECONFIG = '/tmp/dynamic-kubeconfig.yaml'
+                        // Patch kubeconfig for container access
+                        sh '''
+                            cp "$KUBECONFIG" /tmp/kubeconfig_patched.yaml
+                            sed -i 's/127\\.0\\.0\\.1/host.docker.internal/' /tmp/kubeconfig_patched.yaml
+                        '''
+                        env.KUBECONFIG = '/tmp/kubeconfig_patched.yaml'
                         
                         // Debug: Check what kubeconfig is being used
                         sh 'echo "KUBECONFIG path: $KUBECONFIG"'
@@ -153,8 +117,8 @@ EOF
                         // Test kubectl connectivity
                         sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG || echo "kubectl failed"'
                         
-                        // Run the deployment
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                        // Run the deployment with correct image tag
+                        sh "ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml --extra-vars backend_image=$DOCKER_IMAGE"
                     }
                 }
             }

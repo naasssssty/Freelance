@@ -175,8 +175,18 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
                         echo '🚀 Deploying to Kubernetes using Ansible...'
-                        // Deploy using Ansible playbook
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                        // Patch kubeconfig so that it is accessible from within the Jenkins container
+                        sh '''
+                            cp "$KUBECONFIG" /tmp/kubeconfig_patched.yaml
+                            sed -i 's/127\\.0\\.0\\.1/host.docker.internal/' /tmp/kubeconfig_patched.yaml
+                        '''
+                        env.KUBECONFIG = '/tmp/kubeconfig_patched.yaml'
+
+                        // Optional debug
+                        sh 'echo "Using patched kubeconfig:" && head -10 $KUBECONFIG'
+
+                        // Deploy using Ansible playbook with correct image tag
+                        sh "ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml --extra-vars frontend_image=$DOCKER_IMAGE"
                     }
                 }
             }
