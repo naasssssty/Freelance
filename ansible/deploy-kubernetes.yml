@@ -6,10 +6,12 @@
   
   vars:
     namespace: "freelance"
+    kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
   
   tasks:
     - name: Create namespace
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         name: "{{ namespace }}"
         api_version: v1
         kind: Namespace
@@ -17,26 +19,31 @@
         
     - name: Apply ConfigMap and Secrets
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/configmap.yml
         state: present
         
     - name: Deploy PostgreSQL
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/postgres-deployment.yml
         state: present
         
     - name: Deploy MailHog
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/mailhog-deployment.yml
         state: present
         
     - name: Deploy MinIO
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/minio-deployment.yml
         state: present
         
     - name: Wait for infrastructure services to be ready
       kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: v1
         kind: Pod
         namespace: "{{ namespace }}"
@@ -50,11 +57,13 @@
         
     - name: Apply Nginx ConfigMap
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/nginx-configmap.yml
         state: present
         
     - name: Update backend deployment with new image
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         state: present
         definition:
           apiVersion: apps/v1
@@ -105,6 +114,7 @@
         
     - name: Update frontend deployment with new image
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         state: present
         definition:
           apiVersion: apps/v1
@@ -158,16 +168,19 @@
         
     - name: Ensure backend service exists
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/backend-deployment.yml
         state: present
         
     - name: Ensure frontend service exists
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/frontend-deployment.yml
         state: present
         
     - name: Wait for application services to be ready
       kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: apps/v1
         kind: Deployment
         namespace: "{{ namespace }}"
@@ -183,11 +196,13 @@
         
     - name: Deploy Ingress
       kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
         src: ../kubernetes/ingress.yml
         state: present
         
     - name: Display deployment status
       kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
         api_version: v1
         kind: Pod
         namespace: "{{ namespace }}"
