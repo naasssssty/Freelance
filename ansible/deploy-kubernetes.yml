@@ -70,157 +70,17 @@
         src: ../kubernetes/nginx-configmap.yml
         state: present
         
-    - name: Update backend deployment with new image
+    - name: Deploy Backend
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/backend-deployment.yml
         state: present
-        definition:
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: backend
-            namespace: "{{ namespace }}"
-          spec:
-            replicas: 2
-            selector:
-              matchLabels:
-                app: backend
-            template:
-              metadata:
-                labels:
-                  app: backend
-              spec:
-                containers:
-                - name: backend
-                  image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
-                  imagePullPolicy: Always
-                  env:
-                    - name: JAVA_TOOL_OPTIONS
-                      value: "-Xmx768m"
-                  envFrom:
-                    - configMapRef:
-                        name: freelance-config
-                    - secretRef:
-                        name: freelance-secrets
-                  ports:
-                  - containerPort: 8080
-                  resources:
-                    requests:
-                      memory: "512Mi"
-                      cpu: "500m"
-                    limits:
-                      memory: "1Gi"
-                      cpu: "1000m"
-                  livenessProbe:
-                    httpGet:
-                      path: /actuator/health
-                      port: 8080
-                    initialDelaySeconds: 180
-                    periodSeconds: 30
-                    timeoutSeconds: 5
-                    failureThreshold: 5
-                  readinessProbe:
-                    httpGet:
-                      path: /actuator/health
-                      port: 8080
-                    initialDelaySeconds: 90
-                    periodSeconds: 15
-                    timeoutSeconds: 5
-                    failureThreshold: 10
-                    
-    - name: Ensure backend service exists
-      kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Service
-          metadata:
-            name: backend-service
-            namespace: "{{ namespace }}"
-          spec:
-            selector:
-              app: backend
-            ports:
-            - name: http
-              port: 8080
-              targetPort: 8080
-              protocol: TCP
-            type: ClusterIP
         
-    - name: Update frontend deployment with new image
+    - name: Deploy Frontend  
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/frontend-deployment.yml
         state: present
-        definition:
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: frontend
-            namespace: "{{ namespace }}"
-          spec:
-            replicas: 2
-            selector:
-              matchLabels:
-                app: frontend
-            template:
-              metadata:
-                labels:
-                  app: frontend
-              spec:
-                containers:
-                - name: frontend
-                  image: "{{ frontend_image | default('papadooo/freelance-frontend:latest') }}"
-                  imagePullPolicy: Always
-                  ports:
-                  - containerPort: 80
-                  resources:
-                    requests:
-                      memory: "128Mi"
-                      cpu: "100m"
-                    limits:
-                      memory: "256Mi"
-                      cpu: "200m"
-                  volumeMounts:
-                  - name: nginx-config
-                    mountPath: /etc/nginx/conf.d/default.conf
-                    subPath: default.conf
-                  livenessProbe:
-                    httpGet:
-                      path: /
-                      port: 80
-                    initialDelaySeconds: 30
-                    periodSeconds: 30
-                  readinessProbe:
-                    httpGet:
-                      path: /
-                      port: 80
-                    initialDelaySeconds: 10
-                    periodSeconds: 10
-                volumes:
-                - name: nginx-config
-                  configMap:
-                    name: nginx-config
-                    
-    - name: Ensure frontend service exists
-      kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
-        state: present
-        definition:
-          apiVersion: v1
-          kind: Service
-          metadata:
-            name: frontend-service
-            namespace: "{{ namespace }}"
-          spec:
-            selector:
-              app: frontend
-            ports:
-            - name: http
-              port: 80
-              targetPort: 80
-              protocol: TCP
-            type: ClusterIP
         
     - name: Wait for application services to be ready
       kubernetes.core.k8s_info:
@@ -238,7 +98,7 @@
         - backend
         - frontend
       register: app_deployments
-      ignore_errors: yes  # Temporarily ignore failures to allow debugging
+      ignore_errors: yes
       loop_control:
         loop_var: item
 
