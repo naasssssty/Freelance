@@ -16,56 +16,56 @@
 
 ```mermaid
 graph TD
-    subgraph "Εργαλεία DevOps & CI/CD"
-        Git["🐙<br/>Git Repository<br/>(Monorepo)"]
-        Jenkins["🏗️<br/>Jenkins Server"]
-        DockerImage["🖼️<br/>Docker Image"]
-        DockerHub["🐳<br/>Docker Hub"]
-        Ansible["⚙️<br/>Ansible"]
+    subgraph "CI/CD Pipeline"
+        Developer["Developer"] -- "1. Git Push" --> GitRepo("Git Repository (Monorepo)");
+        GitRepo -- "2. Webhook" --> Jenkins;
+        Jenkins -- "3. Build, Test & Create Image" --> DockerHub("Docker Hub");
+        Jenkins -- "4. Run Ansible Playbook" --> Ansible;
     end
 
-    subgraph "Αρχιτεκτονική Εφαρμογής (Kubernetes)"
-        User["👨‍💻<br/>Χρήστηs (Browser)"]
-        Ingress["🌐<br/>Ingress Controller"]
-        Frontend["⚛️<br/>Frontend Service<br/>(React)"]
-        Backend["☕<br/>Backend Service<br/>(Spring Boot)"]
-        Database["🗄️<br/>PostgreSQL"]
-        MinIO["📦<br/>MinIO<br/>(Object Storage)"]
-        MailHog["✉️<br/>MailHog<br/>(Email Server)"]
+    subgraph "Application Architecture (Deployed on Kubernetes)"
+        User("User / Browser") -- "HTTPS" --> Ingress;
+        
+        subgraph "Kubernetes Cluster"
+            Ansible -- "5. Deploy Resources" --> Ingress("Ingress Controller");
+            Ansible -- "5. Deploy Resources" --> FrontendService("Frontend Service");
+            Ansible -- "5. Deploy Resources" --> BackendService("Backend Service");
+            Ansible -- "5. Deploy Resources" --> Database("PostgreSQL Service");
+            Ansible -- "5. Deploy Resources" --> Minio("MinIO Service");
+            Ansible -- "5. Deploy Resources" --> Mailhog("MailHog Service");
+
+            DockerHub -- "6. Pull Image" --> FrontendPod("Frontend Pod (React)");
+            DockerHub -- "6. Pull Image" --> BackendPod("Backend Pod (Spring Boot)");
+
+            Ingress -- "Route /" --> FrontendService;
+            Ingress -- "Route /api/**" --> BackendService;
+            
+            FrontendService --> FrontendPod;
+            BackendService --> BackendPod;
+
+            FrontendPod -- "REST API Call" --> BackendService;
+            BackendPod -- "JDBC" --> Database;
+            BackendPod -- "S3 API" --> Minio;
+            BackendPod -- "SMTP" --> Mailhog;
+        end
     end
-
-    %% CI/CD Flow
-    Git -- "1. Push Κώδικα" --> Jenkins
-    Jenkins -- "2. Build & Test" --> DockerImage
-    DockerImage -- "3. Push στο Registry" --> DockerHub
-    Jenkins -- "4. Εκτελεί Ansible" --> Ansible
-
-    %% Deployment Flow
-    Ansible -- "5. Deploy Manifests" --> Ingress
-    Ansible -- "5. Deploy Manifests" --> Frontend
-    Ansible -- "5. Deploy Manifests" --> Backend
-    DockerHub -- "6. Pull Image" --> Frontend
-    DockerHub -- "6. Pull Image" --> Backend
-    
-    %% Application Flow
-    User -- "HTTPS" --> Ingress
-    Ingress -- "Route" --> Frontend
-    Frontend -- "REST API" --> Backend
-    Backend -- "JDBC" --> Database
-    Backend -- "S3 API" --> MinIO
-    Backend -- "SMTP" --> MailHog
 
     %% Styling
+    style Developer fill:#f5f5f5,stroke:#333
     style Jenkins fill:#f9d479,stroke:#333
-    style Ansible fill:#ee0000,stroke:#333
-    style Frontend fill:#61DAFB,stroke:#333
-    style Backend fill:#6DB33F,stroke:#333
-    style Database fill:#336791,stroke:#333,color:#fff
+    style Ansible fill:#ee0000,stroke:#333,color:white
     style DockerHub fill:#0db7ed,stroke:#333
-    style Git fill:#f1502f,stroke:#333
-    style MinIO fill:#c72c41,stroke:#333,color:#fff
-    style MailHog fill:#80a480,stroke:#333,color:#fff
+    style GitRepo fill:#f1502f,stroke:#333,color:white
+    
+    style User fill:#f5f5f5,stroke:#333
     style Ingress fill:#99d9ea,stroke:#333
+    style FrontendPod fill:#61DAFB,stroke:#333
+    style BackendPod fill:#6DB33F,stroke:#333
+    style Database fill:#336791,stroke:#333,color:white
+    style Minio fill:#c72c41,stroke:#333,color:white
+    style Mailhog fill:#80a480,stroke:#333,color:white
+    style FrontendService fill:#61DAFB,stroke:#333,stroke-dasharray: 5 5
+    style BackendService fill:#6DB33F,stroke:#333,stroke-dasharray: 5 5
 ```
 
 ---
