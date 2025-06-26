@@ -1,5 +1,5 @@
 ---
-- name: Deploy Backend to Kubernetes
+- name: Deploy Backend and its Dependencies to Kubernetes
   hosts: localhost
   connection: local
   gather_facts: false
@@ -9,14 +9,52 @@
     kubeconfig_path: "{{ kubeconfig_path | default(lookup('env', 'KUBECONFIG') | default('~/.kube/config', true)) }}"
   
   tasks:
-    - name: Debug backend deployment parameters
-      debug:
-        msg: |
-          🚀 Starting Kubernetes Backend deployment
-          - Backend image: {{ backend_image }}
-          - Kubeconfig: {{ kubeconfig_path }}
-          - Namespace: {{ namespace }}
-        
+    - name: Create namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        name: "{{ namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Apply ConfigMap and Secrets
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/configmap.yml
+        state: present
+
+    - name: Deploy PostgreSQL
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/postgres-deployment.yml
+        state: present
+
+    - name: Deploy MailHog
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/mailhog-deployment.yml
+        state: present
+
+    - name: Deploy MinIO
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/minio-deployment.yml
+        state: present
+
+    - name: Wait for infrastructure services to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Pod
+        namespace: "{{ namespace }}"
+        label_selectors:
+          - app in (postgres,mailhog,minio)
+        wait: yes
+        wait_condition:
+          type: Ready
+          status: "True"
+        wait_timeout: 300
+
     - name: Deploy Backend using template
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
