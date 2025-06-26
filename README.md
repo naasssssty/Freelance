@@ -17,36 +17,37 @@
 ```mermaid
 graph TD
     subgraph "CI/CD Pipeline"
-        Developer["Developer"] -- "1. Git Push" --> GitRepo("Git Repository (Monorepo)");
-        GitRepo -- "2. Webhook" --> Jenkins;
-        Jenkins -- "3. Build, Test & Create Image" --> DockerHub("Docker Hub");
-        Jenkins -- "4. Run Ansible Playbook" --> Ansible;
+        Developer["Developer"] -- "Git Push" --> GitRepo("Git Repository");
+        GitRepo -- "Webhook" --> Jenkins;
+        Jenkins -- "Build, Test & Create Image" --> DockerHub("Docker Hub");
+        Jenkins -- "Run Ansible Playbook" --> Ansible;
     end
 
-    subgraph "Application Architecture (Deployed on Kubernetes)"
-        User("User / Browser") -- "HTTPS" --> Ingress;
+    subgraph "Application Architecture (Kubernetes)"
+        User("User / Browser") -- "HTTPS" --> Ingress("Ingress Controller");
         
         subgraph "Kubernetes Cluster"
-            Ansible -- "5. Deploy Resources" --> Ingress("Ingress Controller");
-            Ansible -- "5. Deploy Resources" --> FrontendService("Frontend Service");
-            Ansible -- "5. Deploy Resources" --> BackendService("Backend Service");
-            Ansible -- "5. Deploy Resources" --> Database("PostgreSQL Service");
-            Ansible -- "5. Deploy Resources" --> Minio("MinIO Service");
-            Ansible -- "5. Deploy Resources" --> Mailhog("MailHog Service");
+            Ansible -- "Deploy Resources" --> K8sResources{{Kubernetes Resources}};
+            
+            K8sResources -- "Defines" --> FrontendService("Frontend Service");
+            K8sResources -- "Defines" --> BackendService("Backend Service");
+            K8sResources -- "Defines" --> Database("DB Service");
+            K8sResources -- "Defines" --> Minio("MinIO Service");
+            K8sResources -- "Defines" --> Mailhog("MailHog Service");
 
-            DockerHub -- "6. Pull Image" --> FrontendPod("Frontend Pod (React)");
-            DockerHub -- "6. Pull Image" --> BackendPod("Backend Pod (Spring Boot)");
+            DockerHub -- "Pull Image" --> FrontendPod("Frontend Pod (React)");
+            DockerHub -- "Pull Image" --> BackendPod("Backend Pod (Spring Boot)");
 
-            Ingress -- "Route /" --> FrontendService;
-            Ingress -- "Route /api/**" --> BackendService;
+            Ingress -- "Route Traffic" --> FrontendService;
+            Ingress -- "Route Traffic" --> BackendService;
             
             FrontendService --> FrontendPod;
             BackendService --> BackendPod;
 
-            FrontendPod -- "REST API Call" --> BackendService;
-            BackendPod -- "JDBC" --> Database;
-            BackendPod -- "S3 API" --> Minio;
-            BackendPod -- "SMTP" --> Mailhog;
+            FrontendPod -- "REST API" --> BackendService;
+            BackendPod -- "DB Connection" --> Database;
+            BackendPod -- "File Storage" --> Minio;
+            BackendPod -- "Email" --> Mailhog;
         end
     end
 
@@ -59,6 +60,7 @@ graph TD
     
     style User fill:#f5f5f5,stroke:#333
     style Ingress fill:#99d9ea,stroke:#333
+    style K8sResources fill:#e8e8e8,stroke:#333
     style FrontendPod fill:#61DAFB,stroke:#333
     style BackendPod fill:#6DB33F,stroke:#333
     style Database fill:#336791,stroke:#333,color:white
