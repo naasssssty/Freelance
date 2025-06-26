@@ -15,45 +15,57 @@
 Το παρακάτω διάγραμμα απεικονίζει τη συνολική αρχιτεκτονική της λύσης μας. Διακρίνεται το CI/CD pipeline που αναλαμβάνει την αυτοματοποίηση της διαδικασίας build-test-deploy, καθώς και η αρχιτεκτονική της εφαρμογής όπως αυτή εκτελείται μέσα σε ένα Kubernetes cluster.
 
 ```mermaid
-graph TD;
-    subgraph "Εργαλεία DevOps & CI/CD";
-        Git[("🐙<br/>Git Repository<br/>(Monorepo)")] -- "1. Push Κώδικα" --> Jenkins;
-        Jenkins[("🏗️<br/>Jenkins Server")] -- "2. Build & Test" --> DockerImage[("🖼️<br/>Docker Image")];
-        DockerImage -- "3. Push στο Registry" --> DockerHub[("🐳<br/>Docker Hub")];
-        Jenkins -- "4. Εκτελεί Ansible" --> Ansible;
-        Ansible[("⚙️<br/>Ansible")] -- "5. Deploy" --> Kubernetes;
+graph TD
+    subgraph "Εργαλεία DevOps & CI/CD"
+        Git["🐙<br/>Git Repository<br/>(Monorepo)"]
+        Jenkins["🏗️<br/>Jenkins Server"]
+        DockerImage["🖼️<br/>Docker Image"]
+        DockerHub["🐳<br/>Docker Hub"]
+        Ansible["⚙️<br/>Ansible"]
     end
 
-    subgraph "Αρχιτεκτονική Εφαρμογής (Kubernetes)";
-        User[("👨‍💻<br/>Χρήστης (Browser)")] -- "HTTPS" --> Ingress;
-        Ingress[("🌐<br/>Ingress Controller")] -- "Route" --> Frontend;
-        Frontend[("⚛️<br/>Frontend Service<br/>(React)")] -- "REST API" --> Backend;
-        Backend[("☕<br/>Backend Service<br/>(Spring Boot)")] -- "JDBC" --> Database;
-        Backend -- "S3 API" --> MinIO;
-        Backend -- "SMTP" --> MailHog;
-        Database[("🗄️<br/>PostgreSQL")];
-        MinIO[("📦<br/>MinIO<br/>(Object Storage)")];
-        MailHog[("✉️<br/>MailHog<br/>(Email Server)")];
-        
-        DockerHub -- "6. Pull Image" --> Kubernetes[("☸️<br/>Kubernetes Cluster")];
+    subgraph "Αρχιτεκτονική Εφαρμογής (Kubernetes)"
+        User["👨‍💻<br/>Χρήστηs (Browser)"]
+        Ingress["🌐<br/>Ingress Controller"]
+        Frontend["⚛️<br/>Frontend Service<br/>(React)"]
+        Backend["☕<br/>Backend Service<br/>(Spring Boot)"]
+        Database["🗄️<br/>PostgreSQL"]
+        MinIO["📦<br/>MinIO<br/>(Object Storage)"]
+        MailHog["✉️<br/>MailHog<br/>(Email Server)"]
     end
 
-    classDef default fill:#fff,stroke:#333,stroke-width:2px,font-family:Arial;
-    classDef devops fill:#f9f9f9,stroke:#333,stroke-width:1px,font-family:Arial;
+    %% CI/CD Flow
+    Git -- "1. Push Κώδικα" --> Jenkins
+    Jenkins -- "2. Build & Test" --> DockerImage
+    DockerImage -- "3. Push στο Registry" --> DockerHub
+    Jenkins -- "4. Εκτελεί Ansible" --> Ansible
 
-    class Git,Jenkins,Ansible,DockerHub,DockerImage devops;
-    class User,Ingress,Frontend,Backend,Database,MinIO,MailHog,Kubernetes default;
+    %% Deployment Flow
+    Ansible -- "5. Deploy Manifests" --> Ingress
+    Ansible -- "5. Deploy Manifests" --> Frontend
+    Ansible -- "5. Deploy Manifests" --> Backend
+    DockerHub -- "6. Pull Image" --> Frontend
+    DockerHub -- "6. Pull Image" --> Backend
+    
+    %% Application Flow
+    User -- "HTTPS" --> Ingress
+    Ingress -- "Route" --> Frontend
+    Frontend -- "REST API" --> Backend
+    Backend -- "JDBC" --> Database
+    Backend -- "S3 API" --> MinIO
+    Backend -- "SMTP" --> MailHog
 
-    style Jenkins fill:#f9d479
-    style Ansible fill:#ee0000
-    style Kubernetes fill:#326ce5
-    style Frontend fill:#61DAFB
-    style Backend fill:#6DB33F
-    style Database fill:#336791
-    style DockerHub fill:#0db7ed
-    style Git fill:#f1502f
-    style MinIO fill:#c72c41
-    style MailHog fill:#80a480
+    %% Styling
+    style Jenkins fill:#f9d479,stroke:#333
+    style Ansible fill:#ee0000,stroke:#333
+    style Frontend fill:#61DAFB,stroke:#333
+    style Backend fill:#6DB33F,stroke:#333
+    style Database fill:#336791,stroke:#333,color:#fff
+    style DockerHub fill:#0db7ed,stroke:#333
+    style Git fill:#f1502f,stroke:#333
+    style MinIO fill:#c72c41,stroke:#333,color:#fff
+    style MailHog fill:#80a480,stroke:#333,color:#fff
+    style Ingress fill:#99d9ea,stroke:#333
 ```
 
 ---
