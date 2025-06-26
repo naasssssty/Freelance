@@ -78,7 +78,7 @@ graph TD
 *   **Εκκίνηση του περιβάλλοντος:**
     Αυτή η εντολή θα κάνει build τις images (αν δεν υπάρχουν ήδη) και θα ξεκινήσει όλα τα containers.
     ```bash
-    docker-compose up -d
+    docker-compose up -d --build
     ```
     Το `-d` (detached mode) τα τρέχει στο background.
 
