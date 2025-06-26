@@ -102,47 +102,34 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG_PATH')]) {
                         echo '🚀 Preparing for Kubernetes deployment...'
                         
-                        // Create working kubeconfig with insecure-skip-tls-verify enabled
+                        // Create a patched kubeconfig for use inside the container
                         sh '''
-                            echo "📄 Creating working kubeconfig..."
-                            cat > /tmp/kubeconfig_working.yaml << 'EOF'
-apiVersion: v1
-clusters:
-- cluster:
-    insecure-skip-tls-verify: true
-    server: https://host.docker.internal:8443
-  name: minikube
-contexts:
-- context:
-    cluster: minikube
-    namespace: default
-    user: minikube
-  name: minikube
-current-context: minikube
-kind: Config
-preferences: {}
-users:
-- name: minikube
-  user:
-    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lCQWpBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwdGFXNXAKYTNWaVpVTkJNQjRYRFRJMU1EWXlOREV3TXpRd09Wb1hEVEk0TURZeU5ERXdNelF3T1Zvd01URVhNQlVHQTFVRQpDaE1PYzNsemRHVnRPbTFoYzNSbGNuTXhGakFVQmdOVkJBTVREVzFwYm1scmRXSmxMWFZ6WlhJd2dnRWlNQTBHCkNTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFES2RZVmVyeUpwYlk2bDdJMFprSElmdVpERklHc0QKUEdxbmNmVUU3Qll2NGxVb1JpUk55VXNRYTFrb29GSXN4U2s5aW9FdDdlL1gwalZWRnNscTFMbXlucTBiaEpKdApZcHI4S1JMc1RCclpIaVpNRzhFMXJMOGk0ZVVacDhpNXRTRFlxNitBMGJOTXA3UFNzY242Q1VlbVNqd05GNVJtCi93TnNDMXp1b2s3TXpwYVhpWjlkTGg0WTJPS2dlSlhBNm5XOE1oYTJnVld4SkZPUlUzODdkMXJhSW1TTXVtNnMKbWJaVURiemJSUndpVmU1ZXBPRlRsVCtBeFVvMityaEJVcElOSWxIU2N6cFp4Vm41OVRUWXZ0WVh2ZU9BcWgvVApyckpsSEFMME1UYVUzbnZCaG9OYy9TYkZ0V2ZUNzJPbzVJSDlpNWZhY1VBOHNTYzJrNHlidms1QkFnTUJBQUdqCllEQmVNQTRHQTFVZER3RUIvd1FFQXdJRm9EQWRCZ05WSFNVRUZqQVVCZ2dyQmdFRkJRY0RBUVlJS3dZQkJRVUgKQXdJd0RBWURWUjBUQVFIL0JBSXdBREFmQmdOVkhTTUVHREFXZ0JUbmJvR1p2aVJzM1R4RG9XbTlPem02WWhYYgp4REFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBQ3liSDVDdGVzaU5ZRW96clJvc3ZSWUkyalphRGpBMW84QnkvCjNNWlBkbnArUXNCU1lTVGlMQmpYZm5HZGFqSzJ3SkZMdXlhVnh2d1RYRzgwdkFnNHdzekpJd29VL0dNRUlBdGsKMWxheDVYeWZxRTZ1dis2b3hkRVAxVEhHK2JmRGpLTWRicXBRTzllNFBPb053dUliLzhsVWRXUnNNRzhFc0c3MAp4Z1ppSEZSZTl3RnJ4ekNWRmNWYVB5WXdYczRJSDYwV3FxOFp4M2hCUDhSa1EwNVM4blhBSHBLNUpUWHdCcVN6Ckg1WFdoazExd0UwV3BEYjQzMTI4clhscnBmenJhSXJyVEtwUEVTOHVkY1RHaUVFMGpOUkNxSDNHVTZEQ1M5RGEKMFEvU0I3UkhGQnB0MXVEQnVIYjFTN3hSY1l0RTEwcW41ZGgzRCtyb2x3OTVhU1dqWXc9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
-    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFb3dJQkFBS0NBUUVBeW5XRlhxOGlhVzJPcGV5TkdaQnlIN21ReFNCckF6eHFwM0gxQk93V0wrSlZLRVlrClRjbExFR3RaS0tCU0xNVXBQWXFCTGUzdjE5STFWUmJKYXRTNXNwNnRHNFNTYldLYS9Da1M3RXdhMlI0bVRCdkIKTmF5L0l1SGxHYWZJdWJVZzJLdXZnTkd6VEtlejBySEorZ2xIcGtvOERSZVVadjhEYkF0YzdxSk96TTZXbDRtZgpYUzRlR05qaW9IaVZ3T3AxdkRJV3RvRlZzU1JUa1ZOL08zZGEyaUprakxwdXJKbTJWQTI4MjBVY0lsWHVYcVRoClU1VS9nTVZLTnZxNFFWS1NEU0pSMG5NNldjVlorZlUwMkw3V0Y3M2pnS29mMDY2eVpSd0M5REUybE41N3dZYUQKWFAwbXhiVm4wKzlqcU9TQi9ZdVgybkZBUExFbk5wT01tNzVPUVFJREFRQUJBb0lCQUFiTE1tK3V4ODhBTS91MwpEWXNRa1BaN1BIT1RvV2oramk1U2xzcS9VMXFhL29tTW1sWkQ0c2JKRzJPa3h1MGxWcERGUk9MSGdReXpJSmdHCk1qbStyQUU2N1lzbXJvcUl6RjVFSmVtVHFqT2o4b2EyU0dHbWkzNitWQ09Xd08wVHVoSkY1MEhzTWl5VEtoSncKRUlZdWs5N0N6MGk1MmFzcWM5dkhJU3RlMEpuSVprdmdTWEhwazVua29JUkJIeVhmVDIvc1ZGWWRETkpBc2VmWgpEbTBITlhQRVR1ajNrSkpoR2c5ZVpxUUlLZGV4VjVyN3NwTEkrNXZjNXVkdkFZZ1IwVUppdnQvaElZbmoreVFZCjhuZnd2YkROVmxZb1VkMW50NTJ3MG5tei9JL1N3c2tRUEFSazdrUG9TbVE4azVxalYweng5WVBMUm1ZbzBLRTMKYnY5Q1F4TUNnWUVBM3JlZUQwVTlqdDNwV3lUdnkzQkwwQ0dwazBoQ056OEwrVGlMT2pFOFpXQ2hINWxCZlp3RQp2QVlXN0IrdTVBbTBJSkQxWXdRa2Y1bXJ1Um5ncGU2b2l5c3JWNEg1ZGFvOGV1UTNhQUlRTHRoVWZENGNoNUs5CkNtZEZQOXR6b1dTdFFtRUN0NGFBVDh6SGJ5NFBWaEFjbGp4Q1hidzBPMkw5Nk5mZ1oyQTJKRGNDZ1lFQTZMYmwKYWdGR3h2bEJVUENmMmJOcWVzYjRUKzFIcnJlYnFXdmxvWG90OFdKQVZRQ3dDV3QrM2dwUS9jOU5TTzhTaDQxawpwL0tQVnFGQkJIUStWaTRJWURpckpZdVhPcCtraUxPRmxrR243TnJCTFpTZkszSEpiMVREamd6eThid3hkclNkCitvV1NLWjhPYWd1WmtUK1VpTGVKS0srS0o4ZkVrdm1yZnZEc1ZVY0NnWUVBa1NacVJObURmUkR6ZlF0ZG5PREGIC0JKb1NpelZ1dHZFR2ZEWURGejZWN2ZhU3BXL01QWDF2L1RZQzV1Nmg3UXJTTzR3ZncrOEdjMDFOYlcveTJUMwpRM3duQ3lrU1E3Vm5KVkNISzZuc2toczdOSjNtU2hWQVR2OXZDbWNqdlJPNE40S3lHcG4yRmd3SURsV2VlU0NYCkFQTFU3Zkl5dUdHVHlhU29BN2VZa1pFQ2dZQVREcjlVNGd2Z3laTE94UlhpSnk1R0piczZHRzF4WW5udDh2Y1kKTlVCRDcwN2paeTREWjNrNVI5RUFLQlRsTHlidVVPYjRWZ1hsQzBtZXlzSThIb0x6RmxEMXZ5dkFVa2lRSlZ1QQpSWm94N0d3N2hsdE9uSC9walNDQ3BvN1N1eDIxNGU2NkVHdzYybHE4MW54YUI4SHJQRlNRTDJmNkFBTWFJallvCkxDUytpd0tCZ0dPUlRsWVVhME1lUCsrdm1aQzduWnFNYnplOXhDYm9MaWw0TkhXQnZIMEdHUllEZUdYUG9JTUYKUzFIbnBlQlNQeWgrZDFkZVdrRmJKOHpxKzB4NkNlN2p5YmZWaHovMlBINk95S0pxVlBDSVowbmtSdVo0aTVjYgp2citEeTAyNXk2bFRRNGJLMWVTQnA1U1BTQ3lqNkVpQXBhUmtRcGhoVTBSTGRSdVVuMEFrCi0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
-EOF
-                            echo "✅ Working kubeconfig created"
+                            echo "📄 Creating patched kubeconfig from credentials..."
+                            cp "$KUBECONFIG_PATH" /tmp/kubeconfig_patched.yaml
+                            
+                            # 1. Replace server IP with host.docker.internal for container access from localhost
+                            sed -i 's#server: https://127.0.0.1:8443#server: https://host.docker.internal:8443#' /tmp/kubeconfig_patched.yaml
+                            
+                            # 2. Remove certificate authority to prepare for insecure skip
+                            sed -i '/certificate-authority-data/d' /tmp/kubeconfig_patched.yaml
+                            
+                            # 3. Add insecure-skip-tls-verify: true under the cluster definition
+                            awk '/- cluster:/ {print; print "    insecure-skip-tls-verify: true"; next}1' /tmp/kubeconfig_patched.yaml > /tmp/kubeconfig_final.yaml
+
+                            echo "✅ Kubeconfig patched successfully for container environment"
                         '''
                         
-                        // Set the working kubeconfig
-                        env.KUBECONFIG = '/tmp/kubeconfig_working.yaml'
+                        // Set the patched kubeconfig for subsequent commands
+                        env.KUBECONFIG = '/tmp/kubeconfig_final.yaml'
                         
                         // Test connectivity with timeout
                         sh '''
                             echo "🔍 Testing Kubernetes connectivity..."
                             timeout 60s kubectl cluster-info --kubeconfig=$KUBECONFIG || {
                                 echo "❌ Kubernetes connectivity failed"
-                                echo "📋 Available minikube IPs:"
-                                docker inspect minikube | grep -i ipaddress || echo "No minikube container found"
                                 exit 1
                             }
                             echo "✅ Kubernetes connectivity confirmed"
