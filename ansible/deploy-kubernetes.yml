@@ -73,14 +73,14 @@
     - name: Deploy Backend
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
-        src: ../kubernetes/backend-deployment.yml
         state: present
+        definition: "{{ lookup('template', '../kubernetes/backend-deployment.yml') }}"
         
     - name: Deploy Frontend  
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
-        src: ../kubernetes/frontend-deployment.yml
         state: present
+        definition: "{{ lookup('template', '../kubernetes/frontend-deployment.yml') }}"
         
     - name: Wait for application services to be ready
       kubernetes.core.k8s_info:

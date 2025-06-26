@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: papadooo/freelance-frontend:latest  # Use registry image by default
+        image: "{{ frontend_image | default('papadooo/freelance-frontend:latest') }}"
         imagePullPolicy: Always  # Always pull the latest image
         ports:
         - containerPort: 80
