@@ -1,0 +1,45 @@
+---
+- name: Deploy Backend to Kubernetes
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  
+  vars:
+    namespace: "freelance"
+    kubeconfig_path: "{{ kubeconfig_path | default(lookup('env', 'KUBECONFIG') | default('~/.kube/config', true)) }}"
+  
+  tasks:
+    - name: Debug backend deployment parameters
+      debug:
+        msg: |
+          🚀 Starting Kubernetes Backend deployment
+          - Backend image: {{ backend_image }}
+          - Kubeconfig: {{ kubeconfig_path }}
+          - Namespace: {{ namespace }}
+        
+    - name: Deploy Backend using template
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('template', '../kubernetes/backend-deployment.yml') }}"
+        
+    - name: Wait for backend deployment to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: apps/v1
+        kind: Deployment
+        name: backend
+        namespace: "{{ namespace }}"
+        wait: yes
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+      register: backend_deployment
+      
+    - name: Show deployment summary
+      debug:
+        msg: |
+          ✅ Backend deployment completed successfully!
+          - Image used: {{ backend_image }}
+          - Pods should be available now. 

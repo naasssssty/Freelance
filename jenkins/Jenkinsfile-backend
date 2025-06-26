@@ -147,13 +147,14 @@ pipeline {
                         // Deploy using Ansible with correct image tag and kubeconfig path
                         sh """
                             echo "🚀 Deploying backend with image: $DOCKER_IMAGE"
-                            ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml \\
+                            ansible-playbook ansible/deploy-backend.yml -i ansible/inventory.yml \\
                                 --extra-vars "backend_image=$DOCKER_IMAGE" \\
                                 --extra-vars "kubeconfig_path=$KUBECONFIG" \\
                                 -v
                         """
                         
-                        // Wait for application services to be ready
+                        // Wait for application services to be ready - This is now handled by the Ansible playbook
+                        /*
                         sh '''
                             echo "⏳ Waiting for application services to be ready..."
                             sleep 30 
@@ -161,6 +162,7 @@ pipeline {
                             kubectl wait --for=condition=ready pod -l app=backend -n freelance --timeout=300s --kubeconfig=$KUBECONFIG
                             echo "✅ Backend services are ready."
                         '''
+                        */
                     }
                 }
             }

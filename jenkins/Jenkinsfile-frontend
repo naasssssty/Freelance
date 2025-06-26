@@ -198,7 +198,7 @@ pipeline {
                         
                         // Set the patched kubeconfig for subsequent commands
                         env.KUBECONFIG = '/tmp/kubeconfig_final.yaml'
-                        
+
                         // Test connectivity with timeout
                         sh '''
                             echo "🔍 Testing Kubernetes connectivity..."
@@ -214,22 +214,24 @@ pipeline {
                             echo "📁 Ensuring namespace exists..."
                             kubectl create namespace freelance --kubeconfig=$KUBECONFIG --dry-run=client -o yaml | kubectl apply --kubeconfig=$KUBECONFIG -f -
                         '''
-                        
+
                         // Deploy using Ansible with correct image tag
                         sh """
                             echo "🚀 Deploying frontend with image: $DOCKER_IMAGE"
-                            ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml \\
+                            ansible-playbook ansible/deploy-frontend.yml -i ansible/inventory.yml \\
                                 --extra-vars "frontend_image=$DOCKER_IMAGE" \\
                                 --extra-vars "kubeconfig_path=$KUBECONFIG" \\
                                 -v
                         """
                         
-                        // Verify deployment
+                        // Verification is now handled by the Ansible playbook
+                        /*
                         sh '''
                             echo "🔍 Verifying deployment..."
                             kubectl get pods -n freelance --kubeconfig=$KUBECONFIG
                             kubectl get services -n freelance --kubeconfig=$KUBECONFIG
                         '''
+                        */
                     }
                 }
             }

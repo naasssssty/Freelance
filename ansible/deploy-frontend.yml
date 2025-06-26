@@ -1,0 +1,45 @@
+---
+- name: Deploy Frontend to Kubernetes
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  
+  vars:
+    namespace: "freelance"
+    kubeconfig_path: "{{ kubeconfig_path | default(lookup('env', 'KUBECONFIG') | default('~/.kube/config', true)) }}"
+  
+  tasks:
+    - name: Debug frontend deployment parameters
+      debug:
+        msg: |
+          🚀 Starting Kubernetes Frontend deployment
+          - Frontend image: {{ frontend_image }}
+          - Kubeconfig: {{ kubeconfig_path }}
+          - Namespace: {{ namespace }}
+        
+    - name: Deploy Frontend using template
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('template', '../kubernetes/frontend-deployment.yml') }}"
+        
+    - name: Wait for frontend deployment to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: apps/v1
+        kind: Deployment
+        name: frontend
+        namespace: "{{ namespace }}"
+        wait: yes
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+      register: frontend_deployment
+      
+    - name: Show deployment summary
+      debug:
+        msg: |
+          ✅ Frontend deployment completed successfully!
+          - Image used: {{ frontend_image }}
+          - Pods should be available now. 
