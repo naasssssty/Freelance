@@ -1,154 +1,134 @@
-# 📌 TestFreelancerProject
+# Freelance Project - Εργασία DevOps
 
-## 📖 Περιγραφή της Εφαρμογής
-Η εφαρμογή **FreelancerProject** είναι μια πλατφόρμα διαχείρισης έργων πληροφορικής για freelancers. Επιτρέπει στους πελάτες να δημοσιεύουν έργα, στους ελεύθερους επαγγελματίες να υποβάλλουν αιτήσεις και στον διαχειριστή να εγκρίνει έργα και προφίλ.
+Καλωσορίσατε στο αποθετήριο της εργασίας μας για το μάθημα **"Βασικές έννοιες και εργαλεία DevOps"**. Το project αυτό είναι μια full-stack πλατφόρμα που φέρνει σε επαφή πελάτες με ελεύθερους επαγγελματίες (freelancers) για την υλοποίηση έργων πληροφορικής.
 
-## 👥 Ρόλοι Χρηστών
-1. **Διαχειριστής (Admin)**
-    - Επιβεβαιώνει νέες καταχωρίσεις έργων.
-    - Επαληθεύει τα προφίλ των ελεύθερων επαγγελματιών.
-    - Διαχειρίζεται διαφορές και κλιμακώσεις μεταξύ πελατών και freelancers.
+Η εφαρμογή αναπτύχθηκε αρχικά στα πλαίσια του μαθήματος "Κατανεμημένα Συστήματα" και, για τις ανάγκες του τρέχοντος μαθήματος, επεκτάθηκε με ένα πλήρες CI/CD pipeline και διαδικασίες αυτοματοποιημένου deployment σε πολλαπλά περιβάλλοντα (VMs, Docker, Kubernetes).
 
-2. **Πελάτης (Client)**
-    - Δημοσιεύει νέα έργα που χρειάζεται να ολοκληρωθούν.
-    - Εξετάζει τις αιτήσεις των freelancers και προσλαμβάνει τον κατάλληλο.
-    - Παρακολουθεί την εξέλιξη του έργου.
+### Ομάδα 49
+*   **Κωνσταντίνος Παπαδόγιαννης** - ΑΜ: 2022141
+*   **Anastasiia Zervas** - ΑΜ: 2022119
 
-3. **Freelancer (Ελεύθερος Επαγγελματίας)**
-    - Περιηγείται στα διαθέσιμα έργα.
-    - Υποβάλλει αίτηση για έργα που τον ενδιαφέρουν.
-    - Επικοινωνεί με τους πελάτες για την εκτέλεση του έργου.
+---
 
-## 🛠️ Τεχνολογίες που χρησιμοποιούνται
-- **Backend**: Spring Boot 3.4.1 (Spring MVC, Spring Security, Spring Data JPA)
-- **Γλώσσα Προγραμματισμού**: Java 21
-- **Dependency Management**: Maven
-- **Βάση Δεδομένων**: PostgreSQL
-- **Database Management Tool**: pgAdmin 4
-- **API Testing**: Postman
+## 🏛️ Αρχιτεκτονική Συστήματος
 
-## 🚀 Οδηγίες Εγκατάστασης και Εκτέλεσης
+Το παρακάτω διάγραμμα απεικονίζει τη συνολική αρχιτεκτονική της λύσης μας. Διακρίνεται το CI/CD pipeline που αναλαμβάνει την αυτοματοποίηση της διαδικασίας build-test-deploy, καθώς και η αρχιτεκτονική της εφαρμογής όπως αυτή εκτελείται μέσα σε ένα Kubernetes cluster.
 
-### 1. Προαπαιτούμενα
-Πριν ξεκινήσετε, βεβαιωθείτε ότι έχετε εγκαταστήσει τα παρακάτω:
-- **Java 21**: Μπορείτε να κατεβάσετε και να εγκαταστήσετε την τελευταία έκδοση της Java [εδώ](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html).
-- **Maven**: Βεβαιωθείτε ότι έχετε εγκαταστήσει το Maven για τη διαχείριση των εξαρτήσεων του project. Οδηγίες εγκατάστασης μπορείτε να βρείτε [εδώ](https://maven.apache.org/install.html).
-- **PostgreSQL**: Για τη βάση δεδομένων. Μπορείτε να το κατεβάσετε και να το εγκαταστήσετε [εδώ](https://www.postgresql.org/download/).
-- **pgAdmin 4**: Διαχείριση της PostgreSQL. Μπορείτε να το κατεβάσετε [εδώ](https://www.pgadmin.org/download/).
+```mermaid
+graph TD;
+    subgraph "Εργαλεία DevOps & CI/CD";
+        Git[("🐙<br/>Git Repository<br/>(Monorepo)")] -- "1. Push Κώδικα" --> Jenkins;
+        Jenkins[("🏗️<br/>Jenkins Server")] -- "2. Build & Test" --> DockerImage[("🖼️<br/>Docker Image")];
+        DockerImage -- "3. Push στο Registry" --> DockerHub[("🐳<br/>Docker Hub")];
+        Jenkins -- "4. Εκτελεί Ansible" --> Ansible;
+        Ansible[("⚙️<br/>Ansible")] -- "5. Deploy" --> Kubernetes;
+    end
 
-### 2. Κλωνοποίηση του Αποθετηρίου
-Αρχικά, κλωνοποιήστε το αποθετήριο στον τοπικό σας υπολογιστή:
-```bash
-git clone https://github.com/naasssssty/Freelance.git
+    subgraph "Αρχιτεκτονική Εφαρμογής (Kubernetes)";
+        User[("👨‍💻<br/>Χρήστης (Browser)")] -- "HTTPS" --> Ingress;
+        Ingress[("🌐<br/>Ingress Controller")] -- "Route" --> Frontend;
+        Frontend[("⚛️<br/>Frontend Service<br/>(React)")] -- "REST API" --> Backend;
+        Backend[("☕<br/>Backend Service<br/>(Spring Boot)")] -- "JDBC" --> Database;
+        Backend -- "S3 API" --> MinIO;
+        Backend -- "SMTP" --> MailHog;
+        Database[("🗄️<br/>PostgreSQL")];
+        MinIO[("📦<br/>MinIO<br/>(Object Storage)")];
+        MailHog[("✉️<br/>MailHog<br/>(Email Server)")];
+        
+        DockerHub -- "6. Pull Image" --> Kubernetes[("☸️<br/>Kubernetes Cluster")];
+    end
+
+    classDef default fill:#fff,stroke:#333,stroke-width:2px,font-family:Arial;
+    classDef devops fill:#f9f9f9,stroke:#333,stroke-width:1px,font-family:Arial;
+
+    class Git,Jenkins,Ansible,DockerHub,DockerImage devops;
+    class User,Ingress,Frontend,Backend,Database,MinIO,MailHog,Kubernetes default;
+
+    style Jenkins fill:#f9d479
+    style Ansible fill:#ee0000
+    style Kubernetes fill:#326ce5
+    style Frontend fill:#61DAFB
+    style Backend fill:#6DB33F
+    style Database fill:#336791
+    style DockerHub fill:#0db7ed
+    style Git fill:#f1502f
+    style MinIO fill:#c72c41
+    style MailHog fill:#80a480
 ```
 
-## 🔧 Jenkins CI/CD Pipeline
+---
 
-### Σημαντικό: Εκκίνηση kubectl proxy
-**Πριν τρέξετε οποιοδήποτε Jenkins pipeline, πρέπει να εκκινήσετε το kubectl proxy:**
+## 🛠️ Τεχνολογίες & Εργαλεία (Technology Stack)
 
-```bash
-# Εκκίνηση kubectl proxy για Jenkins integration
-./scripts/start-kubectl-proxy.sh
+Για την υλοποίηση του project χρησιμοποιήθηκε ένα εύρος σύγχρονων τεχνολογιών και εργαλείων που καλύπτουν όλο τον κύκλο ζωής της εφαρμογής.
 
-# Ή χειροκίνητα:
-nohup kubectl proxy --port=8080 --address='0.0.0.0' --accept-hosts='^.*' > kubectl-proxy.log 2>&1 &
-```
+| Τομέας | Τεχνολογία |
+| :--- | :--- |
+| **Backend** | `Java 21`, `Spring Boot 3`, `Spring Security (JWT)`, `Spring Data JPA`, `Maven` |
+| **Frontend** | `React 19`, `Redux Toolkit`, `React Router`, `Axios`, `Tailwind CSS`, `npm` |
+| **Βάση Δεδομένων** | `PostgreSQL` |
+| **CI/CD** | `Jenkins` |
+| **Αυτοματοποίηση** | `Ansible` |
+| **Containerization** | `Docker`, `Docker Compose` |
+| **Orchestration** | `Kubernetes (Minikube)`, `Ingress` |
+| **Object Storage** | `MinIO` |
+| **Email Testing** | `MailHog` |
 
-### Γιατί χρειάζεται το kubectl proxy;
-- Το Jenkins container δεν έχει άμεση πρόσβαση στο Kubernetes cluster
-- Το kubectl proxy δημιουργεί ένα HTTP endpoint στο `http://172.17.0.1:8080`
-- Αυτό επιτρέπει στο Jenkins να επικοινωνεί με το Kubernetes API
+---
 
-### Jenkins Setup
+## 🚀 Οδηγίες Εγκατάστασης (Getting Started)
 
-#### Option 1: Standard Docker Setup (Current)
-```bash
-# 1. Εκκίνηση kubectl proxy (ΑΠΑΡΑΙΤΗΤΟ)
-./scripts/start-kubectl-proxy.sh
+Για την επίδειξη της εφαρμογής, το προτεινόμενο περιβάλλον είναι το **Kubernetes** καθώς αναδεικνύει το σύνολο της αρχιτεκτονικής μας.
 
-# 2. Εκκίνηση Jenkins
-cd docker
-docker-compose -f docker-compose-jenkins.yml up -d
+### Προαπαιτούμενα
+Βεβαιωθείτε ότι έχετε εγκατεστημένα τα παρακάτω εργαλεία:
+*   [Docker](https://docs.docker.com/get-docker/)
+*   [Minikube](https://minikube.sigs.k8s.io/docs/start/)
+*   [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+*   [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 
-# Το Jenkins θα εντοπίσει αυτόματα το Docker gateway IP
-```
+### Βήματα Deployment
+1.  **Εκκίνηση του Minikube & Ingress:**
+    ```bash
+    minikube start --driver=docker
+    minikube addons enable ingress
+    ```
+2.  **Κλωνοποίηση του Αποθετηρίου:**
+    ```bash
+    git clone <URL_του_repository>
+    cd <repo_folder>
+    ```
+3.  **Εκτέλεση του Ansible Playbook:**
+    Το παρακάτω playbook θα αναλάβει να κάνει deploy όλα τα components (Frontend, Backend, PostgreSQL, MinIO, MailHog) στο cluster του Minikube.
+    ```bash
+    ansible-playbook -i ansible/inventory.yml ansible/deploy-k8s-full.yml
+    ```
+4.  **Ενημέρωση του `/etc/hosts`:**
+    Για να μπορέσουμε να έχουμε πρόσβαση στην εφαρμογή μέσω ενός FQDN (Fully Qualified Domain Name), προσθέτουμε την παρακάτω εγγραφή στο τοπικό μας αρχείο hosts.
+    ```bash
+    echo "$(minikube ip) freelance.local" | sudo tee -a /etc/hosts
+    ```
+5.  **Εκκίνηση του Tunnel & Πρόσβαση:**
+    Ανοίξτε ένα **νέο terminal** και εκτελέστε την παρακάτω εντολή για να δρομολογήσετε το traffic από το local host στο cluster.
+    ```bash
+    minikube tunnel
+    ```
+    Αφήστε το terminal ανοιχτό. Τώρα μπορείτε να επισκεφθείτε την εφαρμογή από τον browser σας στη διεύθυνση:
+    **[http://freelance.local](http://freelance.local)**
 
-#### Option 2: Host Network Mode (Alternative)
-Αν θέλετε να τρέξετε το Jenkins με άμεση πρόσβαση στο host network:
+---
 
-```bash
-# Σταμάτημα υπάρχοντος Jenkins container
-docker stop jenkins
+## 📂 Δομή του Project
 
-# Εκτέλεση Jenkins με host network
-docker run -d \
-  --name jenkins \
-  --network host \
-  -v jenkins_home:/var/jenkins_home \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  jenkins/jenkins:lts
+Το project ακολουθεί μια **monorepo** δομή, όπου όλος ο κώδικας και τα αρχεία παραμετροποίησης συνυπάρχουν σε ένα κεντρικό αποθετήριο.
 
-# Με host network, μπορείτε να χρησιμοποιήσετε localhost απευθείας
-# Ενημερώστε το kubeconfig να χρησιμοποιεί: http://localhost:8080
-```
+*   `src/`: Περιέχει τον πηγαίο κώδικα της **Backend** εφαρμογής (Spring Boot).
+*   `frontend/`: Περιέχει τον πηγαίο κώδικα της **Frontend** εφαρμογής (React).
+*   `ansible/`: Περιέχει τα **Ansible playbooks** για την αυτοματοποίηση του deployment.
+*   `kubernetes/`: Περιέχει τα **Kubernetes manifest files** (Deployments, Services, Ingress κ.λπ.).
+*   `docker/`: Περιέχει τα **Dockerfiles** για τη δημιουργία των images και το `docker-compose.yml` για τοπική ανάπτυξη.
+*   `jenkins/`: Περιέχει τα **Jenkinsfiles** που ορίζουν τα CI/CD pipelines.
+*   `docs/`: Περιέχει επιπλέον αρχεία τεκμηρίωσης.
 
-### Cross-Machine Deployment
-
-Για deployment σε διαφορετικές μηχανές:
-
-1. **Βεβαιωθείτε ότι kubectl proxy τρέχει** σε κάθε target μηχανή:
-   ```bash
-   kubectl proxy --port=8080 --address=0.0.0.0 --accept-hosts='^.*' &
-   ```
-
-2. **Το pipeline εντοπίζει αυτόματα** το Docker gateway IP σε κάθε μηχανή
-
-3. **Εναλλακτικά**: Χρησιμοποιήστε service discovery ή environment variables για να ρυθμίσετε το Kubernetes endpoint
-
-### Environment Variable Configuration
-
-Μπορείτε να παρακάμψετε το Kubernetes server URL ορίζοντας τη μεταβλητή περιβάλλοντος `KUBE_SERVER_URL` στο Jenkins:
-
-```bash
-# Στο Jenkins System Configuration > Global Properties > Environment Variables
-KUBE_SERVER_URL=http://localhost:8080        # Για host network mode
-KUBE_SERVER_URL=http://192.168.1.100:8080    # Για συγκεκριμένη IP μηχανής
-KUBE_SERVER_URL=https://k8s.example.com:6443 # Για εξωτερικό cluster
-```
-
-**Σειρά Προτεραιότητας:**
-1. `KUBE_SERVER_URL` environment variable (αν οριστεί)
-2. Αυτόματα εντοπισμένο Docker gateway IP (fallback)
-
-### Troubleshooting
-
-#### Αν το deployment αποτυγχάνει με "Connection refused":
-1. Ελέγξτε αν το kubectl proxy τρέχει:
-   ```bash
-   ps aux | grep "kubectl proxy"
-   ```
-
-2. Εκκινήστε το kubectl proxy αν δεν τρέχει:
-   ```bash
-   ./scripts/start-kubectl-proxy.sh
-   ```
-
-3. Ελέγξτε τη σύνδεση:
-   ```bash
-   curl http://localhost:8080/api/v1/namespaces
-   ```
-
-#### Αν το Minikube δεν τρέχει:
-```bash
-minikube status
-minikube start  # αν δεν τρέχει
-```
-
-## Kubernetes Access Methods
-
-| Method | Pros | Cons | Use Case |
-|--------|------|------|----------|
-| kubectl proxy + Docker gateway | Portable across machines | Requires proxy process | CI/CD pipelines |
-| Host network mode | Direct localhost access | Less container isolation | Development |
-| External LoadBalancer | Production-ready | Complex setup | Production clusters |
+---
+Ευχαριστούμε για τον χρόνο σας! 
