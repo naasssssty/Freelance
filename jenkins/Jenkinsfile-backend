@@ -116,7 +116,7 @@ pipeline {
                             # 2. Remove certificate authority to prepare for insecure skip
                             sed -i '/certificate-authority-data/d' /tmp/kubeconfig_patched.yaml
                             
-                            # 3. Add insecure-skip-tls-verify: true under the cluster definition
+                            # 3. Add insecure-skip-tls-verify: true under the cluster definition and save to a new file
                             awk '/- cluster:/ {print; print "    insecure-skip-tls-verify: true"; next}1' /tmp/kubeconfig_patched.yaml > /tmp/kubeconfig_final.yaml
 
                             echo "✅ Kubeconfig patched successfully for container environment"
@@ -141,20 +141,22 @@ pipeline {
                             kubectl create namespace freelance --kubeconfig=$KUBECONFIG --dry-run=client -o yaml | kubectl apply --kubeconfig=$KUBECONFIG -f -
                         '''
                         
-                        // Deploy using Ansible with correct image tag
+                        // Deploy using Ansible with correct image tag and kubeconfig path
                         sh """
                             echo "🚀 Deploying backend with image: $DOCKER_IMAGE"
-                            ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml \\
-                                --extra-vars "backend_image=$DOCKER_IMAGE" \\
+                            ansible-playbook ansible/deploy-k8s.yml -i ansible/inventory.yml \\
+                                --extra-vars "backend_image_tag=${env.BUILD_NUMBER}" \\
                                 --extra-vars "kubeconfig_path=$KUBECONFIG" \\
                                 -v
                         """
                         
-                        // Verify deployment
+                        // Wait for application services to be ready
                         sh '''
-                            echo "🔍 Verifying deployment..."
-                            kubectl get pods -n freelance --kubeconfig=$KUBECONFIG
-                            kubectl get services -n freelance --kubeconfig=$KUBECONFIG
+                            echo "⏳ Waiting for application services to be ready..."
+                            sleep 30 # Initial delay to allow containers to start
+                            kubectl wait --for=condition=ready pod -l app=freelance-backend -n freelance --timeout=300s --kubeconfig=$KUBECONFIG
+                            kubectl wait --for=condition=ready pod -l app=freelance-frontend -n freelance --timeout=300s --kubeconfig=$KUBECONFIG
+                            echo "✅ All application services are ready."
                         '''
                     }
                 }
