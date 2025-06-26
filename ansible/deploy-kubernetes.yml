@@ -112,14 +112,18 @@
                     httpGet:
                       path: /actuator/health
                       port: 8080
-                    initialDelaySeconds: 60
+                    initialDelaySeconds: 180
                     periodSeconds: 30
+                    timeoutSeconds: 5
+                    failureThreshold: 5
                   readinessProbe:
                     httpGet:
                       path: /actuator/health
                       port: 8080
-                    initialDelaySeconds: 30
-                    periodSeconds: 10
+                    initialDelaySeconds: 90
+                    periodSeconds: 15
+                    timeoutSeconds: 5
+                    failureThreshold: 10
                     
     - name: Ensure backend service exists
       kubernetes.core.k8s:
