@@ -109,8 +109,8 @@ graph TD
     ```
 2.  **Κλωνοποίηση του Αποθετηρίου:**
     ```bash
-    git clone <URL_του_repository>
-    cd <repo_folder>
+    git clone https://github.com/naasssssty/Freelance.git
+    cd Freelance
     ```
 3.  **Εκτέλεση του Ansible Playbook:**
     Το παρακάτω playbook θα αναλάβει να κάνει deploy όλα τα components (Frontend, Backend, PostgreSQL, MinIO, MailHog) στο cluster του Minikube.
