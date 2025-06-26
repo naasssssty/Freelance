@@ -94,13 +94,16 @@
                 - name: backend
                   image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
                   imagePullPolicy: Always
+                  env:
+                    - name: JAVA_TOOL_OPTIONS
+                      value: "-Xmx768m"
+                  envFrom:
+                    - configMapRef:
+                        name: freelance-config
+                    - secretRef:
+                        name: freelance-secrets
                   ports:
                   - containerPort: 8080
-                  envFrom:
-                  - configMapRef:
-                      name: freelance-config
-                  - secretRef:
-                      name: freelance-secrets
                   resources:
                     requests:
                       memory: "512Mi"
