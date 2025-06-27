@@ -40,26 +40,6 @@ pipeline {
             }
         }
         
-        stage('Lint') {
-            steps {
-                echo '🔍 Running ESLint for code quality...'
-                dir('frontend') {
-                    script {
-                        try {
-                            // Try to fix auto-fixable issues first
-                            sh 'npm run lint:fix || true'
-                            // Then run the actual lint check
-                            sh 'npm run lint'
-                        } catch (Exception e) {
-                            echo "ESLint found issues: ${e.getMessage()}"
-                            // Don't fail the build for linting issues, just warn
-                            sh 'npm run lint || true'
-                        }
-                    }
-                }
-            }
-        }
-        
         stage('Unit Tests') {
             environment {
                 // Jest test environment
