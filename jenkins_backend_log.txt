@@ -1,0 +1,1244 @@
+Started by user admin
+
+Obtained jenkins/Jenkinsfile-backend from git https://github.com/naasssssty/Freelance
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins
+ in /var/jenkins_home/workspace/Freelance-Backend@2
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/Freelance-Backend@2/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/naasssssty/Freelance # timeout=10
+Fetching upstream changes from https://github.com/naasssssty/Freelance
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.5'
+ > git fetch --tags --force --progress -- https://github.com/naasssssty/Freelance +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/test^{commit} # timeout=10
+Checking out Revision 413df419e785c7d8571cca5d0c7c343a8ff3cb51 (refs/remotes/origin/test)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 413df419e785c7d8571cca5d0c7c343a8ff3cb51 # timeout=10
+Commit message: "CRITICAL FIX: Make Ansible playbooks self-sufficient"
+ > git rev-list --no-walk b9ccc4a81e2433eecbe36c54a165965c2cc1266c # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Tool Install)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Compile)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] echo
+Compiling the backend application...
+[Pipeline] sh
++ mvn clean compile -DskipTests
+
+[INFO] Scanning for projects...
+
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for dit.hua.gr:backend:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.postgresql:postgresql:jar -> version 42.6.0 vs (?) @ line 85, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------------< dit.hua.gr:backend >-------------------------
+[INFO] Building FreelanceProject 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+
+[INFO] 
+[INFO] --- clean:3.4.0:clean (default-clean) @ backend ---
+
+[INFO] Deleting /var/jenkins_home/workspace/Freelance-Backend@2/target
+
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+
+[INFO] Copying 3 resources from src/main/resources to target/classes
+
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ backend ---
+
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 59 source files with javac [debug parameters release 21] to target/classes
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  03:51 min
+[INFO] Finished at: 2025-06-26T21:18:14Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+
+[Pipeline] stage
+[Pipeline] { (Unit Tests)
+[Pipeline] withEnv
+[Pipeline] {
+
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] echo
+Running unit tests...
+[Pipeline] sh
+
++ mvn test -Dspring.profiles.active=test
+
+[INFO] Scanning for projects...
+
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for dit.hua.gr:backend:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.postgresql:postgresql:jar -> version 42.6.0 vs (?) @ line 85, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------------< dit.hua.gr:backend >-------------------------
+[INFO] Building FreelanceProject 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+
+[INFO] Copying 3 resources from src/main/resources to target/classes
+
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ backend ---
+[INFO] skip non existing resourceDirectory /var/jenkins_home/workspace/Freelance-Backend@2/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target/test-classes
+
+[INFO] 
+[INFO] --- surefire:3.5.2:test (default-test) @ backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+
+[INFO] Running dit.hua.gr.backend.TestFreelancerProjectApplicationTests
+
+21:23:09.610 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+
+2025-06-26T21:23:25.307Z  INFO 28022 --- [TestFreelancerProject] [           main] .b.TestFreelancerProjectApplicationTests : Starting TestFreelancerProjectApplicationTests using Java 21.0.7 with PID 28022 (started by root in /var/jenkins_home/workspace/Freelance-Backend@2)
+2025-06-26T21:23:25.369Z  INFO 28022 --- [TestFreelancerProject] [           main] .b.TestFreelancerProjectApplicationTests : The following 1 profile is active: "test"
+
+2025-06-26T21:23:49.961Z  INFO 28022 --- [TestFreelancerProject] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-26T21:23:51.611Z  INFO 28022 --- [TestFreelancerProject] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1476 ms. Found 7 JPA repository interfaces.
+
+2025-06-26T21:24:16.577Z  INFO 28022 --- [TestFreelancerProject] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-26T21:24:18.308Z  INFO 28022 --- [TestFreelancerProject] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.4.Final
+2025-06-26T21:24:19.379Z  INFO 28022 --- [TestFreelancerProject] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+
+2025-06-26T21:24:26.815Z  INFO 28022 --- [TestFreelancerProject] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-26T21:24:27.424Z  INFO 28022 --- [TestFreelancerProject] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+
+2025-06-26T21:24:32.782Z  INFO 28022 --- [TestFreelancerProject] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+2025-06-26T21:24:32.802Z  INFO 28022 --- [TestFreelancerProject] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-26T21:24:33.083Z  WARN 28022 --- [TestFreelancerProject] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-26T21:24:33.286Z  INFO 28022 --- [TestFreelancerProject] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+
+2025-06-26T21:24:56.435Z  INFO 28022 --- [TestFreelancerProject] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    drop table if exists applications cascade 
+Hibernate: 
+    drop table if exists chat_messages cascade 
+Hibernate: 
+    drop table if exists mails cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists projects cascade 
+Hibernate: 
+    drop table if exists reports cascade 
+Hibernate: 
+    drop table if exists users cascade 
+Hibernate: 
+    create table applications (
+        freelancer_id integer not null,
+        id integer generated by default as identity,
+        project_id integer not null,
+        created_at timestamp(6),
+        cover_letter varchar(255),
+        cv_file_path varchar(255),
+        application_status enum ('APPROVED','REJECTED','WAITING'),
+        primary key (id)
+    )
+Hibernate: 
+    create table chat_messages (
+        project_id integer not null,
+        sender_id integer not null,
+        id bigint generated by default as identity,
+        timestamp timestamp(6) not null,
+        content varchar(255) not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table mails (
+        sent boolean not null,
+        id bigint generated by default as identity,
+        sent_at timestamp(6) not null,
+        content varchar(2000) not null,
+        recipient varchar(255) not null,
+        subject varchar(255) not null,
+        mail_type enum ('APPLICATION_NOTIFICATION','PASSWORD_RESET','PROJECT_NOTIFICATION','VERIFICATION') not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table notifications (
+        read boolean not null,
+        user_id integer not null,
+        id bigint generated by default as identity,
+        timestamp timestamp(6) not null,
+        message varchar(255) not null,
+        type enum ('APPLICATION_ACCEPTED','APPLICATION_RECEIVED','APPLICATION_REJECTED','NEW_MESSAGE','PROJECT_COMPLETED','REPORT_STATUS_CHANGED'),
+        primary key (id)
+    )
+Hibernate: 
+    create table projects (
+        budget float(53),
+        client_id integer not null,
+        deadline date,
+        freelancer_id integer,
+        id integer generated by default as identity,
+        created_at timestamp(6),
+        description varchar(255) not null,
+        title varchar(255) not null,
+        project_status enum ('APPROVED','COMPLETED','DENIED','EXPIRED','IN_PROGRESS','PENDING'),
+        primary key (id)
+    )
+Hibernate: 
+    create table reports (
+        id integer generated by default as identity,
+        project_id integer not null,
+        reporter_id integer not null,
+        created_at timestamp(6) not null,
+        admin_response varchar(255),
+        description varchar(255) not null,
+        status enum ('DISMISSED','IN_REVIEW','PENDING','RESOLVED'),
+        primary key (id)
+    )
+Hibernate: 
+    create table users (
+        id integer generated by default as identity,
+        is_verified boolean not null,
+        email varchar(255) not null unique,
+        password varchar(255) not null,
+        username varchar(255) not null unique,
+        role enum ('ADMIN','CLIENT','FREELANCER') not null,
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists applications 
+       add constraint FKh6y11heys6e0vfoqr0dgv7fxq 
+       foreign key (freelancer_id) 
+       references users
+Hibernate: 
+    alter table if exists applications 
+       add constraint FKhm18k2os8y6nqh80nv10g5cb6 
+       foreign key (project_id) 
+       references projects
+Hibernate: 
+    alter table if exists chat_messages 
+       add constraint FKp9abl798sxk8na4uw32wnue8h 
+       foreign key (project_id) 
+       references projects
+Hibernate: 
+    alter table if exists chat_messages 
+       add constraint FKgiqeap8ays4lf684x7m0r2729 
+       foreign key (sender_id) 
+       references users
+Hibernate: 
+    alter table if exists notifications 
+       add constraint FK9y21adhxn0ayjhfocscqox7bh 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists projects 
+       add constraint FK67a5yvhlmv0hgpj87og4ckf6u 
+       foreign key (client_id) 
+       references users
+Hibernate: 
+    alter table if exists projects 
+       add constraint FKipwtd1lu0c46xofccp5bkoy5w 
+       foreign key (freelancer_id) 
+       references users
+Hibernate: 
+    alter table if exists reports 
+       add constraint FKhylt1smy93ix3b4bh51tbf9ij 
+       foreign key (project_id) 
+       references projects
+Hibernate: 
+    alter table if exists reports 
+       add constraint FKd3qiw2om5d2oh5xb7fbdcq225 
+       foreign key (reporter_id) 
+       references users
+2025-06-26T21:24:59.612Z  INFO 28022 --- [TestFreelancerProject] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+
+2025-06-26T21:25:05.921Z  INFO 28022 --- [TestFreelancerProject] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+
+2025-06-26T21:25:18.637Z  INFO 28022 --- [TestFreelancerProject] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImp
+2025-06-26T21:25:20.009Z  WARN 28022 --- [TestFreelancerProject] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+
+2025-06-26T21:25:26.899Z  INFO 28022 --- [TestFreelancerProject] [           main] .b.TestFreelancerProjectApplicationTests : Started TestFreelancerProjectApplicationTests in 137.873 seconds (process running for 182.022)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+Hibernate: 
+    select
+        count(*) 
+    from
+        users u1_0
+
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 167.2 s -- in dit.hua.gr.backend.TestFreelancerProjectApplicationTests
+[INFO] Running dit.hua.gr.backend.service.JwtServiceTest
+
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.293 s -- in dit.hua.gr.backend.service.JwtServiceTest
+[INFO] Running dit.hua.gr.backend.service.ApplicationServiceTest
+
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.67 s -- in dit.hua.gr.backend.service.ApplicationServiceTest
+[INFO] Running dit.hua.gr.backend.service.NotificationServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.827 s -- in dit.hua.gr.backend.service.NotificationServiceTest
+[INFO] Running dit.hua.gr.backend.service.AuthenticationServiceTest
+
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.009 s -- in dit.hua.gr.backend.service.AuthenticationServiceTest
+[INFO] Running dit.hua.gr.backend.service.ProjectServiceTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.759 s -- in dit.hua.gr.backend.service.ProjectServiceTest
+[INFO] Running dit.hua.gr.backend.service.ReportServiceTest
+
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.493 s -- in dit.hua.gr.backend.service.ReportServiceTest
+[INFO] Running dit.hua.gr.backend.service.ChatServiceTest
+
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.782 s -- in dit.hua.gr.backend.service.ChatServiceTest
+[INFO] Running dit.hua.gr.backend.service.UserServiceTest
+
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.833 s -- in dit.hua.gr.backend.service.UserServiceTest
+[INFO] Running dit.hua.gr.backend.service.UserDetailsServiceImpTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.118 s -- in dit.hua.gr.backend.service.UserDetailsServiceImpTest
+[INFO] Running dit.hua.gr.backend.service.EmailServiceTest
+
+Failed to send email: Mail server error
+Failed to send password reset email: Mail server error
+Failed to send email: Mail server error
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.185 s -- in dit.hua.gr.backend.service.EmailServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 96, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  06:45 min
+[INFO] Finished at: 2025-06-26T21:26:08Z
+[INFO] ------------------------------------------------------------------------
+
+Post stage
+[Pipeline] junit
+Recording test results
+
+[Checks API] No suitable checks publisher found.
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Integration Tests)
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] tool
+[Pipeline] envVarsForTool
+
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] echo
+Running integration tests...
+[Pipeline] sh
++ mvn test-compile
+
+[INFO] Scanning for projects...
+
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for dit.hua.gr:backend:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.postgresql:postgresql:jar -> version 42.6.0 vs (?) @ line 85, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------------< dit.hua.gr:backend >-------------------------
+[INFO] Building FreelanceProject 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+
+[INFO] Copying 3 resources from src/main/resources to target/classes
+
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ backend ---
+
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ backend ---
+
+[INFO] skip non existing resourceDirectory /var/jenkins_home/workspace/Freelance-Backend@2/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target/test-classes
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  42.791 s
+[INFO] Finished at: 2025-06-26T21:27:07Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] sh
++ mvn surefire:test -Dtest=TestFreelancerProjectApplicationTests -Dspring.profiles.active=test
+
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for dit.hua.gr:backend:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.postgresql:postgresql:jar -> version 42.6.0 vs (?) @ line 85, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+
+[INFO] 
+[INFO] -------------------------< dit.hua.gr:backend >-------------------------
+[INFO] Building FreelanceProject 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+
+[INFO] 
+[INFO] --- surefire:3.5.2:test (default-cli) @ backend ---
+
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+
+[INFO] Running dit.hua.gr.backend.TestFreelancerProjectApplicationTests
+
+21:27:47.210 [main] INFO org.springframework.boot.devtools.restart.RestartApplicationListener -- Restart disabled due to context in which it is running
+
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.4.1)
+
+2025-06-26T21:27:50.028Z  INFO 28493 --- [TestFreelancerProject] [           main] .b.TestFreelancerProjectApplicationTests : Starting TestFreelancerProjectApplicationTests using Java 21.0.7 with PID 28493 (started by root in /var/jenkins_home/workspace/Freelance-Backend@2)
+2025-06-26T21:27:50.041Z  INFO 28493 --- [TestFreelancerProject] [           main] .b.TestFreelancerProjectApplicationTests : The following 1 profile is active: "test"
+
+2025-06-26T21:28:01.201Z  INFO 28493 --- [TestFreelancerProject] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-26T21:28:01.827Z  INFO 28493 --- [TestFreelancerProject] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 570 ms. Found 7 JPA repository interfaces.
+
+2025-06-26T21:28:07.505Z  INFO 28493 --- [TestFreelancerProject] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-26T21:28:07.886Z  INFO 28493 --- [TestFreelancerProject] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.4.Final
+2025-06-26T21:28:08.054Z  INFO 28493 --- [TestFreelancerProject] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+
+2025-06-26T21:28:10.396Z  INFO 28493 --- [TestFreelancerProject] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-26T21:28:10.609Z  INFO 28493 --- [TestFreelancerProject] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+
+2025-06-26T21:28:11.958Z  INFO 28493 --- [TestFreelancerProject] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:integrationtestdb user=SA
+2025-06-26T21:28:11.968Z  INFO 28493 --- [TestFreelancerProject] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-26T21:28:12.221Z  WARN 28493 --- [TestFreelancerProject] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-26T21:28:12.410Z  INFO 28493 --- [TestFreelancerProject] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+
+2025-06-26T21:28:20.118Z  INFO 28493 --- [TestFreelancerProject] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    drop table if exists applications cascade 
+Hibernate: 
+    drop table if exists chat_messages cascade 
+Hibernate: 
+    drop table if exists mails cascade 
+Hibernate: 
+    drop table if exists notifications cascade 
+Hibernate: 
+    drop table if exists projects cascade 
+Hibernate: 
+    drop table if exists reports cascade 
+Hibernate: 
+    drop table if exists users cascade 
+Hibernate: 
+    create table applications (
+        freelancer_id integer not null,
+        id integer generated by default as identity,
+        project_id integer not null,
+        created_at timestamp(6),
+        cover_letter varchar(255),
+        cv_file_path varchar(255),
+        application_status enum ('APPROVED','REJECTED','WAITING'),
+        primary key (id)
+    )
+Hibernate: 
+    create table chat_messages (
+        project_id integer not null,
+        sender_id integer not null,
+        id bigint generated by default as identity,
+        timestamp timestamp(6) not null,
+        content varchar(255) not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table mails (
+        sent boolean not null,
+        id bigint generated by default as identity,
+        sent_at timestamp(6) not null,
+        content varchar(2000) not null,
+        recipient varchar(255) not null,
+        subject varchar(255) not null,
+        mail_type enum ('APPLICATION_NOTIFICATION','PASSWORD_RESET','PROJECT_NOTIFICATION','VERIFICATION') not null,
+        primary key (id)
+    )
+Hibernate: 
+    create table notifications (
+        read boolean not null,
+        user_id integer not null,
+        id bigint generated by default as identity,
+        timestamp timestamp(6) not null,
+        message varchar(255) not null,
+        type enum ('APPLICATION_ACCEPTED','APPLICATION_RECEIVED','APPLICATION_REJECTED','NEW_MESSAGE','PROJECT_COMPLETED','REPORT_STATUS_CHANGED'),
+        primary key (id)
+    )
+Hibernate: 
+    create table projects (
+        budget float(53),
+        client_id integer not null,
+        deadline date,
+        freelancer_id integer,
+        id integer generated by default as identity,
+        created_at timestamp(6),
+        description varchar(255) not null,
+        title varchar(255) not null,
+        project_status enum ('APPROVED','COMPLETED','DENIED','EXPIRED','IN_PROGRESS','PENDING'),
+        primary key (id)
+    )
+Hibernate: 
+    create table reports (
+        id integer generated by default as identity,
+        project_id integer not null,
+        reporter_id integer not null,
+        created_at timestamp(6) not null,
+        admin_response varchar(255),
+        description varchar(255) not null,
+        status enum ('DISMISSED','IN_REVIEW','PENDING','RESOLVED'),
+        primary key (id)
+    )
+Hibernate: 
+    create table users (
+        id integer generated by default as identity,
+        is_verified boolean not null,
+        email varchar(255) not null unique,
+        password varchar(255) not null,
+        username varchar(255) not null unique,
+        role enum ('ADMIN','CLIENT','FREELANCER') not null,
+        primary key (id)
+    )
+Hibernate: 
+    alter table if exists applications 
+       add constraint FKh6y11heys6e0vfoqr0dgv7fxq 
+       foreign key (freelancer_id) 
+       references users
+Hibernate: 
+    alter table if exists applications 
+       add constraint FKhm18k2os8y6nqh80nv10g5cb6 
+       foreign key (project_id) 
+       references projects
+Hibernate: 
+    alter table if exists chat_messages 
+       add constraint FKp9abl798sxk8na4uw32wnue8h 
+       foreign key (project_id) 
+       references projects
+Hibernate: 
+    alter table if exists chat_messages 
+       add constraint FKgiqeap8ays4lf684x7m0r2729 
+       foreign key (sender_id) 
+       references users
+Hibernate: 
+    alter table if exists notifications 
+       add constraint FK9y21adhxn0ayjhfocscqox7bh 
+       foreign key (user_id) 
+       references users
+Hibernate: 
+    alter table if exists projects 
+       add constraint FK67a5yvhlmv0hgpj87og4ckf6u 
+       foreign key (client_id) 
+       references users
+Hibernate: 
+    alter table if exists projects 
+       add constraint FKipwtd1lu0c46xofccp5bkoy5w 
+       foreign key (freelancer_id) 
+       references users
+Hibernate: 
+    alter table if exists reports 
+       add constraint FKhylt1smy93ix3b4bh51tbf9ij 
+       foreign key (project_id) 
+       references projects
+Hibernate: 
+    alter table if exists reports 
+       add constraint FKd3qiw2om5d2oh5xb7fbdcq225 
+       foreign key (reporter_id) 
+       references users
+2025-06-26T21:28:20.713Z  INFO 28493 --- [TestFreelancerProject] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+
+2025-06-26T21:28:22.699Z  INFO 28493 --- [TestFreelancerProject] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+
+2025-06-26T21:28:33.149Z  INFO 28493 --- [TestFreelancerProject] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userDetailsServiceImp
+2025-06-26T21:28:34.219Z  WARN 28493 --- [TestFreelancerProject] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+
+2025-06-26T21:28:41.387Z  INFO 28493 --- [TestFreelancerProject] [           main] .b.TestFreelancerProjectApplicationTests : Started TestFreelancerProjectApplicationTests in 54.38 seconds (process running for 62.599)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build what is described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org/mockito/Mockito.html#0.3
+
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.15.11/byte-buddy-agent-1.15.11.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+Hibernate: 
+    select
+        count(*) 
+    from
+        users u1_0
+
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 68.16 s -- in dit.hua.gr.backend.TestFreelancerProjectApplicationTests
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:27 min
+[INFO] Finished at: 2025-06-26T21:28:53Z
+[INFO] ------------------------------------------------------------------------
+Post stage
+
+[Pipeline] archiveArtifacts
+Archiving artifacts
+[Pipeline] }
+
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Package)
+
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] echo
+Packaging the application...
+[Pipeline] sh
++ mvn package -DskipTests
+
+[INFO] Scanning for projects...
+
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for dit.hua.gr:backend:jar:0.0.1-SNAPSHOT
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.postgresql:postgresql:jar -> version 42.6.0 vs (?) @ line 85, column 21
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO] 
+[INFO] -------------------------< dit.hua.gr:backend >-------------------------
+[INFO] Building FreelanceProject 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ backend ---
+
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ backend ---
+
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ backend ---
+[INFO] skip non existing resourceDirectory /var/jenkins_home/workspace/Freelance-Backend@2/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug parameters release 21] to target/test-classes
+
+[INFO] 
+[INFO] --- surefire:3.5.2:test (default-test) @ backend ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ backend ---
+[INFO] Building jar: /var/jenkins_home/workspace/Freelance-Backend@2/target/backend-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:3.4.1:repackage (repackage) @ backend ---
+
+[INFO] Replacing main artifact /var/jenkins_home/workspace/Freelance-Backend@2/target/backend-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /var/jenkins_home/workspace/Freelance-Backend@2/target/backend-0.0.1-SNAPSHOT.jar.original
+[INFO] 
+[INFO] --- spring-boot:3.4.1:repackage (default) @ backend ---
+[INFO] Replacing main artifact /var/jenkins_home/workspace/Freelance-Backend@2/target/backend-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /var/jenkins_home/workspace/Freelance-Backend@2/target/backend-0.0.1-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  37.341 s
+[INFO] Finished at: 2025-06-26T21:29:48Z
+[INFO] ------------------------------------------------------------------------
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build Docker Image)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] echo
+Building Docker image...
+[Pipeline] sh
++ docker build -t papadooo/freelance-backend:62 -f docker/Dockerfile.backend .
+
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.backend
+#1 transferring dockerfile:
+#1 transferring dockerfile: 402B 0.1s done
+#1 DONE 0.3s
+
+#2 [internal] load metadata for docker.io/library/openjdk:21-jdk-slim
+
+#2 ...
+
+#3 [auth] library/openjdk:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/openjdk:21-jdk-slim
+
+#2 DONE 3.4s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B 0.0s done
+#4 DONE 0.0s
+
+#5 [build 1/6] FROM docker.io/library/openjdk:21-jdk-slim@sha256:7072053847a8a05d7f3a14ebc778a90b38c50ce7e8f199382128a53385160688
+#5 resolve docker.io/library/openjdk:21-jdk-slim@sha256:7072053847a8a05d7f3a14ebc778a90b38c50ce7e8f199382128a53385160688 0.1s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 7.02kB 0.1s done
+#6 DONE 0.1s
+
+#7 [build 3/6] COPY pom.xml .
+#7 CACHED
+
+#8 [build 4/6] COPY src ./src
+#8 CACHED
+
+#9 [build 5/6] RUN apt-get update && apt-get install -y maven
+#9 CACHED
+
+#10 [build 6/6] RUN mvn clean package -DskipTests
+#10 CACHED
+
+#11 [build 2/6] WORKDIR /app
+#11 CACHED
+
+#12 [stage-1 3/3] COPY --from=build /app/target/*.jar app.jar
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers 0.0s done
+#13 exporting manifest sha256:e8393bbbec1bb719f278822ef3cb03d519c43ef9221c01534cf01322b3bae1da done
+#13 exporting config sha256:a612963859a05aafd6ea23e0fb5c9d8ca9ba2b09c56558b6ebae1328642f81af done
+#13 exporting attestation manifest sha256:c3ceb26299ba714ed4af58aae1c987d8156a47c444913c03eada8f87c1dc1576
+#13 exporting attestation manifest sha256:c3ceb26299ba714ed4af58aae1c987d8156a47c444913c03eada8f87c1dc1576 0.1s done
+#13 exporting manifest list sha256:8b1e02c5a309eec80d18601fff96172ca7fd6681a7f36d96f8db0e09e182918f 0.0s done
+#13 naming to docker.io/papadooo/freelance-backend:62 0.0s done
+#13 unpacking to docker.io/papadooo/freelance-backend:62 0.0s done
+
+#13 DONE 0.3s
+[Pipeline] sh
++ docker tag papadooo/freelance-backend:62 papadooo/freelance-backend:latest
+
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+
+[Pipeline] stage
+[Pipeline] { (Push Docker Image)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+
+[Pipeline] echo
+Pushing Docker image to registry...
+[Pipeline] withCredentials
+Masking supported pattern matches of $DOCKER_PASSWORD
+[Pipeline] {
+
+[Pipeline] sh
++ docker login -u papadooo -p ****
+WARNING! Using --password via the CLI is insecure. Use --password-stdin.
+
+Login Succeeded
+[Pipeline] sh
++ docker push papadooo/freelance-backend:62
+
+The push refers to repository [docker.io/papadooo/freelance-backend]
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+a803e7c4b030: Waiting
+af800cd8441e: Waiting
+b4972576c83d: Layer already exists
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Layer already exists
+a803e7c4b030: Waiting
+af800cd8441e: Layer already exists
+87d2b27000d0: Layer already exists
+a803e7c4b030: Waiting
+a803e7c4b030: Layer already exists
+
+9c997b48d626: Pushed
+
+62: digest: sha256:8b1e02c5a309eec80d18601fff96172ca7fd6681a7f36d96f8db0e09e182918f size: 856
+[Pipeline] sh
+
++ docker push papadooo/freelance-backend:latest
+The push refers to repository [docker.io/papadooo/freelance-backend]
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Waiting
+a803e7c4b030: Waiting
+87d2b27000d0: Waiting
+9c997b48d626: Already exists
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+af800cd8441e: Layer already exists
+b4972576c83d: Waiting
+a803e7c4b030: Layer already exists
+87d2b27000d0: Waiting
+cf22da40e5d4: Waiting
+cf22da40e5d4: Waiting
+b4972576c83d: Waiting
+87d2b27000d0: Waiting
+b4972576c83d: Layer already exists
+87d2b27000d0: Layer already exists
+cf22da40e5d4: Layer already exists
+
+latest: digest: sha256:8b1e02c5a309eec80d18601fff96172ca7fd6681a7f36d96f8db0e09e182918f size: 856
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Deploy to Kubernetes)
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] tool
+[Pipeline] envVarsForTool
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] withCredentials
+Masking supported pattern matches of $KUBECONFIG_PATH
+[Pipeline] {
+[Pipeline] echo
+🚀 Preparing for Kubernetes deployment...
+[Pipeline] sh
++ echo 📄 Creating patched kubeconfig from credentials...
+📄 Creating patched kubeconfig from credentials...
++ cp **** /tmp/kubeconfig_final_62.yaml
++ sed -i s#server: https://127.0.0.1:8443#server: https://host.docker.internal:8443# /tmp/kubeconfig_final_62.yaml
++ sed -i /certificate-authority-data/d /tmp/kubeconfig_final_62.yaml
++ awk /- cluster:/ {print; print "    insecure-skip-tls-verify: true"; next}1 /tmp/kubeconfig_final_62.yaml
++ mv /tmp/kubeconfig_final_62.yaml.tmp /tmp/kubeconfig_final_62.yaml
++ echo ✅ Kubeconfig patched successfully: /tmp/kubeconfig_final_62.yaml
+✅ Kubeconfig patched successfully: /tmp/kubeconfig_final_62.yaml
+
+[Pipeline] sh
++ echo 🔍 Testing Kubernetes connectivity...
+🔍 Testing Kubernetes connectivity...
++ timeout 60s kubectl cluster-info --kubeconfig=/tmp/kubeconfig_final_62.yaml
+
+Kubernetes control plane is running at https://host.docker.internal:8443
+CoreDNS is running at https://host.docker.internal:8443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
++ echo ✅ Kubernetes connectivity confirmed
+✅ Kubernetes connectivity confirmed
+[Pipeline] sh
++ echo 📁 Ensuring namespace exists...
+📁 Ensuring namespace exists...
++ kubectl create namespace freelance --kubeconfig=/tmp/kubeconfig_final_62.yaml --dry-run=client -o yaml
++ kubectl apply --kubeconfig=/tmp/kubeconfig_final_62.yaml -f -
+
+namespace/freelance configured
+[Pipeline] sh
++ echo 🚀 Deploying backend with image: papadooo/freelance-backend:62
+🚀 Deploying backend with image: papadooo/freelance-backend:62
++ ansible-playbook ansible/deploy-backend.yml -i ansible/inventory.yml --extra-vars backend_image=papadooo/freelance-backend:62 --extra-vars kubeconfig_path=/tmp/kubeconfig_final_62.yaml -v
+
+[WARNING]: Found variable using reserved name: namespace
+No config file found; using defaults
+
+PLAY [Deploy Backend and its Dependencies to Kubernetes] ***********************
+
+TASK [Create namespace] ********************************************************
+
+ok: [localhost] => {"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "Namespace", "metadata": {"annotations": {"kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"creationTimestamp\":null,\"name\":\"freelance\"},\"spec\":{},\"status\":{}}\n"}, "creationTimestamp": "2025-06-26T17:46:31Z", "labels": {"kubernetes.io/metadata.name": "freelance"}, "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:kubectl.kubernetes.io/last-applied-configuration": {}}, "f:labels": {".": {}, "f:kubernetes.io/metadata.name": {}}}}, "manager": "kubectl-client-side-apply", "operation": "Update", "time": "2025-06-26T17:46:31Z"}], "name": "freelance", "resourceVersion": "35071", "uid": "2c7b3a3d-676e-466f-9fde-9ea6b755356c"}, "spec": {"finalizers": ["kubernetes"]}, "status": {"phase": "Active"}}}
+
+TASK [Apply ConfigMap and Secrets] *********************************************
+
+ok: [localhost] => {"changed": false, "result": {"results": [{"changed": false, "method": "update", "result": {"apiVersion": "v1", "data": {"CORS_ALLOWED_ORIGINS": "http://freelance.local,http://localhost:3000", "MINIO_ACCESS_KEY": "iRb4jDOLKvmbfkQ", "MINIO_BUCKET_NAME": "freelancer-cvs", "MINIO_ENDPOINT": "http://minio-service:9000", "POSTGRES_DB": "freelancer_db", "POSTGRES_USER": "freelancer_user", "SPRING_AUTOCONFIGURE_EXCLUDE": "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration", "SPRING_DATASOURCE_URL": "jdbc:postgresql://postgres-service:5432/freelancer_db", "SPRING_DATASOURCE_USERNAME": "freelancer_user", "SPRING_JPA_HIBERNATE_DDL_AUTO": "update", "SPRING_MAIL_HOST": "mailhog-service", "SPRING_MAIL_PASSWORD": "", "SPRING_MAIL_PORT": "1025", "SPRING_MAIL_PROPERTIES_MAIL_DEBUG": "true", "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH": "false", "SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE": "false", "SPRING_MAIL_USERNAME": "", "SPRING_PROFILES_ACTIVE": "dev", "SPRING_SECURITY_CSRF_DISABLED": "true"}, "kind": "ConfigMap", "metadata": {"creationTimestamp": "2025-06-26T17:46:49Z", "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:data": {".": {}, "f:CORS_ALLOWED_ORIGINS": {}, "f:MINIO_ACCESS_KEY": {}, "f:MINIO_BUCKET_NAME": {}, "f:MINIO_ENDPOINT": {}, "f:POSTGRES_DB": {}, "f:POSTGRES_USER": {}, "f:SPRING_AUTOCONFIGURE_EXCLUDE": {}, "f:SPRING_DATASOURCE_URL": {}, "f:SPRING_DATASOURCE_USERNAME": {}, "f:SPRING_JPA_HIBERNATE_DDL_AUTO": {}, "f:SPRING_MAIL_HOST": {}, "f:SPRING_MAIL_PASSWORD": {}, "f:SPRING_MAIL_PORT": {}, "f:SPRING_MAIL_PROPERTIES_MAIL_DEBUG": {}, "f:SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH": {}, "f:SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE": {}, "f:SPRING_MAIL_USERNAME": {}, "f:SPRING_PROFILES_ACTIVE": {}, "f:SPRING_SECURITY_CSRF_DISABLED": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:49Z"}], "name": "freelance-config", "namespace": "freelance", "resourceVersion": "35089", "uid": "bab7357f-955d-4fe0-8231-fddd255c5f78"}}}, {"changed": false, "method": "update", "result": {"apiVersion": "v1", "data": {"MINIO_ROOT_PASSWORD": "T3NrYk1TU0ZMb0t3NDFk", "MINIO_ROOT_USER": "aVJiNGpET0xLdm1iZmtR", "MINIO_SECRET_KEY": "T3NrYk1TU0ZMb0t3NDFk", "POSTGRES_PASSWORD": "ZnJlZWxhbmNlcl9wYXNz"}, "kind": "Secret", "metadata": {"creationTimestamp": "2025-06-26T17:46:49Z", "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:data": {".": {}, "f:MINIO_ROOT_PASSWORD": {}, "f:MINIO_ROOT_USER": {}, "f:MINIO_SECRET_KEY": {}, "f:POSTGRES_PASSWORD": {}}, "f:type": {}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:49Z"}], "name": "freelance-secrets", "namespace": "freelance", "resourceVersion": "35090", "uid": "268f9aac-f23a-4678-a7d7-726bbee392ee"}, "type": "Opaque"}}]}}
+
+TASK [Deploy PostgreSQL] *******************************************************
+
+ok: [localhost] => {"changed": false, "result": {"results": [{"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "PersistentVolumeClaim", "metadata": {"annotations": {"pv.kubernetes.io/bind-completed": "yes", "pv.kubernetes.io/bound-by-controller": "yes", "volume.beta.kubernetes.io/storage-provisioner": "k8s.io/minikube-hostpath", "volume.kubernetes.io/storage-provisioner": "k8s.io/minikube-hostpath"}, "creationTimestamp": "2025-06-26T17:46:52Z", "finalizers": ["kubernetes.io/pvc-protection"], "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {"f:accessModes": {}, "f:resources": {"f:requests": {".": {}, "f:storage": {}}}, "f:volumeMode": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:52Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:pv.kubernetes.io/bind-completed": {}, "f:pv.kubernetes.io/bound-by-controller": {}, "f:volume.beta.kubernetes.io/storage-provisioner": {}, "f:volume.kubernetes.io/storage-provisioner": {}}}, "f:spec": {"f:volumeName": {}}}, "manager": "kube-controller-manager", "operation": "Update", "time": "2025-06-26T17:46:53Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:status": {"f:accessModes": {}, "f:capacity": {".": {}, "f:storage": {}}, "f:phase": {}}}, "manager": "kube-controller-manager", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:46:53Z"}], "name": "postgres-pvc", "namespace": "freelance", "resourceVersion": "35107", "uid": "768b149b-8a77-436d-8421-d6467de6eee7"}, "spec": {"accessModes": ["ReadWriteOnce"], "resources": {"requests": {"storage": "5Gi"}}, "storageClassName": "standard", "volumeMode": "Filesystem", "volumeName": "pvc-768b149b-8a77-436d-8421-d6467de6eee7"}, "status": {"accessModes": ["ReadWriteOnce"], "capacity": {"storage": "5Gi"}, "phase": "Bound"}}}, {"changed": false, "method": "update", "result": {"apiVersion": "apps/v1", "kind": "Deployment", "metadata": {"annotations": {"deployment.kubernetes.io/revision": "1"}, "creationTimestamp": "2025-06-26T17:46:52Z", "generation": 1, "labels": {"app": "postgres"}, "managedFields": [{"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:progressDeadlineSeconds": {}, "f:replicas": {}, "f:revisionHistoryLimit": {}, "f:selector": {}, "f:strategy": {"f:rollingUpdate": {".": {}, "f:maxSurge": {}, "f:maxUnavailable": {}}, "f:type": {}}, "f:template": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"postgres\"}": {".": {}, "f:env": {".": {}, "k:{\"name\":\"POSTGRES_DB\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"POSTGRES_PASSWORD\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}, "k:{\"name\":\"POSTGRES_USER\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}}, "f:image": {}, "f:imagePullPolicy": {}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":5432,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}, "f:volumeMounts": {".": {}, "k:{\"mountPath\":\"/var/lib/postgresql/data\"}": {".": {}, "f:mountPath": {}, "f:name": {}}}}}, "f:dnsPolicy": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}, "f:volumes": {".": {}, "k:{\"name\":\"postgres-storage\"}": {".": {}, "f:name": {}, "f:persistentVolumeClaim": {".": {}, "f:claimName": {}}}}}}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:52Z"}, {"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:deployment.kubernetes.io/revision": {}}}, "f:status": {"f:availableReplicas": {}, "f:conditions": {".": {}, "k:{\"type\":\"Available\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Progressing\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}}, "f:observedGeneration": {}, "f:readyReplicas": {}, "f:replicas": {}, "f:updatedReplicas": {}}}, "manager": "kube-controller-manager", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:00Z"}], "name": "postgres", "namespace": "freelance", "resourceVersion": "35155", "uid": "d0a4f77c-a690-4960-9a1c-ac08930f94ed"}, "spec": {"progressDeadlineSeconds": 600, "replicas": 1, "revisionHistoryLimit": 10, "selector": {"matchLabels": {"app": "postgres"}}, "strategy": {"rollingUpdate": {"maxSurge": "25%", "maxUnavailable": "25%"}, "type": "RollingUpdate"}, "template": {"metadata": {"creationTimestamp": null, "labels": {"app": "postgres"}}, "spec": {"containers": [{"env": [{"name": "POSTGRES_DB", "valueFrom": {"configMapKeyRef": {"key": "POSTGRES_DB", "name": "freelance-config"}}}, {"name": "POSTGRES_USER", "valueFrom": {"configMapKeyRef": {"key": "POSTGRES_USER", "name": "freelance-config"}}}, {"name": "POSTGRES_PASSWORD", "valueFrom": {"secretKeyRef": {"key": "POSTGRES_PASSWORD", "name": "freelance-secrets"}}}], "image": "postgres:15-alpine", "imagePullPolicy": "IfNotPresent", "name": "postgres", "ports": [{"containerPort": 5432, "protocol": "TCP"}], "resources": {"limits": {"cpu": "500m", "memory": "512Mi"}, "requests": {"cpu": "250m", "memory": "256Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File", "volumeMounts": [{"mountPath": "/var/lib/postgresql/data", "name": "postgres-storage"}]}], "dnsPolicy": "ClusterFirst", "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "terminationGracePeriodSeconds": 30, "volumes": [{"name": "postgres-storage", "persistentVolumeClaim": {"claimName": "postgres-pvc"}}]}}}, "status": {"availableReplicas": 1, "conditions": [{"lastTransitionTime": "2025-06-26T17:47:00Z", "lastUpdateTime": "2025-06-26T17:47:00Z", "message": "Deployment has minimum availability.", "reason": "MinimumReplicasAvailable", "status": "True", "type": "Available"}, {"lastTransitionTime": "2025-06-26T17:46:53Z", "lastUpdateTime": "2025-06-26T17:47:00Z", "message": "ReplicaSet \"postgres-549dbd78b5\" has successfully progressed.", "reason": "NewReplicaSetAvailable", "status": "True", "type": "Progressing"}], "observedGeneration": 1, "readyReplicas": 1, "replicas": 1, "updatedReplicas": 1}}}, {"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "Service", "metadata": {"creationTimestamp": "2025-06-26T17:46:53Z", "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {"f:internalTrafficPolicy": {}, "f:ports": {".": {}, "k:{\"port\":5432,\"protocol\":\"TCP\"}": {".": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}}, "f:selector": {}, "f:sessionAffinity": {}, "f:type": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:53Z"}], "name": "postgres-service", "namespace": "freelance", "resourceVersion": "35113", "uid": "09bcd5b2-93d2-464f-b15a-d0590cb4ac36"}, "spec": {"clusterIP": "10.106.114.85", "clusterIPs": ["10.106.114.85"], "internalTrafficPolicy": "Cluster", "ipFamilies": ["IPv4"], "ipFamilyPolicy": "SingleStack", "ports": [{"port": 5432, "protocol": "TCP", "targetPort": 5432}], "selector": {"app": "postgres"}, "sessionAffinity": "None", "type": "ClusterIP"}, "status": {"loadBalancer": {}}}}]}}
+
+TASK [Deploy MailHog] **********************************************************
+
+ok: [localhost] => {"changed": false, "result": {"results": [{"changed": false, "method": "update", "result": {"apiVersion": "apps/v1", "kind": "Deployment", "metadata": {"annotations": {"deployment.kubernetes.io/revision": "1"}, "creationTimestamp": "2025-06-26T17:46:56Z", "generation": 1, "labels": {"app": "mailhog"}, "managedFields": [{"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:progressDeadlineSeconds": {}, "f:replicas": {}, "f:revisionHistoryLimit": {}, "f:selector": {}, "f:strategy": {"f:rollingUpdate": {".": {}, "f:maxSurge": {}, "f:maxUnavailable": {}}, "f:type": {}}, "f:template": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"mailhog\"}": {".": {}, "f:image": {}, "f:imagePullPolicy": {}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":1025,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}, "k:{\"containerPort\":8025,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}}}, "f:dnsPolicy": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}}}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:56Z"}, {"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:deployment.kubernetes.io/revision": {}}}, "f:status": {"f:availableReplicas": {}, "f:conditions": {".": {}, "k:{\"type\":\"Available\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Progressing\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}}, "f:observedGeneration": {}, "f:readyReplicas": {}, "f:replicas": {}, "f:updatedReplicas": {}}}, "manager": "kube-controller-manager", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:06Z"}], "name": "mailhog", "namespace": "freelance", "resourceVersion": "35201", "uid": "31a849ee-7a92-4742-ba54-70f45753c703"}, "spec": {"progressDeadlineSeconds": 600, "replicas": 1, "revisionHistoryLimit": 10, "selector": {"matchLabels": {"app": "mailhog"}}, "strategy": {"rollingUpdate": {"maxSurge": "25%", "maxUnavailable": "25%"}, "type": "RollingUpdate"}, "template": {"metadata": {"creationTimestamp": null, "labels": {"app": "mailhog"}}, "spec": {"containers": [{"image": "mailhog/mailhog", "imagePullPolicy": "Always", "name": "mailhog", "ports": [{"containerPort": 8025, "protocol": "TCP"}, {"containerPort": 1025, "protocol": "TCP"}], "resources": {"limits": {"cpu": "100m", "memory": "128Mi"}, "requests": {"cpu": "50m", "memory": "64Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File"}], "dnsPolicy": "ClusterFirst", "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "terminationGracePeriodSeconds": 30}}}, "status": {"availableReplicas": 1, "conditions": [{"lastTransitionTime": "2025-06-26T17:47:06Z", "lastUpdateTime": "2025-06-26T17:47:06Z", "message": "Deployment has minimum availability.", "reason": "MinimumReplicasAvailable", "status": "True", "type": "Available"}, {"lastTransitionTime": "2025-06-26T17:46:57Z", "lastUpdateTime": "2025-06-26T17:47:06Z", "message": "ReplicaSet \"mailhog-696dcdd7d5\" has successfully progressed.", "reason": "NewReplicaSetAvailable", "status": "True", "type": "Progressing"}], "observedGeneration": 1, "readyReplicas": 1, "replicas": 1, "updatedReplicas": 1}}}, {"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "Service", "metadata": {"creationTimestamp": "2025-06-26T17:46:56Z", "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {"f:internalTrafficPolicy": {}, "f:ports": {".": {}, "k:{\"port\":1025,\"protocol\":\"TCP\"}": {".": {}, "f:name": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}, "k:{\"port\":8025,\"protocol\":\"TCP\"}": {".": {}, "f:name": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}}, "f:selector": {}, "f:sessionAffinity": {}, "f:type": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:46:56Z"}], "name": "mailhog-service", "namespace": "freelance", "resourceVersion": "35140", "uid": "bf61954d-b9b2-4fbe-86bb-aa7959be2dec"}, "spec": {"clusterIP": "10.99.193.221", "clusterIPs": ["10.99.193.221"], "internalTrafficPolicy": "Cluster", "ipFamilies": ["IPv4"], "ipFamilyPolicy": "SingleStack", "ports": [{"name": "web", "port": 8025, "protocol": "TCP", "targetPort": 8025}, {"name": "smtp", "port": 1025, "protocol": "TCP", "targetPort": 1025}], "selector": {"app": "mailhog"}, "sessionAffinity": "None", "type": "ClusterIP"}, "status": {"loadBalancer": {}}}}]}}
+
+TASK [Deploy MinIO] ************************************************************
+
+ok: [localhost] => {"changed": false, "result": {"results": [{"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "PersistentVolumeClaim", "metadata": {"annotations": {"pv.kubernetes.io/bind-completed": "yes", "pv.kubernetes.io/bound-by-controller": "yes", "volume.beta.kubernetes.io/storage-provisioner": "k8s.io/minikube-hostpath", "volume.kubernetes.io/storage-provisioner": "k8s.io/minikube-hostpath"}, "creationTimestamp": "2025-06-26T17:47:00Z", "finalizers": ["kubernetes.io/pvc-protection"], "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {"f:accessModes": {}, "f:resources": {"f:requests": {".": {}, "f:storage": {}}}, "f:volumeMode": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:47:00Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:pv.kubernetes.io/bind-completed": {}, "f:pv.kubernetes.io/bound-by-controller": {}, "f:volume.beta.kubernetes.io/storage-provisioner": {}, "f:volume.kubernetes.io/storage-provisioner": {}}}, "f:spec": {"f:volumeName": {}}}, "manager": "kube-controller-manager", "operation": "Update", "time": "2025-06-26T17:47:01Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:status": {"f:accessModes": {}, "f:capacity": {".": {}, "f:storage": {}}, "f:phase": {}}}, "manager": "kube-controller-manager", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:01Z"}], "name": "minio-pvc", "namespace": "freelance", "resourceVersion": "35172", "uid": "f74960a2-47cb-47cb-86fe-6fa95292b411"}, "spec": {"accessModes": ["ReadWriteOnce"], "resources": {"requests": {"storage": "10Gi"}}, "storageClassName": "standard", "volumeMode": "Filesystem", "volumeName": "pvc-f74960a2-47cb-47cb-86fe-6fa95292b411"}, "status": {"accessModes": ["ReadWriteOnce"], "capacity": {"storage": "10Gi"}, "phase": "Bound"}}}, {"changed": false, "method": "update", "result": {"apiVersion": "apps/v1", "kind": "Deployment", "metadata": {"annotations": {"deployment.kubernetes.io/revision": "1"}, "creationTimestamp": "2025-06-26T17:47:01Z", "generation": 1, "labels": {"app": "minio"}, "managedFields": [{"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:progressDeadlineSeconds": {}, "f:replicas": {}, "f:revisionHistoryLimit": {}, "f:selector": {}, "f:strategy": {"f:rollingUpdate": {".": {}, "f:maxSurge": {}, "f:maxUnavailable": {}}, "f:type": {}}, "f:template": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"minio\"}": {".": {}, "f:args": {}, "f:command": {}, "f:env": {".": {}, "k:{\"name\":\"MINIO_ROOT_PASSWORD\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}, "k:{\"name\":\"MINIO_ROOT_USER\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}}, "f:image": {}, "f:imagePullPolicy": {}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":9000,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}, "k:{\"containerPort\":9001,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}, "f:volumeMounts": {".": {}, "k:{\"mountPath\":\"/data\"}": {".": {}, "f:mountPath": {}, "f:name": {}}}}}, "f:dnsPolicy": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}, "f:volumes": {".": {}, "k:{\"name\":\"minio-storage\"}": {".": {}, "f:name": {}, "f:persistentVolumeClaim": {".": {}, "f:claimName": {}}}}}}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:47:01Z"}, {"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:deployment.kubernetes.io/revision": {}}}, "f:status": {"f:availableReplicas": {}, "f:conditions": {".": {}, "k:{\"type\":\"Available\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Progressing\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}}, "f:observedGeneration": {}, "f:readyReplicas": {}, "f:replicas": {}, "f:updatedReplicas": {}}}, "manager": "kube-controller-manager", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:10Z"}], "name": "minio", "namespace": "freelance", "resourceVersion": "35210", "uid": "d1bb46fe-bcd6-4597-9d76-fed798acd754"}, "spec": {"progressDeadlineSeconds": 600, "replicas": 1, "revisionHistoryLimit": 10, "selector": {"matchLabels": {"app": "minio"}}, "strategy": {"rollingUpdate": {"maxSurge": "25%", "maxUnavailable": "25%"}, "type": "RollingUpdate"}, "template": {"metadata": {"creationTimestamp": null, "labels": {"app": "minio"}}, "spec": {"containers": [{"args": ["server", "/data", "--console-address", ":9001"], "command": ["minio"], "env": [{"name": "MINIO_ROOT_USER", "valueFrom": {"secretKeyRef": {"key": "MINIO_ROOT_USER", "name": "freelance-secrets"}}}, {"name": "MINIO_ROOT_PASSWORD", "valueFrom": {"secretKeyRef": {"key": "MINIO_ROOT_PASSWORD", "name": "freelance-secrets"}}}], "image": "minio/minio", "imagePullPolicy": "Always", "name": "minio", "ports": [{"containerPort": 9000, "protocol": "TCP"}, {"containerPort": 9001, "protocol": "TCP"}], "resources": {"limits": {"cpu": "500m", "memory": "512Mi"}, "requests": {"cpu": "250m", "memory": "256Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File", "volumeMounts": [{"mountPath": "/data", "name": "minio-storage"}]}], "dnsPolicy": "ClusterFirst", "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "terminationGracePeriodSeconds": 30, "volumes": [{"name": "minio-storage", "persistentVolumeClaim": {"claimName": "minio-pvc"}}]}}}, "status": {"availableReplicas": 1, "conditions": [{"lastTransitionTime": "2025-06-26T17:47:10Z", "lastUpdateTime": "2025-06-26T17:47:10Z", "message": "Deployment has minimum availability.", "reason": "MinimumReplicasAvailable", "status": "True", "type": "Available"}, {"lastTransitionTime": "2025-06-26T17:47:01Z", "lastUpdateTime": "2025-06-26T17:47:10Z", "message": "ReplicaSet \"minio-67f5669d75\" has successfully progressed.", "reason": "NewReplicaSetAvailable", "status": "True", "type": "Progressing"}], "observedGeneration": 1, "readyReplicas": 1, "replicas": 1, "updatedReplicas": 1}}}, {"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "Service", "metadata": {"creationTimestamp": "2025-06-26T17:47:01Z", "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {"f:internalTrafficPolicy": {}, "f:ports": {".": {}, "k:{\"port\":9000,\"protocol\":\"TCP\"}": {".": {}, "f:name": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}, "k:{\"port\":9001,\"protocol\":\"TCP\"}": {".": {}, "f:name": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}}, "f:selector": {}, "f:sessionAffinity": {}, "f:type": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:47:01Z"}], "name": "minio-service", "namespace": "freelance", "resourceVersion": "35181", "uid": "edaeb67f-82e4-4b22-a3b7-f16785c04f00"}, "spec": {"clusterIP": "10.108.144.81", "clusterIPs": ["10.108.144.81"], "internalTrafficPolicy": "Cluster", "ipFamilies": ["IPv4"], "ipFamilyPolicy": "SingleStack", "ports": [{"name": "api", "port": 9000, "protocol": "TCP", "targetPort": 9000}, {"name": "console", "port": 9001, "protocol": "TCP", "targetPort": 9001}], "selector": {"app": "minio"}, "sessionAffinity": "None", "type": "ClusterIP"}, "status": {"loadBalancer": {}}}}]}}
+
+TASK [Wait for infrastructure services to be ready] ****************************
+
+ok: [localhost] => {"api_found": true, "changed": false, "resources": [{"apiVersion": "v1", "kind": "Pod", "metadata": {"creationTimestamp": "2025-06-26T17:46:57Z", "generateName": "mailhog-696dcdd7d5-", "generation": 1, "labels": {"app": "mailhog", "pod-template-hash": "696dcdd7d5"}, "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:generateName": {}, "f:labels": {".": {}, "f:app": {}, "f:pod-template-hash": {}}, "f:ownerReferences": {".": {}, "k:{\"uid\":\"cbf8e6ce-657f-4511-a170-57d9ecfee436\"}": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"mailhog\"}": {".": {}, "f:image": {}, "f:imagePullPolicy": {}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":1025,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}, "k:{\"containerPort\":8025,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}}}, "f:dnsPolicy": {}, "f:enableServiceLinks": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}}}, "manager": "kube-controller-manager", "operation": "Update", "time": "2025-06-26T17:46:57Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:status": {"f:conditions": {"k:{\"type\":\"ContainersReady\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Initialized\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"PodReadyToStartContainers\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Ready\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}}, "f:containerStatuses": {}, "f:hostIP": {}, "f:hostIPs": {}, "f:phase": {}, "f:podIP": {}, "f:podIPs": {".": {}, "k:{\"ip\":\"10.244.0.24\"}": {".": {}, "f:ip": {}}}, "f:startTime": {}}}, "manager": "kubelet", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:06Z"}], "name": "mailhog-696dcdd7d5-zt2s8", "namespace": "freelance", "ownerReferences": [{"apiVersion": "apps/v1", "blockOwnerDeletion": true, "controller": true, "kind": "ReplicaSet", "name": "mailhog-696dcdd7d5", "uid": "cbf8e6ce-657f-4511-a170-57d9ecfee436"}], "resourceVersion": "35196", "uid": "e2f4524c-dbf7-443c-8473-f50533cfb80a"}, "spec": {"containers": [{"image": "mailhog/mailhog", "imagePullPolicy": "Always", "name": "mailhog", "ports": [{"containerPort": 8025, "protocol": "TCP"}, {"containerPort": 1025, "protocol": "TCP"}], "resources": {"limits": {"cpu": "100m", "memory": "128Mi"}, "requests": {"cpu": "50m", "memory": "64Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File", "volumeMounts": [{"mountPath": "/var/run/secrets/kubernetes.io/serviceaccount", "name": "kube-api-access-v46bk", "readOnly": true}]}], "dnsPolicy": "ClusterFirst", "enableServiceLinks": true, "nodeName": "minikube", "preemptionPolicy": "PreemptLowerPriority", "priority": 0, "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "serviceAccount": "default", "serviceAccountName": "default", "terminationGracePeriodSeconds": 30, "tolerations": [{"effect": "NoExecute", "key": "node.kubernetes.io/not-ready", "operator": "Exists", "tolerationSeconds": 300}, {"effect": "NoExecute", "key": "node.kubernetes.io/unreachable", "operator": "Exists", "tolerationSeconds": 300}], "volumes": [{"name": "kube-api-access-v46bk", "projected": {"defaultMode": 420, "sources": [{"serviceAccountToken": {"expirationSeconds": 3607, "path": "token"}}, {"configMap": {"items": [{"key": "ca.crt", "path": "ca.crt"}], "name": "kube-root-ca.crt"}}, {"downwardAPI": {"items": [{"fieldRef": {"apiVersion": "v1", "fieldPath": "metadata.namespace"}, "path": "namespace"}]}}]}}]}, "status": {"conditions": [{"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:06Z", "status": "True", "type": "PodReadyToStartContainers"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:46:57Z", "status": "True", "type": "Initialized"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:06Z", "status": "True", "type": "Ready"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:06Z", "status": "True", "type": "ContainersReady"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:46:57Z", "status": "True", "type": "PodScheduled"}], "containerStatuses": [{"allocatedResources": {"cpu": "50m", "memory": "64Mi"}, "containerID": "docker://609b7e9b5a21316ce2324fa204acede21c4a81ceaed1b92ea06a1307a8a8b939", "image": "mailhog/mailhog:latest", "imageID": "docker-pullable://mailhog/mailhog@sha256:8d76a3d4ffa32a3661311944007a415332c4bb855657f4f6c57996405c009bea", "lastState": {}, "name": "mailhog", "ready": true, "resources": {"limits": {"cpu": "100m", "memory": "128Mi"}, "requests": {"cpu": "50m", "memory": "64Mi"}}, "restartCount": 0, "started": true, "state": {"running": {"startedAt": "2025-06-26T17:47:03Z"}}, "volumeMounts": [{"mountPath": "/var/run/secrets/kubernetes.io/serviceaccount", "name": "kube-api-access-v46bk", "readOnly": true, "recursiveReadOnly": "Disabled"}]}], "hostIP": "192.168.49.2", "hostIPs": [{"ip": "192.168.49.2"}], "phase": "Running", "podIP": "10.244.0.24", "podIPs": [{"ip": "10.244.0.24"}], "qosClass": "Burstable", "startTime": "2025-06-26T17:46:57Z"}}, {"apiVersion": "v1", "kind": "Pod", "metadata": {"creationTimestamp": "2025-06-26T17:47:01Z", "generateName": "minio-67f5669d75-", "generation": 1, "labels": {"app": "minio", "pod-template-hash": "67f5669d75"}, "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:generateName": {}, "f:labels": {".": {}, "f:app": {}, "f:pod-template-hash": {}}, "f:ownerReferences": {".": {}, "k:{\"uid\":\"9a1de9c4-5dd6-4af2-b191-468862f80b77\"}": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"minio\"}": {".": {}, "f:args": {}, "f:command": {}, "f:env": {".": {}, "k:{\"name\":\"MINIO_ROOT_PASSWORD\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}, "k:{\"name\":\"MINIO_ROOT_USER\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}}, "f:image": {}, "f:imagePullPolicy": {}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":9000,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}, "k:{\"containerPort\":9001,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}, "f:volumeMounts": {".": {}, "k:{\"mountPath\":\"/data\"}": {".": {}, "f:mountPath": {}, "f:name": {}}}}}, "f:dnsPolicy": {}, "f:enableServiceLinks": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}, "f:volumes": {".": {}, "k:{\"name\":\"minio-storage\"}": {".": {}, "f:name": {}, "f:persistentVolumeClaim": {".": {}, "f:claimName": {}}}}}}, "manager": "kube-controller-manager", "operation": "Update", "time": "2025-06-26T17:47:01Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:status": {"f:conditions": {".": {}, "k:{\"type\":\"PodScheduled\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}}}}, "manager": "kube-scheduler", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:01Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:status": {"f:conditions": {"k:{\"type\":\"ContainersReady\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Initialized\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"PodReadyToStartContainers\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Ready\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}}, "f:containerStatuses": {}, "f:hostIP": {}, "f:hostIPs": {}, "f:phase": {}, "f:podIP": {}, "f:podIPs": {".": {}, "k:{\"ip\":\"10.244.0.25\"}": {".": {}, "f:ip": {}}}, "f:startTime": {}}}, "manager": "kubelet", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:09Z"}], "name": "minio-67f5669d75-29jwg", "namespace": "freelance", "ownerReferences": [{"apiVersion": "apps/v1", "blockOwnerDeletion": true, "controller": true, "kind": "ReplicaSet", "name": "minio-67f5669d75", "uid": "9a1de9c4-5dd6-4af2-b191-468862f80b77"}], "resourceVersion": "35206", "uid": "6000481e-1fdc-42ac-b189-8b46ca6a6036"}, "spec": {"containers": [{"args": ["server", "/data", "--console-address", ":9001"], "command": ["minio"], "env": [{"name": "MINIO_ROOT_USER", "valueFrom": {"secretKeyRef": {"key": "MINIO_ROOT_USER", "name": "freelance-secrets"}}}, {"name": "MINIO_ROOT_PASSWORD", "valueFrom": {"secretKeyRef": {"key": "MINIO_ROOT_PASSWORD", "name": "freelance-secrets"}}}], "image": "minio/minio", "imagePullPolicy": "Always", "name": "minio", "ports": [{"containerPort": 9000, "protocol": "TCP"}, {"containerPort": 9001, "protocol": "TCP"}], "resources": {"limits": {"cpu": "500m", "memory": "512Mi"}, "requests": {"cpu": "250m", "memory": "256Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File", "volumeMounts": [{"mountPath": "/data", "name": "minio-storage"}, {"mountPath": "/var/run/secrets/kubernetes.io/serviceaccount", "name": "kube-api-access-bxftg", "readOnly": true}]}], "dnsPolicy": "ClusterFirst", "enableServiceLinks": true, "nodeName": "minikube", "preemptionPolicy": "PreemptLowerPriority", "priority": 0, "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "serviceAccount": "default", "serviceAccountName": "default", "terminationGracePeriodSeconds": 30, "tolerations": [{"effect": "NoExecute", "key": "node.kubernetes.io/not-ready", "operator": "Exists", "tolerationSeconds": 300}, {"effect": "NoExecute", "key": "node.kubernetes.io/unreachable", "operator": "Exists", "tolerationSeconds": 300}], "volumes": [{"name": "minio-storage", "persistentVolumeClaim": {"claimName": "minio-pvc"}}, {"name": "kube-api-access-bxftg", "projected": {"defaultMode": 420, "sources": [{"serviceAccountToken": {"expirationSeconds": 3607, "path": "token"}}, {"configMap": {"items": [{"key": "ca.crt", "path": "ca.crt"}], "name": "kube-root-ca.crt"}}, {"downwardAPI": {"items": [{"fieldRef": {"apiVersion": "v1", "fieldPath": "metadata.namespace"}, "path": "namespace"}]}}]}}]}, "status": {"conditions": [{"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:09Z", "status": "True", "type": "PodReadyToStartContainers"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:01Z", "status": "True", "type": "Initialized"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:09Z", "status": "True", "type": "Ready"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:09Z", "status": "True", "type": "ContainersReady"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:01Z", "status": "True", "type": "PodScheduled"}], "containerStatuses": [{"allocatedResources": {"cpu": "250m", "memory": "256Mi"}, "containerID": "docker://f131f765185a674f459ad28d9b8fb690e07d4bd8a3ee71b146f506492acab3ac", "image": "minio/minio:latest", "imageID": "docker-pullable://minio/minio@sha256:064117214caceaa8d8a90ef7caa58f2b2aeb316b5156afe9ee8da5b4d83e12c8", "lastState": {}, "name": "minio", "ready": true, "resources": {"limits": {"cpu": "500m", "memory": "512Mi"}, "requests": {"cpu": "250m", "memory": "256Mi"}}, "restartCount": 0, "started": true, "state": {"running": {"startedAt": "2025-06-26T17:47:07Z"}}, "volumeMounts": [{"mountPath": "/data", "name": "minio-storage"}, {"mountPath": "/var/run/secrets/kubernetes.io/serviceaccount", "name": "kube-api-access-bxftg", "readOnly": true, "recursiveReadOnly": "Disabled"}]}], "hostIP": "192.168.49.2", "hostIPs": [{"ip": "192.168.49.2"}], "phase": "Running", "podIP": "10.244.0.25", "podIPs": [{"ip": "10.244.0.25"}], "qosClass": "Burstable", "startTime": "2025-06-26T17:47:01Z"}}, {"apiVersion": "v1", "kind": "Pod", "metadata": {"creationTimestamp": "2025-06-26T17:46:53Z", "generateName": "postgres-549dbd78b5-", "generation": 1, "labels": {"app": "postgres", "pod-template-hash": "549dbd78b5"}, "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:generateName": {}, "f:labels": {".": {}, "f:app": {}, "f:pod-template-hash": {}}, "f:ownerReferences": {".": {}, "k:{\"uid\":\"920ef481-f08b-4e31-9e77-b90955756a71\"}": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"postgres\"}": {".": {}, "f:env": {".": {}, "k:{\"name\":\"POSTGRES_DB\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"POSTGRES_PASSWORD\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}, "k:{\"name\":\"POSTGRES_USER\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}}, "f:image": {}, "f:imagePullPolicy": {}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":5432,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}, "f:volumeMounts": {".": {}, "k:{\"mountPath\":\"/var/lib/postgresql/data\"}": {".": {}, "f:mountPath": {}, "f:name": {}}}}}, "f:dnsPolicy": {}, "f:enableServiceLinks": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}, "f:volumes": {".": {}, "k:{\"name\":\"postgres-storage\"}": {".": {}, "f:name": {}, "f:persistentVolumeClaim": {".": {}, "f:claimName": {}}}}}}, "manager": "kube-controller-manager", "operation": "Update", "time": "2025-06-26T17:46:53Z"}, {"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:status": {"f:conditions": {"k:{\"type\":\"ContainersReady\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Initialized\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"PodReadyToStartContainers\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Ready\"}": {".": {}, "f:lastProbeTime": {}, "f:lastTransitionTime": {}, "f:status": {}, "f:type": {}}}, "f:containerStatuses": {}, "f:hostIP": {}, "f:hostIPs": {}, "f:phase": {}, "f:podIP": {}, "f:podIPs": {".": {}, "k:{\"ip\":\"10.244.0.23\"}": {".": {}, "f:ip": {}}}, "f:startTime": {}}}, "manager": "kubelet", "operation": "Update", "subresource": "status", "time": "2025-06-26T17:47:00Z"}], "name": "postgres-549dbd78b5-nq2k9", "namespace": "freelance", "ownerReferences": [{"apiVersion": "apps/v1", "blockOwnerDeletion": true, "controller": true, "kind": "ReplicaSet", "name": "postgres-549dbd78b5", "uid": "920ef481-f08b-4e31-9e77-b90955756a71"}], "resourceVersion": "35151", "uid": "a0c035bf-541f-48ce-842f-31501aeb06be"}, "spec": {"containers": [{"env": [{"name": "POSTGRES_DB", "valueFrom": {"configMapKeyRef": {"key": "POSTGRES_DB", "name": "freelance-config"}}}, {"name": "POSTGRES_USER", "valueFrom": {"configMapKeyRef": {"key": "POSTGRES_USER", "name": "freelance-config"}}}, {"name": "POSTGRES_PASSWORD", "valueFrom": {"secretKeyRef": {"key": "POSTGRES_PASSWORD", "name": "freelance-secrets"}}}], "image": "postgres:15-alpine", "imagePullPolicy": "IfNotPresent", "name": "postgres", "ports": [{"containerPort": 5432, "protocol": "TCP"}], "resources": {"limits": {"cpu": "500m", "memory": "512Mi"}, "requests": {"cpu": "250m", "memory": "256Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File", "volumeMounts": [{"mountPath": "/var/lib/postgresql/data", "name": "postgres-storage"}, {"mountPath": "/var/run/secrets/kubernetes.io/serviceaccount", "name": "kube-api-access-t47vz", "readOnly": true}]}], "dnsPolicy": "ClusterFirst", "enableServiceLinks": true, "nodeName": "minikube", "preemptionPolicy": "PreemptLowerPriority", "priority": 0, "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "serviceAccount": "default", "serviceAccountName": "default", "terminationGracePeriodSeconds": 30, "tolerations": [{"effect": "NoExecute", "key": "node.kubernetes.io/not-ready", "operator": "Exists", "tolerationSeconds": 300}, {"effect": "NoExecute", "key": "node.kubernetes.io/unreachable", "operator": "Exists", "tolerationSeconds": 300}], "volumes": [{"name": "postgres-storage", "persistentVolumeClaim": {"claimName": "postgres-pvc"}}, {"name": "kube-api-access-t47vz", "projected": {"defaultMode": 420, "sources": [{"serviceAccountToken": {"expirationSeconds": 3607, "path": "token"}}, {"configMap": {"items": [{"key": "ca.crt", "path": "ca.crt"}], "name": "kube-root-ca.crt"}}, {"downwardAPI": {"items": [{"fieldRef": {"apiVersion": "v1", "fieldPath": "metadata.namespace"}, "path": "namespace"}]}}]}}]}, "status": {"conditions": [{"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:00Z", "status": "True", "type": "PodReadyToStartContainers"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:46:53Z", "status": "True", "type": "Initialized"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:00Z", "status": "True", "type": "Ready"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:47:00Z", "status": "True", "type": "ContainersReady"}, {"lastProbeTime": null, "lastTransitionTime": "2025-06-26T17:46:53Z", "status": "True", "type": "PodScheduled"}], "containerStatuses": [{"allocatedResources": {"cpu": "250m", "memory": "256Mi"}, "containerID": "docker://f531607527ddc6cf4debf6ce1ae0ea6513cd64360bf876cf94d01b2e2a7bcf27", "image": "postgres:15-alpine", "imageID": "docker-pullable://postgres@sha256:2985f77749c75e90d340b8538dbf55d4e5b2c5396b2f05b7add61a7d8cd50a99", "lastState": {}, "name": "postgres", "ready": true, "resources": {"limits": {"cpu": "500m", "memory": "512Mi"}, "requests": {"cpu": "250m", "memory": "256Mi"}}, "restartCount": 0, "started": true, "state": {"running": {"startedAt": "2025-06-26T17:46:56Z"}}, "volumeMounts": [{"mountPath": "/var/lib/postgresql/data", "name": "postgres-storage"}, {"mountPath": "/var/run/secrets/kubernetes.io/serviceaccount", "name": "kube-api-access-t47vz", "readOnly": true, "recursiveReadOnly": "Disabled"}]}], "hostIP": "192.168.49.2", "hostIPs": [{"ip": "192.168.49.2"}], "phase": "Running", "podIP": "10.244.0.23", "podIPs": [{"ip": "10.244.0.23"}], "qosClass": "Burstable", "startTime": "2025-06-26T17:46:53Z"}}]}
+
+TASK [Deploy Backend using template] *******************************************
+
+changed: [localhost] => {"changed": true, "result": {"results": [{"changed": true, "method": "update", "result": {"apiVersion": "apps/v1", "kind": "Deployment", "metadata": {"annotations": {"deployment.kubernetes.io/revision": "5"}, "creationTimestamp": "2025-06-26T17:47:20Z", "generation": 6, "labels": {"app": "backend"}, "managedFields": [{"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:annotations": {".": {}, "f:deployment.kubernetes.io/revision": {}}}, "f:status": {"f:conditions": {".": {}, "k:{\"type\":\"Available\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}, "k:{\"type\":\"Progressing\"}": {".": {}, "f:lastTransitionTime": {}, "f:lastUpdateTime": {}, "f:message": {}, "f:reason": {}, "f:status": {}, "f:type": {}}}, "f:observedGeneration": {}, "f:replicas": {}, "f:unavailableReplicas": {}, "f:updatedReplicas": {}}}, "manager": "kube-controller-manager", "operation": "Update", "subresource": "status", "time": "2025-06-26T21:02:47Z"}, {"apiVersion": "apps/v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:progressDeadlineSeconds": {}, "f:replicas": {}, "f:revisionHistoryLimit": {}, "f:selector": {}, "f:strategy": {"f:rollingUpdate": {".": {}, "f:maxSurge": {}, "f:maxUnavailable": {}}, "f:type": {}}, "f:template": {"f:metadata": {"f:labels": {".": {}, "f:app": {}}}, "f:spec": {"f:containers": {"k:{\"name\":\"backend\"}": {".": {}, "f:env": {".": {}, "k:{\"name\":\"JAVA_TOOL_OPTIONS\"}": {".": {}, "f:name": {}, "f:value": {}}, "k:{\"name\":\"MINIO_ACCESS_KEY\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"MINIO_BUCKET_NAME\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"MINIO_ENDPOINT\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"MINIO_SECRET_KEY\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}, "k:{\"name\":\"SPRING_DATASOURCE_PASSWORD\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:secretKeyRef": {}}}, "k:{\"name\":\"SPRING_DATASOURCE_URL\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_DATASOURCE_USERNAME\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_JPA_HIBERNATE_DDL_AUTO\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_HOST\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_PASSWORD\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_PORT\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_PROPERTIES_MAIL_DEBUG\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_MAIL_USERNAME\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}, "k:{\"name\":\"SPRING_PROFILES_ACTIVE\"}": {".": {}, "f:name": {}, "f:valueFrom": {".": {}, "f:configMapKeyRef": {}}}}, "f:envFrom": {}, "f:image": {}, "f:imagePullPolicy": {}, "f:livenessProbe": {".": {}, "f:failureThreshold": {}, "f:httpGet": {".": {}, "f:path": {}, "f:port": {}, "f:scheme": {}}, "f:initialDelaySeconds": {}, "f:periodSeconds": {}, "f:successThreshold": {}, "f:timeoutSeconds": {}}, "f:name": {}, "f:ports": {".": {}, "k:{\"containerPort\":8080,\"protocol\":\"TCP\"}": {".": {}, "f:containerPort": {}, "f:protocol": {}}}, "f:readinessProbe": {".": {}, "f:failureThreshold": {}, "f:httpGet": {".": {}, "f:path": {}, "f:port": {}, "f:scheme": {}}, "f:initialDelaySeconds": {}, "f:periodSeconds": {}, "f:successThreshold": {}, "f:timeoutSeconds": {}}, "f:resources": {".": {}, "f:limits": {".": {}, "f:cpu": {}, "f:memory": {}}, "f:requests": {".": {}, "f:cpu": {}, "f:memory": {}}}, "f:terminationMessagePath": {}, "f:terminationMessagePolicy": {}}}, "f:dnsPolicy": {}, "f:restartPolicy": {}, "f:schedulerName": {}, "f:securityContext": {}, "f:terminationGracePeriodSeconds": {}}}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T21:30:44Z"}], "name": "backend", "namespace": "freelance", "resourceVersion": "45204", "uid": "60ebde80-ef1d-442b-a228-c9f6cae83d7c"}, "spec": {"progressDeadlineSeconds": 600, "replicas": 2, "revisionHistoryLimit": 10, "selector": {"matchLabels": {"app": "backend"}}, "strategy": {"rollingUpdate": {"maxSurge": "25%", "maxUnavailable": "25%"}, "type": "RollingUpdate"}, "template": {"metadata": {"creationTimestamp": null, "labels": {"app": "backend"}}, "spec": {"containers": [{"env": [{"name": "SPRING_DATASOURCE_URL", "valueFrom": {"configMapKeyRef": {"key": "SPRING_DATASOURCE_URL", "name": "freelance-config"}}}, {"name": "SPRING_DATASOURCE_USERNAME", "valueFrom": {"configMapKeyRef": {"key": "SPRING_DATASOURCE_USERNAME", "name": "freelance-config"}}}, {"name": "SPRING_DATASOURCE_PASSWORD", "valueFrom": {"secretKeyRef": {"key": "POSTGRES_PASSWORD", "name": "freelance-secrets"}}}, {"name": "SPRING_JPA_HIBERNATE_DDL_AUTO", "valueFrom": {"configMapKeyRef": {"key": "SPRING_JPA_HIBERNATE_DDL_AUTO", "name": "freelance-config"}}}, {"name": "MINIO_ENDPOINT", "valueFrom": {"configMapKeyRef": {"key": "MINIO_ENDPOINT", "name": "freelance-config"}}}, {"name": "MINIO_ACCESS_KEY", "valueFrom": {"configMapKeyRef": {"key": "MINIO_ACCESS_KEY", "name": "freelance-config"}}}, {"name": "MINIO_SECRET_KEY", "valueFrom": {"secretKeyRef": {"key": "MINIO_SECRET_KEY", "name": "freelance-secrets"}}}, {"name": "MINIO_BUCKET_NAME", "valueFrom": {"configMapKeyRef": {"key": "MINIO_BUCKET_NAME", "name": "freelance-config"}}}, {"name": "SPRING_PROFILES_ACTIVE", "valueFrom": {"configMapKeyRef": {"key": "SPRING_PROFILES_ACTIVE", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_HOST", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_HOST", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_PORT", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_PORT", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_USERNAME", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_USERNAME", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_PASSWORD", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_PASSWORD", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE", "name": "freelance-config"}}}, {"name": "SPRING_MAIL_PROPERTIES_MAIL_DEBUG", "valueFrom": {"configMapKeyRef": {"key": "SPRING_MAIL_PROPERTIES_MAIL_DEBUG", "name": "freelance-config"}}}, {"name": "JAVA_TOOL_OPTIONS", "value": "-Xmx768m"}], "envFrom": [{"configMapRef": {"name": "freelance-config"}}, {"secretRef": {"name": "freelance-secrets"}}], "image": "papadooo/freelance-backend:62", "imagePullPolicy": "Always", "livenessProbe": {"failureThreshold": 5, "httpGet": {"path": "/actuator/health", "port": 8080, "scheme": "HTTP"}, "initialDelaySeconds": 60, "periodSeconds": 30, "successThreshold": 1, "timeoutSeconds": 5}, "name": "backend", "ports": [{"containerPort": 8080, "protocol": "TCP"}], "readinessProbe": {"failureThreshold": 10, "httpGet": {"path": "/actuator/health", "port": 8080, "scheme": "HTTP"}, "initialDelaySeconds": 30, "periodSeconds": 10, "successThreshold": 1, "timeoutSeconds": 5}, "resources": {"limits": {"cpu": "1500m", "memory": "1536Mi"}, "requests": {"cpu": "500m", "memory": "768Mi"}}, "terminationMessagePath": "/dev/termination-log", "terminationMessagePolicy": "File"}], "dnsPolicy": "ClusterFirst", "restartPolicy": "Always", "schedulerName": "default-scheduler", "securityContext": {}, "terminationGracePeriodSeconds": 30}}}, "status": {"conditions": [{"lastTransitionTime": "2025-06-26T17:47:20Z", "lastUpdateTime": "2025-06-26T17:47:20Z", "message": "Deployment does not have minimum availability.", "reason": "MinimumReplicasUnavailable", "status": "False", "type": "Available"}, {"lastTransitionTime": "2025-06-26T21:02:47Z", "lastUpdateTime": "2025-06-26T21:02:47Z", "message": "ReplicaSet \"backend-58d89645f6\" has timed out progressing.", "reason": "ProgressDeadlineExceeded", "status": "False", "type": "Progressing"}], "observedGeneration": 5, "replicas": 3, "unavailableReplicas": 3, "updatedReplicas": 1}}}, {"changed": false, "method": "update", "result": {"apiVersion": "v1", "kind": "Service", "metadata": {"creationTimestamp": "2025-06-26T17:47:25Z", "managedFields": [{"apiVersion": "v1", "fieldsType": "FieldsV1", "fieldsV1": {"f:spec": {"f:internalTrafficPolicy": {}, "f:ports": {".": {}, "k:{\"port\":8080,\"protocol\":\"TCP\"}": {".": {}, "f:name": {}, "f:port": {}, "f:protocol": {}, "f:targetPort": {}}}, "f:selector": {}, "f:sessionAffinity": {}, "f:type": {}}}, "manager": "OpenAPI-Generator", "operation": "Update", "time": "2025-06-26T17:47:25Z"}], "name": "backend-service", "namespace": "freelance", "resourceVersion": "35249", "uid": "9a28247f-2539-461a-9351-6add9f98aabb"}, "spec": {"clusterIP": "10.100.10.109", "clusterIPs": ["10.100.10.109"], "internalTrafficPolicy": "Cluster", "ipFamilies": ["IPv4"], "ipFamilyPolicy": "SingleStack", "ports": [{"name": "http", "port": 8080, "protocol": "TCP", "targetPort": 8080}], "selector": {"app": "backend"}, "sessionAffinity": "None", "type": "ClusterIP"}, "status": {"loadBalancer": {}}}}]}}
+
+TASK [Wait for backend deployment to be ready] *********************************
+
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: ansible_collections.kubernetes.core.plugins.module_utils.k8s.exceptions.CoreException: Failed to gather information about Deployment(s) even after waiting for 303 seconds
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Failed to gather information about Deployment(s) even after waiting for 303 seconds"}
+
+PLAY RECAP *********************************************************************
+localhost                  : ok=7    changed=1    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0   
+
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // stage
+
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] echo
+Backend pipeline completed.
+[Pipeline] archiveArtifacts
+Archiving artifacts
+[Pipeline] sh
++ rm -f /tmp/kubeconfig_final_62.yaml
+[Pipeline] echo
+❌ Backend pipeline failed. Check the logs for details.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 2
+
+Finished: FAILURE

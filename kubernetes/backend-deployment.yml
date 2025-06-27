@@ -6,7 +6,7 @@ metadata:
   labels:
     app: backend
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
+        image: papadooo/freelance-backend:latest
         imagePullPolicy: Always  # Always pull the latest image
         ports:
         - containerPort: 8080
@@ -113,15 +113,15 @@ spec:
           httpGet:
             path: /actuator/health
             port: 8080
-          initialDelaySeconds: 180
-          periodSeconds: 30
+          initialDelaySeconds: 300
+          periodSeconds: 60
           failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /actuator/health
             port: 8080
-          initialDelaySeconds: 90
-          periodSeconds: 10
+          initialDelaySeconds: 180
+          periodSeconds: 30
           failureThreshold: 10
 
 ---

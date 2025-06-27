@@ -103,28 +103,28 @@ graph TD
 
 ### Βήματα Deployment
 1.  **Εκκίνηση του Minikube & Ingress:**
-    ```bash
+```bash
     minikube start --driver=docker
     minikube addons enable ingress
     ```
 2.  **Κλωνοποίηση του Αποθετηρίου:**
-    ```bash
+   ```bash
     git clone https://github.com/naasssssty/Freelance.git
     cd Freelance
-    ```
+   ```
 3.  **Εκτέλεση του Ansible Playbook:**
     Το παρακάτω playbook θα αναλάβει να κάνει deploy όλα τα components (Frontend, Backend, PostgreSQL, MinIO, MailHog) στο cluster του Minikube.
-    ```bash
+   ```bash
     ansible-playbook -i ansible/inventory.yml ansible/deploy-k8s-full.yml
-    ```
+   ```
 4.  **Ενημέρωση του `/etc/hosts`:**
     Για να μπορέσουμε να έχουμε πρόσβαση στην εφαρμογή μέσω ενός FQDN (Fully Qualified Domain Name), προσθέτουμε την παρακάτω εγγραφή στο τοπικό μας αρχείο hosts.
-    ```bash
+   ```bash
     echo "$(minikube ip) freelance.local" | sudo tee -a /etc/hosts
-    ```
+   ```
 5.  **Εκκίνηση του Tunnel & Πρόσβαση:**
     Ανοίξτε ένα **νέο terminal** και εκτελέστε την παρακάτω εντολή για να δρομολογήσετε το traffic από το local host στο cluster.
-    ```bash
+```bash
     minikube tunnel
     ```
     Αφήστε το terminal ανοιχτό. Τώρα μπορείτε να επισκεφθείτε την εφαρμογή από τον browser σας στη διεύθυνση:
