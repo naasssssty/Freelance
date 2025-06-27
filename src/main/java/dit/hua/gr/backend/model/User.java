@@ -30,7 +30,7 @@ public class User implements UserDetails {
     @Column(name = "role", nullable = false)
     private Role role = Role.CLIENT;
 
-    @Column(name = "isVerified", nullable = false)
+    @Column(name = "is_verified", nullable = false)
     private boolean isVerified = false;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -68,7 +68,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return isVerified;
     }
 
     public void setUsername(String username) {

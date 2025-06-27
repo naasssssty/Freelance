@@ -40,7 +40,7 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: mailhog-service
+            name: mailhog
             port:
               number: 8025
   # MinIO subdomain

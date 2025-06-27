@@ -37,17 +37,27 @@ public class BackendApplication {
     // This bean will be used only in dev profile
     @Bean
     @Profile("dev")
-    public JavaMailSender getDevJavaMailSender() {
+    public JavaMailSender getDevJavaMailSender(
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.host}") String host,
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.port}") int port,
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.username:}") String username,
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.password:}") String password,
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.properties.mail.smtp.auth:false}") boolean smtpAuth,
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.properties.mail.smtp.starttls.enable:false}") boolean starttlsEnable,
+            @org.springframework.beans.factory.annotation.Value("${spring.mail.properties.mail.debug:true}") boolean mailDebug
+    ) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("mailhog-service");
-        mailSender.setPort(1025);
+        mailSender.setHost(host);
+        mailSender.setPort(port);
+        mailSender.setUsername(username);
+        mailSender.setPassword(password);
         
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.auth", "false");
-        props.put("mail.smtp.starttls.enable", "false");
-        props.put("mail.debug", "true");
+        props.put("mail.smtp.auth", String.valueOf(smtpAuth));
+        props.put("mail.smtp.starttls.enable", String.valueOf(starttlsEnable));
+        props.put("mail.debug", String.valueOf(mailDebug));
         
         return mailSender;
     }
-} 
+}
