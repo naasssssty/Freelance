@@ -83,7 +83,7 @@
               spec:
                 containers:
                 - name: backend
-                  image: "{{ backend_image | default('freelance-backend:latest') }}"
+                  image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
                   imagePullPolicy: IfNotPresent
                   ports:
                   - containerPort: 8080
@@ -99,6 +99,13 @@
                     limits:
                       memory: "1Gi"
                       cpu: "1000m"
+                  startupProbe:
+                    httpGet:
+                      path: /api/home
+                      port: 8080
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                    failureThreshold: 30
                   livenessProbe:
                     httpGet:
                       path: /actuator/health
@@ -134,7 +141,7 @@
               spec:
                 containers:
                 - name: frontend
-                  image: "{{ frontend_image | default('freelance-frontend:latest') }}"
+                  image: "{{ frontend_image | default('papadooo/freelance-frontend:latest') }}"
                   imagePullPolicy: IfNotPresent
                   ports:
                   - containerPort: 80
@@ -148,7 +155,7 @@
                   volumeMounts:
                   - name: nginx-config
                     mountPath: /etc/nginx/conf.d/default.conf
-                    subPath: default.conf
+                    subPath: nginx-k8s.conf
                   livenessProbe:
                     httpGet:
                       path: /
@@ -214,7 +221,7 @@
           ✅ Deployment completed successfully!
           
           🐳 Images used:
-          - Backend: {{ backend_image | default('freelance-backend:latest') }}
+          - Backend: {{ backend_image | default('papadooo/freelance-backend:latest') }}
           - Frontend: {{ frontend_image | default('freelance-frontend:latest') }}
           
           📊 Pod Status:
