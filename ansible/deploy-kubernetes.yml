@@ -74,7 +74,7 @@
               spec:
                 containers:
                 - name: backend
-                  image: "{{ backend_image | default('freelance-backend:latest') }}"
+                  image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
                   imagePullPolicy: IfNotPresent
                   ports:
                   - containerPort: 8080
@@ -124,7 +124,7 @@
               spec:
                 containers:
                 - name: frontend
-                  image: "{{ frontend_image | default('freelance-frontend:latest') }}"
+                  image: "{{ frontend_image | default('papadooo/freelance-frontend:latest') }}"
                   imagePullPolicy: IfNotPresent
                   ports:
                   - containerPort: 80
@@ -199,8 +199,8 @@
           ✅ Deployment completed successfully!
           
           🐳 Images used:
-          - Backend: {{ backend_image | default('freelance-backend:latest') }}
-          - Frontend: {{ frontend_image | default('freelance-frontend:latest') }}
+          - Backend: {{ backend_image | default('papadooo/freelance-backend:latest') }}
+          - Frontend: {{ frontend_image | default('papadooo/freelance-frontend:latest') }}
           
           📊 Pod Status:
           {% for pod in pods.resources %}

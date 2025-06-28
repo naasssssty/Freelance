@@ -159,7 +159,7 @@ pipeline {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
                         echo '🚀 Deploying to Kubernetes using Ansible...'
                         // Deploy using Ansible playbook
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
+                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml -e frontend_image=papadooo/freelance-frontend:latest'
                     }
                 }
             }
