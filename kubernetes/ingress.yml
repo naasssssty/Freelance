@@ -9,11 +9,26 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    # Enable SSL redirect and use cert-manager for automatic SSL certificates
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Enable CORS for API endpoints
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - ergohub.duckdns.org  # Your DuckDNS domain
+    - api-ergohub.duckdns.org
+    - minio-ergohub.duckdns.org
+    - mailhog-ergohub.duckdns.org
+    secretName: freelance-tls
   rules:
   # Main application domain
-  - host: freelance.local
+  - host: ergohub.duckdns.org  # Your DuckDNS domain
     http:
       paths:
       # API endpoints - route to backend service (highest priority)
@@ -32,8 +47,19 @@ spec:
             name: frontend-service
             port:
               number: 80
+  # API subdomain (optional, for cleaner API access)
+  - host: api-ergohub.duckdns.org  # Your DuckDNS domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 8080
   # MailHog subdomain
-  - host: mailhog.freelance.local
+  - host: mailhog-ergohub.duckdns.org  # Your DuckDNS domain
     http:
       paths:
       - path: /
@@ -44,7 +70,7 @@ spec:
             port:
               number: 8025
   # MinIO subdomain
-  - host: minio.freelance.local
+  - host: minio-ergohub.duckdns.org  # Your DuckDNS domain
     http:
       paths:
       - path: /

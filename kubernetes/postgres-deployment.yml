@@ -31,8 +31,6 @@ spec:
       containers:
       - name: postgres
         image: postgres:15-alpine
-        ports:
-        - containerPort: 5432
         env:
         - name: POSTGRES_DB
           valueFrom:
@@ -49,16 +47,36 @@ spec:
             secretKeyRef:
               name: freelance-secrets
               key: POSTGRES_PASSWORD
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        ports:
+        - containerPort: 5432
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
         resources:
           requests:
             memory: "256Mi"
-            cpu: "250m"
+            cpu: "100m"
           limits:
             memory: "512Mi"
-            cpu: "500m"
+            cpu: "300m"
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - pg_isready -U $POSTGRES_USER -d $POSTGRES_DB
+          initialDelaySeconds: 30
+          periodSeconds: 10
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:
@@ -74,6 +92,8 @@ spec:
   selector:
     app: postgres
   ports:
-  - port: 5432
+  - name: postgres
+    port: 5432
     targetPort: 5432
+    protocol: TCP
   type: ClusterIP 

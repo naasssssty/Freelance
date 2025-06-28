@@ -104,11 +104,11 @@ spec:
               key: SPRING_MAIL_PROPERTIES_MAIL_DEBUG
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "500m"
+            memory: "256Mi"
+            cpu: "50m"
           limits:
-            memory: "1Gi"
-            cpu: "1000m"
+            memory: "512Mi"
+            cpu: "200m"
         # Startup probe to give the application time to start
         startupProbe:
           httpGet:

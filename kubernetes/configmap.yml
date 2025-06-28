@@ -16,20 +16,21 @@ data:
   MINIO_ACCESS_KEY: "iRb4jDOLKvmbfkQ"
   MINIO_BUCKET_NAME: "freelancer-cvs"
   
-  # Mail Configuration
-  SPRING_PROFILES_ACTIVE: "dev"
-  SPRING_MAIL_HOST: "mailhog"
-  SPRING_MAIL_PORT: "1025"
-  SPRING_MAIL_USERNAME: ""
-  SPRING_MAIL_PASSWORD: ""
-  SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
-  SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
-  SPRING_MAIL_PROPERTIES_MAIL_DEBUG: "true"
+  # Mail Configuration - Updated for production
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_MAIL_HOST: "mailhog"  # Change to real SMTP server for production
+  SPRING_MAIL_PORT: "1025"     # Change to 587 or 465 for real SMTP
+  SPRING_MAIL_USERNAME: ""     # Add real SMTP username for production
+  SPRING_MAIL_PASSWORD: ""     # Add real SMTP password for production
+  SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"      # Change to "true" for real SMTP
+  SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"  # Change to "true" for real SMTP
+  SPRING_MAIL_PROPERTIES_MAIL_DEBUG: "false"  # Disable debug in production
   
-  # Security Configuration for Development
-  SPRING_SECURITY_CSRF_DISABLED: "true"
-  CORS_ALLOWED_ORIGINS: "http://freelance.local,http://localhost:3000"
-  SPRING_AUTOCONFIGURE_EXCLUDE: "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration"
+  # Security Configuration for Production
+  SPRING_SECURITY_CSRF_DISABLED: "false"  # Enable CSRF protection in production
+  CORS_ALLOWED_ORIGINS: "https://ergohub.duckdns.org,https://api-ergohub.duckdns.org"  # Your DuckDNS domain
+  # Remove the security exclusion for production
+  # SPRING_AUTOCONFIGURE_EXCLUDE: "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration"
 
 ---
 apiVersion: v1

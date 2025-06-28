@@ -17,13 +17,13 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: papadooo/freelance-frontend:latest  # Use Docker Hub image
-        imagePullPolicy: IfNotPresent  # Pull from registry if not present locally
+        image: ergohubregistry.azurecr.io/freelance-frontend:latest  # Use Azure Container Registry
+        imagePullPolicy: Always  # Always pull latest from ACR
         ports:
         - containerPort: 80
         env:
         - name: REACT_APP_API_URL
-          value: "http://freelance.local"
+          value: "https://ergohub.duckdns.org"  # Your DuckDNS domain
         resources:
           requests:
             memory: "128Mi"
