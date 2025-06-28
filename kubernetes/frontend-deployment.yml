@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: papadooo/freelance-frontend:latest  # Use image from Docker Hub
+        image: papadooo/freelance-frontend:20240607  # Use image from Docker Hub
         imagePullPolicy: Always  # Ensure image is pulled from registry
         ports:
         - containerPort: 80
