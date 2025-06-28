@@ -94,14 +94,18 @@
                     httpGet:
                       path: /actuator/health
                       port: 8080
-                    initialDelaySeconds: 60
+                    initialDelaySeconds: 90
                     periodSeconds: 30
+                    timeoutSeconds: 10
+                    failureThreshold: 5
                   readinessProbe:
                     httpGet:
                       path: /actuator/health
                       port: 8080
-                    initialDelaySeconds: 30
-                    periodSeconds: 10
+                    initialDelaySeconds: 60
+                    periodSeconds: 15
+                    timeoutSeconds: 10
+                    failureThreshold: 3
         
     - name: Update frontend deployment with new image
       kubernetes.core.k8s:
@@ -166,20 +170,31 @@
         src: ../kubernetes/frontend-deployment.yml
         state: present
         
-    - name: Wait for application services to be ready
+    - name: Wait for backend deployment to be ready (when backend image is updated)
       kubernetes.core.k8s_info:
         api_version: apps/v1
         kind: Deployment
         namespace: "{{ namespace }}"
-        name: "{{ item }}"
+        name: backend
         wait: true
         wait_condition:
           type: Available
           status: "True"
-        wait_timeout: 300
-      loop:
-        - backend
-        - frontend
+        wait_timeout: 450
+      when: backend_image is defined
+        
+    - name: Wait for frontend deployment to be ready (when frontend image is updated)
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        namespace: "{{ namespace }}"
+        name: frontend
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 450
+      when: frontend_image is defined
         
     - name: Deploy Ingress
       kubernetes.core.k8s:
