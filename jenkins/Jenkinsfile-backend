@@ -5,7 +5,7 @@ pipeline {
         jdk 'JDK 21 Linux'
     }
     environment {
-        DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
+        DOCKER_IMAGE = "papadooo/freelance-backend:20240607"
         SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
@@ -92,9 +92,6 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                     sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
                     sh 'docker push $DOCKER_IMAGE'
-                    // Tag and push as latest for Kubernetes deployment
-                    sh 'docker tag $DOCKER_IMAGE papadooo/freelance-backend:latest'
-                    sh 'docker push papadooo/freelance-backend:latest'
                 }
             }
         }
@@ -105,7 +102,7 @@ pipeline {
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
                         sh """
                         ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml \
-                        -e backend_image=papadooo/freelance-backend:latest
+                        -e backend_image=papadooo/freelance-backend:20240607
                         """
                         // Διαγραφή pods με ErrImageNeverPull
                         sh """
