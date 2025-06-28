@@ -1,15 +1,6 @@
 apiVersion: v1
 data:
-  nginx-k8s.conf: "server {\n    listen 80;\n    server_name _;\n    root /usr/share/nginx/html;\n
-    \   index index.html;\n\n    # Serve static files directly\n    location /static/
-    {\n        expires 1y;\n        add_header Cache-Control \"public, immutable\";\n
-    \       try_files $uri =404;\n    }\n\n    # Serve manifest.json, robots.txt,
-    etc.\n    location ~* \\.(json|txt|ico|png|jpg|jpeg|gif|svg)$ {\n        expires
-    1y;\n        add_header Cache-Control \"public, immutable\";\n        try_files
-    $uri =404;\n    }\n\n    # Handle React Router - catch all other requests and
-    serve index.html\n    location / {\n        try_files $uri $uri/ /index.html;\n
-    \   }\n\n    # Error pages\n    error_page 500 502 503 504 /50x.html;\n    location
-    = /50x.html {\n        root /usr/share/nginx/html;\n    }\n} "
+  default.conf: "server {\n    listen 80;\n    server_name _;\n    root /usr/share/nginx/html;\n    index index.html;\n\n    # Serve static files directly\n    location /static/ {\n        expires 1y;\n        add_header Cache-Control \"public, immutable\";\n        try_files $uri =404;\n    }\n\n    # Serve manifest.json, robots.txt, etc.\n    location ~* \\.(json|txt|ico|png|jpg|jpeg|gif|svg)$ {\n        expires 1y;\n        add_header Cache-Control \"public, immutable\";\n        try_files $uri =404;\n    }\n\n    # Handle React Router - catch all other requests and serve index.html\n    location / {\n        try_files $uri $uri/ /index.html;\n    }\n\n    # Error pages\n    error_page 500 502 503 504 /50x.html;\n    location = /50x.html {\n        root /usr/share/nginx/html;\n    }\n} "
 kind: ConfigMap
 metadata:
   creationTimestamp: null

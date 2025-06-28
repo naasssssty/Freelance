@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: backend
-        image: freelance-backend:latest  # Use local image built with docker build
-        imagePullPolicy: Never  # Use local image, don't pull from registry
+        image: papadooo/freelance-backend:latest  # Use image from Docker Hub
+        imagePullPolicy: Always  # Ensure image is pulled from registry
         ports:
         - containerPort: 8080
         env:
