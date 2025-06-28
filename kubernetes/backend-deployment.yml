@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: papadooo/freelance-backend:20240607  # Use image from Docker Hub
+        image: papadooo/freelance-backend:20240607-fixed  # Use image from Docker Hub
         imagePullPolicy: Always  # Ensure image is pulled from registry
         ports:
         - containerPort: 8080
