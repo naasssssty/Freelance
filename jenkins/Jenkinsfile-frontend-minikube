@@ -171,36 +171,28 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 script {
-                    // This assumes the 'kubeconfig-secret' is a valid kubeconfig file,
-                    // but the server IP might be outdated. We will update it dynamically.
+                    // When Jenkins runs in a Docker container, it cannot execute 'minikube ip' from the host.
+                    // Instead, we use the special DNS name 'host.docker.internal' which Docker resolves
+                    // to the host's internal IP, allowing the container to connect back to services
+                    // like the Minikube API server running on the host.
                     withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG_TEMPLATE')]) {
                         
                         echo "📝 Using kubeconfig template from Jenkins credentials..."
-                        
-                        // Get the current Minikube IP.
-                        // This requires 'minikube' to be installed on the Jenkins agent.
-                        def minikubeIp = ''
-                        try {
-                            minikubeIp = sh(script: 'minikube ip', returnStdout: true).trim()
-                        } catch (Exception e) {
-                            error "❌ Failed to execute 'minikube ip'. Is Minikube running and is the command available in the agent's PATH?"
-                        }
 
-                        if (!minikubeIp) {
-                            error "❌ Failed to get Minikube IP. Is Minikube running?"
-                        }
-                        echo "✅ Found Minikube IP: ${minikubeIp}"
-                        
-                        // The standard Minikube API port is 8443
-                        def minikubeServerUrl = "https://${minikubeIp}:8443"
-                        echo "➡️  Target Minikube server URL: ${minikubeServerUrl}"
+                        // Define the Minikube server URL using Docker's special DNS name.
+                        // This avoids the need to find the dynamic IP. The standard port is 8443.
+                        def minikubeServerUrl = "https://host.docker.internal:8443"
+                        echo "➡️  Targeting Minikube server on the host at: ${minikubeServerUrl}"
 
-                        // Create a temporary, updated kubeconfig file by replacing the server URL
-                        // in the template. This is safer than building one from scratch.
+                        // Create a temporary, updated kubeconfig file by replacing the server URL.
                         def updatedKubeconfigPath = "/tmp/kubeconfig-minikube-updated-${env.BUILD_NUMBER}.yaml"
                         
-                        // Use 'sed' to replace the server line. This works for standard kubeconfig files.
+                        // Use 'sed' to replace the server line in the template.
                         sh "sed -E 's|server:.*|server: ${minikubeServerUrl}|g' ${KUBECONFIG_TEMPLATE} > ${updatedKubeconfigPath}"
+                        
+                        // Add 'insecure-skip-tls-verify: true' for simplicity in a dev/demo environment,
+                        // as the container might not trust the Minikube CA.
+                        sh "echo 'insecure-skip-tls-verify: true' >> ${updatedKubeconfigPath}"
                         
                         echo "📄 Generated updated kubeconfig at ${updatedKubeconfigPath}."
                         
@@ -208,7 +200,8 @@ pipeline {
                         env.KUBECONFIG = updatedKubeconfigPath
                         
                         echo "🔎 Testing connectivity with updated kubeconfig..."
-                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG'
+                        // We add --insecure-skip-tls-verify to kubectl as well, to match the kubeconfig setting.
+                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG --insecure-skip-tls-verify=true'
                         
                         echo "🚀 Deploying to Minikube using Ansible..."
                         sh 'ansible-playbook ansible/deploy-kubernetes-minikube.yml -i ansible/inventory.yml'
