@@ -195,9 +195,17 @@ describe('ClientServices', () => {
                 writable: true
             });
 
+            // Mock window.location.origin for the test
+            Object.defineProperty(window, 'location', {
+                value: {
+                    origin: 'http://localhost'
+                },
+                writable: true
+            });
+
             const result = await ClientServices.downloadCV(applicationId);
 
-            expect(mockOpen).toHaveBeenCalledWith('/api/application/123/download-cv', '_blank');
+            expect(mockOpen).toHaveBeenCalledWith('http://localhost/api/application/123/download-cv', '_blank');
             expect(result).toBe(true);
         });
 
