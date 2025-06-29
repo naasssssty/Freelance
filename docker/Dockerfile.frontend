@@ -1,14 +1,14 @@
 FROM node:21-alpine as builder
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from frontend directory
+COPY frontend/package*.json ./
 
 # Install dependencies with simple approach
 RUN npm ci || npm install
 
-# Copy source code
-COPY . .
+# Copy frontend source code
+COPY frontend/ .
 
 # Build the application
 RUN npm run build
