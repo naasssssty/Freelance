@@ -90,8 +90,8 @@ pipeline {
                                 # Login to Azure
                                 az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
                                 
-                                # Login to Azure Container Registry
-                                az acr login --name $ACR_NAME
+                                # Get ACR access token and save to file
+                                az acr login --name $ACR_NAME --expose-token --output tsv --query accessToken > acr_token.txt
                                 
                                 # Get AKS credentials and save to workspace
                                 az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file ./kubeconfig
@@ -109,31 +109,20 @@ pipeline {
                     // Build Docker image on the Jenkins agent
                     sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend .'
                     
-                    // Push using Azure CLI container
-                    docker.image('mcr.microsoft.com/azure-cli:latest').inside('--entrypoint=""') {
-                        withCredentials([
-                            string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
-                            string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
-                            string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
-                        ]) {
-                            sh '''
-                                # Login to Azure
-                                az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-                                
-                                # Login to Azure Container Registry
-                                az acr login --name $ACR_NAME
-                            '''
-                        }
-                    }
-                    
-                    // Push images
+                    // Login to ACR using token and push images
                     sh '''
+                        # Login to ACR using the token
+                        cat acr_token.txt | docker login $ACR_NAME.azurecr.io --username 00000000-0000-0000-0000-000000000000 --password-stdin
+                        
                         # Push to Azure Container Registry
                         docker push $DOCKER_IMAGE
                         
                         # Also tag and push as latest
                         docker tag $DOCKER_IMAGE ${ACR_NAME}.azurecr.io/freelance-backend:latest
                         docker push ${ACR_NAME}.azurecr.io/freelance-backend:latest
+                        
+                        # Logout for security
+                        docker logout $ACR_NAME.azurecr.io
                     '''
                 }
             }
@@ -185,6 +174,11 @@ pipeline {
                 artifacts: '**/target/surefire-reports/*.xml',
                 allowEmptyArchive: true
             )
+            // Clean up sensitive files
+            sh '''
+                rm -f acr_token.txt || true
+                rm -f kubeconfig || true
+            '''
         }
         success {
             echo '✅ Backend deployed successfully to Azure AKS!'
@@ -199,6 +193,8 @@ pipeline {
             sh '''
                 docker rmi $DOCKER_IMAGE || true
                 docker rmi ${ACR_NAME}.azurecr.io/freelance-backend:latest || true
+                rm -f acr_token.txt || true
+                rm -f kubeconfig || true
             '''
         }
     }
