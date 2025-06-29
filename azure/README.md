@@ -18,7 +18,7 @@ graph TD
         DNS["Azure DNS Zone<br/>(ή εξωτερικός DNS Provider)"]
         
         subgraph "AKS Cluster (freelance-rg)"
-            LB[("Azure Load Balancer<br/>Δημιουργείται από το Ingress Controller")]
+            LB["Azure Load Balancer<br/>(Δημιουργείται από το Ingress Controller)"]
             
             subgraph "Nodes"
                 ING_PODS["NGINX Ingress Controller Pods"]
@@ -27,16 +27,16 @@ graph TD
             end
             
             subgraph "Azure Storage"
-                DISK[("Azure Managed Disks<br/>(Persistent Volumes)")];
+                DISK[("Azure Managed Disks<br/>(Persistent Volumes)")]
             end
         end
     end
 
     USER -- "https://ergohub.duckdns.org" --> DNS
     DNS -- "A Record" --> LB
-    LB -- "Τraffιc" --> ING_PODS
+    LB -- "Traffic" --> ING_PODS
     
-    ING_PODS -- "Routing Rules<br/>(ingress.yml)" --> APP_PODS
+    ING_PODS -- "Routing Rules (ingress.yml)" --> APP_PODS
     STATE_PODS <--> DISK
 ```
 **Ροή:**
