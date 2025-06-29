@@ -10,36 +10,38 @@
 
 ```mermaid
 graph TD
-    subgraph "Host Machine"
+    subgraph "Υπολογιστής Host"
         subgraph "Docker Network: freelance-net"
             style freelance-net fill:#f0f8ff,stroke:#84a9c0,stroke-width:2px
 
-            FRONTEND[Frontend (React + Nginx)]
-            BACKEND[Backend (Spring Boot)]
-            DB[Database (PostgreSQL)]
-            MINIO[Object Storage (MinIO)]
-            MAIL[Mail Catcher (MailHog)]
+            FRONTEND["Frontend (React + Nginx)"]
+            BACKEND["Backend (Spring Boot)"]
+            DB["Βάση Δεδομένων (PostgreSQL)"]
+            MINIO["Object Storage (MinIO)"]
+            MAIL["Mail Catcher (MailHog)"]
         end
         
-        USER[Developer's Browser] -- "HTTP/S on localhost:80" --> FRONTEND
-        FRONTEND -- "Serves static files" --> USER
-        FRONTEND -- "API Calls to /api" --> BACKEND
-        BACKEND -- "Reads/Writes Data" --> DB
-        BACKEND -- "File Upload/Download" --> MINIO
-        BACKEND -- "Sends Emails" --> MAIL
+        USER["Browser Χρήστη"] -- "HTTP/S (localhost:80)" --> FRONTEND
+        FRONTEND -- "Σερβίρει στατικά αρχεία" --> USER
+        FRONTEND -- "Κλήσεις API (/api)" --> BACKEND
+        BACKEND -- "Εγγραφή/Ανάγνωση Δεδομένων" --> DB
+        BACKEND -- "Μεταφόρτωση/Λήψη Αρχείων" --> MINIO
+        BACKEND -- "Αποστολή Email" --> MAIL
     end
 
-    MINIO_UI[MinIO UI]
-    MAIL_UI[MailHog UI]
+    subgraph "Web Interfaces Εργαλείων"
+        MINIO_UI["MinIO Web UI"]
+        MAIL_UI["MailHog Web UI"]
+    end
     
-    USER -- "localhost:9001 (MinIO UI)" --> MINIO_UI
-    USER -- "localhost:8025 (MailHog UI)" --> MAIL_UI
+    USER -- "localhost:9001" --> MINIO_UI
+    USER -- "localhost:8025" --> MAIL_UI
 
-    style FRONTEND fill:#add8e6
-    style BACKEND fill:#f0e68c
-    style DB fill:#d3d3d3
-    style MINIO fill:#ffb6c1
-    style MAIL fill:#98fb98
+    style FRONTEND fill:#add8e6,stroke:#333,stroke-width:2px
+    style BACKEND fill:#f0e68c,stroke:#333,stroke-width:2px
+    style DB fill:#d3d3d3,stroke:#333,stroke-width:2px
+    style MINIO fill:#ffb6c1,stroke:#333,stroke-width:2px
+    style MAIL fill:#98fb98,stroke:#333,stroke-width:2px
 ```
 Το `docker-compose.yml` ορίζει όλες τις παραπάνω υπηρεσίες, τα ports που εκθέτουν, τους δίσκους (volumes) για μόνιμη αποθήκευση δεδομένων και το δίκτυο `freelance-net` για την μεταξύ τους επικοινωνία.
 
