@@ -115,8 +115,9 @@ export const handleRejectApplication = async (applicationId) => {
 // Download CV from an application
 export const downloadCV = async (applicationId) => {
     try {
-        // Απλά ανοίγουμε το URL σε νέο tab
-        window.open(`/api/application/${applicationId}/download-cv`, '_blank');
+        // Use the same pattern as ClientApplicationCard.jsx
+        const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
+        window.open(`${apiUrl}/api/application/${applicationId}/download-cv`, '_blank');
         return true;
     } catch (error) {
         console.error("Error downloading CV:", error);
