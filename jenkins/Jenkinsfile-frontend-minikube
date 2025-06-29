@@ -184,24 +184,28 @@ pipeline {
                         def minikubeServerUrl = "https://host.docker.internal:8443"
                         echo "➡️  Targeting Minikube server on the host at: ${minikubeServerUrl}"
 
-                        // Create a temporary, updated kubeconfig file by replacing the server URL.
+                        // Create a temporary copy to modify
                         def updatedKubeconfigPath = "/tmp/kubeconfig-minikube-updated-${env.BUILD_NUMBER}.yaml"
                         
-                        // Use 'sed' to replace the server line in the template.
-                        sh "sed -E 's|server:.*|server: ${minikubeServerUrl}|g' ${KUBECONFIG_TEMPLATE} > ${updatedKubeconfigPath}"
+                        // Create a temporary copy to modify
+                        sh "cp ${KUBECONFIG_TEMPLATE} ${updatedKubeconfigPath}"
+
+                        // 1. Replace the server URL to point to the host machine from within the Docker container.
+                        sh "sed -i -E 's|server:.*|server: ${minikubeServerUrl}|g' ${updatedKubeconfigPath}"
                         
-                        // Add 'insecure-skip-tls-verify: true' for simplicity in a dev/demo environment,
-                        // as the container might not trust the Minikube CA.
-                        sh "echo 'insecure-skip-tls-verify: true' >> ${updatedKubeconfigPath}"
-                        
+                        // 2. Replace the certificate-authority line with 'insecure-skip-tls-verify: true'.
+                        // This is crucial because the CA file path from the host is not accessible inside the container.
+                        // This command correctly places the setting within the 'cluster' definition, creating a valid YAML.
+                        sh "sed -i -E '/- cluster:/,/name:/ s|certificate-authority-data:.*|insecure-skip-tls-verify: true|g; /- cluster:/,/name:/ s|certificate-authority:.*|insecure-skip-tls-verify: true|g' ${updatedKubeconfigPath}"
+
                         echo "📄 Generated updated kubeconfig at ${updatedKubeconfigPath}."
                         
                         // Set the KUBECONFIG environment variable for the subsequent steps
                         env.KUBECONFIG = updatedKubeconfigPath
                         
                         echo "🔎 Testing connectivity with updated kubeconfig..."
-                        // We add --insecure-skip-tls-verify to kubectl as well, to match the kubeconfig setting.
-                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG --insecure-skip-tls-verify=true'
+                        // The --insecure-skip-tls-verify flag is no longer needed here as it's now part of the kubeconfig file itself.
+                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG'
                         
                         echo "🚀 Deploying to Minikube using Ansible..."
                         sh 'ansible-playbook ansible/deploy-kubernetes-minikube.yml -i ansible/inventory.yml'
