@@ -1,108 +1,185 @@
-# 📌 FreelanceProject
+# 📱 Frontend Application - FreelancerProject
 
-## 👥 Ομάδα Ανάπτυξης
--[Ομάδα 3]
-- [ANASTASIIA ZERVAS] - [ΑΜ: 2022119]
-- [Κωνσταντίνος Παπαδόγιαννης] - [ΑΜ: 2022141]
+> **Ομάδα 49** | React.js SPA Implementation | DIT250 - DevOps
 
+Καλωσήρθατε στην τεχνική τεκμηρίωση του Frontend για το FreelancerProject. Αυτό το έγγραφο περιγράφει την αρχιτεκτονική, τη δομή και τις λειτουργίες του Single Page Application (SPA) που υλοποιήσαμε με **React.js**, **Redux Toolkit** και **TailwindCSS**.
 
-## 📖 Περιγραφή της Εφαρμογής
-Η εφαρμογή FreelancerProject είναι μια πλατφόρμα διαχείρισης έργων πληροφορικής για freelancers. Επιτρέπει στους πελάτες να δημοσιεύουν έργα, στους ελεύθερους επαγγελματίες να υποβάλλουν αιτήσεις και στον διαχειριστή να εγκρίνει έργα και προφίλ.
+## 🏗️ 1. Αρχιτεκτονική Εφαρμογής
 
-## 👥 Ρόλοι Χρηστών
-1. Διαχειριστής (Admin)
-    - Επιβεβαιώνει νέες καταχωρίσεις έργων
-    - Επαληθεύει τα προφίλ των ελεύθερων επαγγελματιών
-    - Διαχειρίζεται αναφορές και διαφορές
-    - Έχει πρόσβαση σε όλα τα έργα μέσω του /projects/allProjects
+Σχεδιάσαμε το frontend με επίκεντρο την αρχή της διάκρισης των αρμοδιοτήτων (Separation of Concerns). Κάθε μέρος του συστήματος έχει έναν σαφή και διακριτό ρόλο, διευκολύνοντας την ανάπτυξη, τη συντήρηση και το testing.
 
-2. Πελάτης (Client)
-    - Δημοσιεύει νέα έργα μέσω του /projects/{username}/post
-    - Εξετάζει τις αιτήσεις των freelancers
-    - Παρακολουθεί την εξέλιξη του έργου
-    - Μπορεί να υποβάλει αναφορές
+```mermaid
+graph TD
+    subgraph "Browser Environment"
+        U[User Interaction]
+    end
 
-3. Freelancer
-    - Αναζητά έργα με τίτλο μέσω του /projects/title/{title}
-    - Υποβάλλει αιτήσεις για έργα
-    - Επικοινωνεί με τους πελάτες μέσω του συστήματος μηνυμάτων
+    subgraph "React Application Core"
+        subgraph "UI Layer"
+            P[Pages]
+            C[Reusable UI Components]
+        end
 
-## 🛠️ Τεχνική Τεκμηρίωση
+        subgraph "Routing Layer (react-router-dom)"
+            R[Router Definition]
+            PR[PrivateRoute Guard]
+        end
 
-### Αρχιτεκτονική
-- Backend: REST API με Spring Boot
-- Database: PostgreSQL, Render
-- Authentication: JWT (JSON Web Tokens)
-- API Documentation: Swagger UI
+        subgraph "State Management Layer (Redux Toolkit)"
+            S[Global Store]
+            SL[Slices / Reducers]
+            AT[AsyncThunks for API calls]
+        end
 
-### Βασικά Endpoints
-- POST /auth/register: Εγγραφή νέου χρήστη
-- POST /auth/login: Σύνδεση χρήστη
-- GET /projects/allProjects: Λίστα όλων των έργων (Admin only)
-- POST /projects/{username}/post: Δημοσίευση νέου έργου (Client only)
-- GET /projects/title/{title}: Αναζήτηση έργων με τίτλο (Freelancer only)
+        subgraph "Service & API Layer"
+            SRV[API Service Files]
+            AX[Axios Interceptor for JWT]
+        end
+        
+        subgraph "Styling Layer"
+            TW[TailwindCSS Utility Classes]
+            CSS[Custom CSS Modules & Global Styles]
+        end
+    end
 
+    subgraph "External World"
+        API[(Backend REST API)]
+    end
 
-## 🛠️ Τεχνολογίες που χρησιμοποιούνται
-- Backend: Spring Boot 3.4.1 (Spring MVC, Spring Security, Spring Data JPA)
-- Frontend: React.js, Redux, Axios
-- Γλώσσα Προγραμματισμού: Java 21
-- Dependency Management: Maven
-- Βάση Δεδομένων: PostgreSQL
-- Database Management Tool: pgAdmin 4, Render SQL
-- API Testing: Postman
+    U -- "Triggers Events" --> P & C
+    R -- "Renders" --> P
+    PR -- "Protects" --> P
 
-## 🚀 Οδηγίες Εγκατάστασης και Εκτέλεσης
+    P & C -- "Dispatch Actions" --> AT
+    AT -- "Executes Async Logic & Calls" --> SRV
+    SRV -- "Uses" --> AX
+    AX -- "Attaches Token & Sends Request" --> API
+    API -- "Returns Data/Error" --> AX
+    AX -- "Forwards Response" --> SRV
+    SRV -- "Returns to" --> AT
+    AT -- "Dispatches success/failure Actions" --> SL
+    SL -- "Updates State" --> S
+    S -- "Provides Updated State to" --> P & C
+    
+    TW & CSS -- "Apply Styles to" --> P & C
+```
 
-### 1. Προαπαιτούμενα
-Πριν ξεκινήσετε, βεβαιωθείτε ότι έχετε εγκαταστήσει τα παρακάτω:
-- Java 21: [Download](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
-- Node.js & npm: [Download](https://nodejs.org/)
-- Maven: [Download](https://maven.apache.org/install.html)
-- PostgreSQL: [Download](https://www.postgresql.org/download/)
-- pgAdmin 4: [Download](https://www.pgadmin.org/download/)
+## 📁 2. Δομή Φακέλων
 
-### 2. Ρύθμιση Βάσης Δεδομένων
-1. Ανοίξτε το pgAdmin 4
-2. Δημιουργήστε νέα βάση δεδομένων με όνομα freelancer_db
-3. Ρυθμίστε το application.properties με τα στοιχεία σύνδεσης:
-   properties
-   spring.datasource.url=jdbc:postgresql://dpg-cun4aq23esus73amkca0-a.frankfurt-postgres.render.com:5432/dbfreelancer_ngy9
-   spring.datasource.username=your_username
-   spring.datasource.password=your_password
+Η δομή του `src` φακέλου είναι οργανωμένη με βάση τη λειτουργικότητα, ακολουθώντας τα βιομηχανικά πρότυπα για μεγάλα React projects.
 
+```
+frontend/src/
+├── 📁 __tests__/          # Integration tests που καλύπτουν ολόκληρες ροές
+├── 📁 assets/              # Εικόνες, λογότυπα και άλλα στατικά αρχεία
+├── 📁 components/          # Επαναχρησιμοποιήσιμα, "dumb" React components
+│   └── 📁 __tests__/       # Unit tests για τα components
+├── 📁 pages/               # "Smart" components που αντιπροσωπεύουν σελίδες
+│   └── 📁 __tests__/       # Tests για τις σελίδες
+├── 📁 services/            # Λογική επικοινωνίας με το API
+├── 📁 store/               # Redux state management (slices, store config)
+├── 📁 styles/              # Global CSS, θέματα και αρχεία styling
+├── 📁 utils/               # Βοηθητικές συναρτήσεις
+├── 📄 App.jsx              # Κεντρικό component με τη λογική του routing
+├── 📄 index.js             # Το σημείο εισόδου (entry point) της εφαρμογής
+└── 📄 setupTests.js        # Configuration για το Jest testing environment
+```
 
-### 3. Εγκατάσταση και Εκτέλεση Backend
-bash
-# Κλωνοποίηση του repository
-git clone https://github.com/naasssssty/Freelance.git
+## 🚀 3. Εγκατάσταση και Τοπική Εκτέλεση
 
-# Μετάβαση στον φάκελο του backend
-cd Freelance/backend
+Για να τρέξετε το frontend τοπικά για development, ακολουθήστε τα παρακάτω βήματα.
 
-# Εγκατάσταση dependencies και build
-mvn clean install
+### Προαπαιτούμενα
+- **Node.js**: `v18.x` ή νεότερη
+- **npm**: `v9.x` ή νεότερη
+- Ένα `.env` αρχείο στον ριζικό φάκελο `frontend/` με τη διεύθυνση του backend API:
+  ```env
+  REACT_APP_API_URL=http://localhost:8080/api
+  ```
 
-# Εκτέλεση της εφαρμογής
-mvn spring-boot:run
+### Βήματα Εκτέλεσης
+```bash
+# 1. Ανοίξτε ένα terminal και πλοηγηθείτε στον φάκελο του frontend
+cd frontend
 
+# 2. Εγκαταστήστε όλες τις απαραίτητες εξαρτήσεις.
+# Η εντολή 'ci' είναι ταχύτερη και ασφαλέστερη για CI/CD περιβάλλοντα.
+npm ci
 
-### 4. Εγκατάσταση και Εκτέλεση Frontend
-bash
-# Μετάβαση στον φάκελο του frontend
-cd ../frontend
-
-# Εγκατάσταση dependencies
-npm install
-# Εκτέλεση της εφαρμογής
+# 3. Ξεκινήστε τον development server.
+# Η εφαρμογή θα ανοίξει αυτόματα στο http://localhost:3000.
 npm start
+```
 
+## 📜 4. Διαθέσιμα Scripts
 
-Η εφαρμογή θα είναι διαθέσιμη στη διεύθυνση: `http://localhost:3000`
+Έχουμε ρυθμίσει διάφορα scripts στο `package.json` για την αυτοματοποίηση των διαδικασιών ανάπτυξης και testing.
 
-## 🔒 Ασφάλεια και Authentication
+- `npm start`: Ξεκινά την εφαρμογή σε development mode με hot-reloading.
+- `npm run build`: Δημιουργεί ένα βελτιστοποιημένο production build στον φάκελο `build/`.
+- `npm test`: Εκτελεί όλα τα unit και integration tests σε watch mode.
+- `npm test -- --coverage`: Υπολογίζει την κάλυψη του κώδικα από τα tests.
+- `npm run test:integration`: Εκτελεί μόνο τα integration tests που βρίσκονται στον φάκελο `src/__tests__/`.
+- `npm run lint`: Ελέγχει τον κώδικα για στυλιστικά και συντακτικά λάθη με το ESLint.
+- `npm run lint:fix`: Προσπαθεί να διορθώσει αυτόματα τα προβλήματα που βρίσκει το ESLint.
 
-Η εφαρμογή χρησιμοποιεί JWT (JSON Web Tokens) για authentication. Κάθε request στο API πρέπει να περιλαμβάνει ένα έγκυρο JWT token στο header:
+## 🔄 5. State Management με Redux Toolkit
 
-Authorization: Bearer <token>
-`
+Χρησιμοποιούμε το **Redux Toolkit** ως τη μοναδική πηγή αλήθειας (single source of truth) για την κατάσταση της εφαρμογής. Αυτή η προσέγγιση μας επιτρέπει να έχουμε προβλέψιμο state και ευκολότερο debugging.
+
+- **Slices**: Χρησιμοποιούμε τη συνάρτηση `createSlice` για να ορίσουμε ένα κομμάτι του state μαζί με τους reducers που το μεταβάλλουν. Έχουμε slices για `auth`, `projects`, `users`, κ.λπ.
+- **AsyncThunks**: Για τις ασύγχρονες λειτουργίες (API calls), χρησιμοποιούμε `createAsyncThunk`. Αυτό διαχειρίζεται αυτόματα τις καταστάσεις `pending`, `fulfilled`, και `rejected`, επιτρέποντάς μας να ενημερώνουμε το UI ανάλογα (π.χ., εμφάνιση loading spinner).
+
+### Ροή Δεδομένων στο Redux
+Η ροή είναι πάντα μονόδρομη, κάτι που κάνει την εφαρμογή πιο προβλέψιμη.
+```mermaid
+sequenceDiagram
+    participant User
+    participant Component
+    participant AsyncThunk
+    participant Slice/Reducer
+    participant Store
+    
+    User->>Component: Clicks "Load Projects"
+    Component->>AsyncThunk: dispatch(fetchProjects())
+    AsyncThunk->>API: Makes API call
+    API-->>AsyncThunk: Returns data
+    AsyncThunk->>Slice/Reducer: dispatch(fetchProjects.fulfilled(data))
+    Slice/Reducer->>Store: Creates new state object
+    Store->>Component: Re-renders with new projects data
+```
+
+## 🎨 6. Styling
+
+Η προσέγγισή μας στο styling είναι υβριδική για μέγιστη ευελιξία:
+- **TailwindCSS**: Χρησιμοποιείται για το μεγαλύτερο μέρος του styling μέσω utility classes. Αυτό επιταχύνει την ανάπτυξη και διατηρεί το design συνεπές.
+- **Custom CSS**: Για πιο σύνθετα ή custom components, χρησιμοποιούμε αρχεία CSS (`.css`) που εισάγονται απευθείας στα components.
+
+## 🧪 7. Στρατηγική Testing
+
+Η στρατηγική μας για το testing διασφαλίζει ότι η εφαρμογή είναι αξιόπιστη και λειτουργεί όπως αναμένεται.
+
+### Testing Workflow
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Local as Local Machine
+    participant Jenkins as CI/CD Server
+    
+    Dev ->> Local: Γράφει Κώδικα & Tests
+    Dev ->> Local: Τρέχει `npm test` τοπικά
+    Local -->> Dev: Λαμβάνει άμεσο feedback
+    
+    Dev ->> Jenkins: Κάνει push τον κώδικα στο Git repository
+    Jenkins ->> Jenkins: 1. `npm ci` (Καθαρή εγκατάσταση)
+    Jenkins ->> Jenkins: 2. `npm run lint` (Έλεγχος ποιότητας)
+    Jenkins ->> Jenkins: 3. `npm test -- --coverage` (Tests & Κάλυψη)
+    Jenkins ->> Jenkins: 4. `npm run build` (Production Build)
+    Jenkins ->> Dev: Αναφέρει το αποτέλεσμα του build & των tests
+```
+
+- **Unit Tests**: Ελέγχουν μεμονωμένα components (`<Button>`, `<Card>`, etc.) για να επιβεβαιώσουν ότι κάνουν render σωστά και ανταποκρίνονται σε props.
+- **Integration Tests**: Ελέγχουν ολόκληρες ροές χρηστών (π.χ., login flow, project creation) για να επιβεβαιώσουν ότι πολλαπλά components, το Redux store και οι services συνεργάζονται αρμονικά.
+
+---
+**Ομάδα 49 | Harokopio University of Athens | DevOps Project 2025**
