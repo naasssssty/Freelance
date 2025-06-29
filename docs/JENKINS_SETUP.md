@@ -82,7 +82,7 @@
 4.  Στη σελίδα παραμετροποίησης του pipeline, πηγαίνετε στην ενότητα **"Pipeline"**.
 5.  Στο πεδίο **Definition**, επιλέξτε **"Pipeline script from SCM"**.
 6.  Στο **SCM**, επιλέξτε **"Git"**.
-7.  Στο **Repository URL**, εισάγετε το URL του Git repository σας (`https://github.com/naasssssty/Freelance`).
+7.  Στο **Repository URL**, εισάγετε το URL του Git repository μας (`https://github.com/naasssssty/Freelance`).
 8.  Αν το αποθετήριο είναι private, επιλέξτε το κατάλληλο credential από τη λίστα **Credentials**.
 9.  Στο **Branch Specifier**, βεβαιωθείτε ότι είναι `*/main` (ή ο κλάδος που χρησιμοποιείτε).
 10. Στο **Script Path**, εισάγετε τη διαδρομή προς το Jenkinsfile.
