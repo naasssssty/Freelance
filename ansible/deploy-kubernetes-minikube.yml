@@ -1,5 +1,5 @@
 ---
-- name: Deploy Freelance Platform to Kubernetes (Jenkins Compatible)
+- name: Deploy Freelance Platform to Minikube
   hosts: localhost
   connection: local
   gather_facts: false
@@ -55,13 +55,7 @@
           status: "True"
         wait_timeout: 300
         
-    - name: Apply Nginx ConfigMap
-      kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
-        src: ../kubernetes/nginx-configmap.yml
-        state: present
-        
-    - name: Update backend deployment with new image
+    - name: Update backend deployment with new image (Minikube)
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
@@ -84,7 +78,7 @@
                 containers:
                 - name: backend
                   image: "{{ backend_image | default('papadooo/freelance-backend:latest') }}"
-                  imagePullPolicy: IfNotPresent
+                  imagePullPolicy: Always
                   ports:
                   - containerPort: 8080
                   envFrom:
@@ -94,11 +88,11 @@
                       name: freelance-secrets
                   resources:
                     requests:
+                      memory: "256Mi"
+                      cpu: "250m"
+                    limits:
                       memory: "512Mi"
                       cpu: "500m"
-                    limits:
-                      memory: "1Gi"
-                      cpu: "1000m"
                   startupProbe:
                     httpGet:
                       path: /api/home
@@ -119,7 +113,7 @@
                     initialDelaySeconds: 30
                     periodSeconds: 10
         
-    - name: Update frontend deployment with new image
+    - name: Update frontend deployment with new image (Minikube)
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
@@ -142,16 +136,16 @@
                 containers:
                 - name: frontend
                   image: "{{ frontend_image | default('papadooo/freelance-frontend:latest') }}"
-                  imagePullPolicy: IfNotPresent
+                  imagePullPolicy: Always
                   ports:
                   - containerPort: 80
                   resources:
                     requests:
+                      memory: "64Mi"
+                      cpu: "50m"
+                    limits:
                       memory: "128Mi"
                       cpu: "100m"
-                    limits:
-                      memory: "256Mi"
-                      cpu: "200m"
                   livenessProbe:
                     httpGet:
                       path: /
@@ -164,10 +158,6 @@
                       port: 80
                     initialDelaySeconds: 10
                     periodSeconds: 10
-                volumes:
-                - name: nginx-config
-                  configMap:
-                    name: nginx-config
         
     - name: Ensure backend service exists
       kubernetes.core.k8s:
@@ -197,11 +187,12 @@
         - backend
         - frontend
         
-    - name: Deploy Ingress
-      kubernetes.core.k8s:
-        kubeconfig: "{{ kubeconfig_path }}"
-        src: ../kubernetes/ingress.yml
-        state: present
+    # Optional: Deploy Ingress if you want to use it in Minikube
+    # - name: Deploy Ingress
+    #   kubernetes.core.k8s:
+    #     kubeconfig: "{{ kubeconfig_path }}"
+    #     src: ../kubernetes/ingress.yml
+    #     state: present
         
     - name: Display deployment status
       kubernetes.core.k8s_info:
@@ -214,7 +205,7 @@
     - name: Show deployment summary
       debug:
         msg: |
-          ✅ Deployment completed successfully!
+          ✅ Minikube Deployment completed successfully!
           
           🐳 Images used:
           - Backend: {{ backend_image | default('papadooo/freelance-backend:latest') }}
@@ -225,4 +216,4 @@
           - {{ pod.metadata.name }}: {{ pod.status.phase }}
           {% endfor %}
           
-          🌐 Access: http://freelance.local 
+          🌐 Access: Use minikube service frontend -n freelance 

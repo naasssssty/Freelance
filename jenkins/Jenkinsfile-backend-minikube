@@ -1,0 +1,172 @@
+pipeline {
+    agent any
+    tools {
+        maven 'Maven 3'
+        jdk 'JDK 21 Linux'
+    }
+    environment {
+        DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
+        SPRING_PROFILES_ACTIVE = 'test'
+    }
+    stages {
+        stage('Compile') {
+            steps {
+                echo 'Compiling the backend application...'
+                sh 'mvn clean compile -DskipTests'
+            }
+        }
+        
+        stage('Unit Tests') {
+            environment {
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+            }
+            steps {
+                echo 'Running unit tests...'
+                sh 'mvn test -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    junit(
+                        allowEmptyResults: true,
+                        testResults: '**/target/surefire-reports/*.xml'
+                    )
+                }
+            }
+        }
+        
+        stage('Integration Tests') {
+            environment {
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:integrationtestdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+            }
+            steps {
+                echo 'Running integration tests...'
+                sh 'mvn test-compile'
+                sh 'mvn surefire:test -Dtest=TestFreelancerProjectApplicationTests -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    archiveArtifacts(
+                        artifacts: '**/target/surefire-reports/TEST-*TestFreelancerProjectApplicationTests.xml',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                echo 'Packaging the application...'
+                sh 'mvn package -DskipTests'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image for Minikube...'
+                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend.minikube .'
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                echo 'Pushing Docker image to Docker Hub...'
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
+            }
+        }
+        
+        stage('Deploy to Minikube') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
+                        // Check if KUBE_SERVER_URL is provided as environment variable
+                        def kubeServerUrl = env.KUBE_SERVER_URL
+                        
+                        if (!kubeServerUrl) {
+                            // Dynamically find Docker gateway IP for cross-machine compatibility
+                            def dockerGatewayIP = sh(
+                                script: "docker network inspect bridge | grep 'Gateway' | head -1 | sed 's/.*\"Gateway\": \"\\([^\"]*\\)\".*/\\1/'",
+                                returnStdout: true
+                            ).trim()
+                            
+                            kubeServerUrl = "http://${dockerGatewayIP}:8080"
+                            echo "Auto-detected Docker Gateway IP: ${dockerGatewayIP}"
+                        } else {
+                            echo "Using provided KUBE_SERVER_URL: ${kubeServerUrl}"
+                        }
+                        
+                        // Create a dynamic kubeconfig that uses the detected/provided server URL
+                        sh """
+                            cat > /tmp/dynamic-kubeconfig.yaml << EOF
+apiVersion: v1
+clusters:
+- cluster:
+    server: ${kubeServerUrl}
+    insecure-skip-tls-verify: true
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user: {}
+EOF
+                        """
+                        
+                        // Export the dynamic kubeconfig
+                        env.KUBECONFIG = '/tmp/dynamic-kubeconfig.yaml'
+                        
+                        // Debug: Check what kubeconfig is being used
+                        sh 'echo "KUBECONFIG path: $KUBECONFIG"'
+                        sh 'echo "Kubeconfig content (first 10 lines):"'
+                        sh 'head -10 $KUBECONFIG'
+                        sh 'echo "Server URL from kubeconfig:"'
+                        sh 'grep -A 1 -B 1 "server:" $KUBECONFIG || echo "No server found"'
+                        
+                        // Test kubectl connectivity
+                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG || echo "kubectl failed"'
+                        
+                        // Run the deployment
+                        sh 'ansible-playbook ansible/deploy-kubernetes-minikube.yml -i ansible/inventory.yml'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Backend Minikube pipeline completed.'
+            archiveArtifacts(
+                artifacts: '**/target/surefire-reports/*.xml',
+                allowEmptyArchive: true
+            )
+        }
+        success {
+            echo '✅ Backend deployed successfully to Minikube!'
+            echo 'Docker image built and pushed: ' + env.DOCKER_IMAGE
+        }
+        failure {
+            echo '❌ Backend Minikube deployment failed. Check the logs for details.'
+        }
+    }
+} 
