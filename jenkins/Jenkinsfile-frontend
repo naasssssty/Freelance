@@ -158,21 +158,25 @@ pipeline {
         stage('Azure Login & Setup') {
             steps {
                 echo '☁️ Setting up Azure CLI and ACR access...'
-                withCredentials([
-                    string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
-                    string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
-                    string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
-                ]) {
-                    sh '''
-                        # Login to Azure
-                        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-                        
-                        # Login to Azure Container Registry
-                        az acr login --name $ACR_NAME
-                        
-                        # Get AKS credentials
-                        az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --overwrite-existing
-                    '''
+                script {
+                    docker.image('mcr.microsoft.com/azure-cli:latest').inside('--entrypoint=""') {
+                        withCredentials([
+                            string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
+                            string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
+                            string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                        ]) {
+                            sh '''
+                                # Login to Azure
+                                az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                                
+                                # Login to Azure Container Registry
+                                az acr login --name $ACR_NAME
+                                
+                                # Get AKS credentials and save to workspace
+                                az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file ./kubeconfig
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -180,33 +184,58 @@ pipeline {
         stage('Build & Push Docker Image') {
             steps {
                 echo '🐳 Building and pushing Docker image to Azure Container Registry...'
-                sh '''
-                    # Build Docker image (build context is frontend directory)
-                    docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/
+                script {
+                    // Build Docker image on the Jenkins agent
+                    sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/'
                     
-                    # Push to Azure Container Registry
-                    docker push $DOCKER_IMAGE
+                    // Push using Azure CLI container
+                    docker.image('mcr.microsoft.com/azure-cli:latest').inside('--entrypoint=""') {
+                        withCredentials([
+                            string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
+                            string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
+                            string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                        ]) {
+                            sh '''
+                                # Login to Azure
+                                az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                                
+                                # Login to Azure Container Registry
+                                az acr login --name $ACR_NAME
+                            '''
+                        }
+                    }
                     
-                    # Also tag and push as latest
-                    docker tag $DOCKER_IMAGE ${ACR_NAME}.azurecr.io/freelance-frontend:latest
-                    docker push ${ACR_NAME}.azurecr.io/freelance-frontend:latest
-                '''
+                    // Push images
+                    sh '''
+                        # Push to Azure Container Registry
+                        docker push $DOCKER_IMAGE
+                        
+                        # Also tag and push as latest
+                        docker tag $DOCKER_IMAGE ${ACR_NAME}.azurecr.io/freelance-frontend:latest
+                        docker push ${ACR_NAME}.azurecr.io/freelance-frontend:latest
+                    '''
+                }
             }
         }
         
         stage('Deploy to Azure AKS') {
             steps {
                 echo '🚀 Deploying to Azure Kubernetes Service...'
-                sh '''
-                    # Update frontend deployment with new image
-                    kubectl set image deployment/frontend frontend=$DOCKER_IMAGE -n freelance
-                    
-                    # Wait for rollout to complete
-                    kubectl rollout status deployment/frontend -n freelance --timeout=300s
-                    
-                    # Verify deployment
-                    kubectl get pods -n freelance -l app=frontend
-                '''
+                script {
+                    // Use kubectl with the kubeconfig file created in Azure Login stage
+                    sh '''
+                        export KUBECONFIG=./kubeconfig
+                        
+                        # Update frontend deployment with new image
+                        kubectl set image deployment/frontend frontend=$DOCKER_IMAGE -n freelance
+                        
+                        # Wait for rollout to complete
+                        kubectl rollout status deployment/frontend -n freelance --timeout=300s
+                        
+                        # Verify deployment
+                        kubectl get pods -n freelance -l app=frontend
+                    '''
+                }
             }
         }
         
@@ -214,6 +243,8 @@ pipeline {
             steps {
                 echo '🔍 Performing health check...'
                 sh '''
+                    export KUBECONFIG=./kubeconfig
+                    
                     # Wait a bit for the service to be ready
                     sleep 20
                     
