@@ -49,7 +49,7 @@ graph TD
     subgraph "Phase 3: Continuous Deployment (Ansible & Kubernetes)"
         direction LR
         G -- "7. Image Ready" --> C
-        C -- "8. Trigger Deployment" --> H{Ansible <br/> (via Jenkins plugin)}
+        C -- "8. Trigger Deployment" --> H{"Ansible <br/> (via Jenkins plugin)"}
         H -- "9. Run Playbook <br/> deploy-k8s-full.yml" --> I(Kubernetes Cluster - AKS)
         I -- "10. Pull New Image" --> J(Docker Registry)
         I -- "11. Rolling Update" --> K(Update Pods <br/> Backend Service)
