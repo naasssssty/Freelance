@@ -32,7 +32,7 @@ graph TD
         end
     end
 
-    USER -- "https://freelance.your-domain.com" --> DNS
+    USER -- "https://ergohub.duckdns.org" --> DNS
     DNS -- "A Record" --> LB
     LB -- "Τraffιc" --> ING_PODS
     
@@ -40,7 +40,7 @@ graph TD
     STATE_PODS <--> DISK
 ```
 **Ροή:**
-1.  Ο χρήστης πλοηγείται στο FQDN της εφαρμογής (π.χ., `https://freelance.your-domain.com`).
+1.  Ο χρήστης πλοηγείται στο FQDN της εφαρμογής (`https://ergohub.duckdns.org`).
 2.  Το DNS επιλύει το όνομα στη δημόσια IP του **Azure Load Balancer** που έχει δημιουργηθεί αυτόματα από τον NGINX Ingress Controller.
 3.  Ο Load Balancer προωθεί την κίνηση στα pods του **Ingress Controller** μέσα στο AKS.
 4.  Ο Ingress Controller, χρησιμοποιώντας τους κανόνες από το `ingress.yml`, διαχειρίζεται το TLS termination (HTTPS) και προωθεί το αίτημα στο κατάλληλο service (frontend ή backend).
@@ -53,7 +53,7 @@ graph TD
 2.  **Azure CLI**: Εγκατεστημένο το `az` CLI και συνδεδεμένο στον λογαριασμό σας (`az login`).
 3.  **`kubectl`**: Εγκατεστημένο το command-line tool του Kubernetes.
 4.  **`helm`**: Εγκατεστημένο το package manager του Kubernetes.
-5.  **Registered Domain Name (FQDN)**: Ένα όνομα τομέα που μπορείτε να διαχειριστείτε τις εγγραφές DNS του.
+5.  **DuckDNS (ή άλλο) Domain**: Ένα FQDN ρυθμισμένο να δείχνει στη δημόσια IP του Ingress.
 
 ## 🚀 3. Βήματα Ανάπτυξης
 
@@ -83,20 +83,15 @@ chmod +x azure/deploy.sh
 # Περιμένετε λίγα λεπτά μέχρι να εμφανιστεί η IP στη στήλη EXTERNAL-IP
 kubectl get service -n ingress-nginx ingress-nginx-controller
 ```
-Αντιγράψτε την `EXTERNAL-IP`. Πηγαίνετε στον πάροχο του domain σας και δημιουργήστε μια **`A` record** που να δείχνει από το FQDN σας (π.χ., `freelance.your-domain.com`) σε αυτή την IP.
+Αντιγράψτε την `EXTERNAL-IP`. Πηγαίνετε στο [DuckDNS.org](https://www.duckdns.org/) και βεβαιωθείτε ότι το domain `ergohub` δείχνει σε αυτή τη νέα IP.
 
-### Βήμα 3: Τροποποίηση και Εφαρμογή του Ingress
-Τώρα πρέπει να ενημερώσετε το `ingress.yml` για να χρησιμοποιεί το δικό σας domain.
+### Βήμα 3: Επαλήθευση του Ingress
+Το αρχείο `kubernetes/ingress.yml` είναι ήδη ρυθμισμένο με τα σωστά ονόματα (`ergohub.duckdns.org`, `api-ergohub.duckdns.org` κ.λπ.). Δεν χρειάζεται να το αλλάξετε, αλλά αν δεν το έχετε εφαρμόσει ακόμα, μπορείτε να το κάνετε τώρα:
+```bash
+kubectl apply -f kubernetes/ingress.yml
+```
 
-1.  Ανοίξτε το αρχείο `kubernetes/ingress.yml`.
-2.  Αντικαταστήστε όλες τις εμφανίσεις του `ergohub.duckdns.org` με το δικό σας FQDN (π.χ., `freelance.your-domain.com`).
-3.  Βεβαιωθείτε ότι το `secretName` (π.χ., `freelance-tls`) και το `cluster-issuer` (`letsencrypt-prod`) είναι σωστά ρυθμισμένα.
-4.  Εφαρμόστε τις αλλαγές:
-    ```bash
-    kubectl apply -f kubernetes/ingress.yml
-    ```
-
-### Βήμα 4: Επαλήθευση
+### Βήμα 4: Επαλήθευση Πιστοποιητικού
 Ο `cert-manager` θα δει το Ingress resource και θα επικοινωνήσει αυτόματα με το Let's Encrypt για να εκδώσει πιστοποιητικό. Αυτή η διαδικασία μπορεί να πάρει 2-5 λεπτά.
 
 **Έλεγχος της κατάστασης του πιστοποιητικού:**
@@ -110,7 +105,7 @@ kubectl describe certificate freelance-tls -n freelance
 Όταν δείτε το μήνυμα `Certificate is valid and up to date`, είστε έτοιμοι.
 
 ## ✅ 4. Πρόσβαση στην Εφαρμογή
-Ανοίξτε τον browser σας και πλοηγηθείτε στο `https://<το-δικό-σας-FQDN>`. Θα πρέπει να δείτε την εφαρμογή να φορτώνει με ασφαλή σύνδεση (λουκέτο).
+Ανοίξτε τον browser σας και πλοηγηθείτε στο `https://ergohub.duckdns.org`. Θα πρέπει να δείτε την εφαρμογή να φορτώνει με ασφαλή σύνδεση (λουκέτο).
 
 ---
 **Ομάδα 49 | Harokopio University of Athens | DevOps Project 2025** 
