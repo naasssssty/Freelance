@@ -22,10 +22,28 @@
 Πρέπει να έχεις ρυθμίσει στο Jenkins:
 
 #### Credentials
-- **`azure-service-principal`**: Azure Service Principal με δικαιώματα:
-  - Contributor στο Resource Group
-  - AcrPush στο Container Registry
-  - Azure Kubernetes Service Cluster User Role
+Χρειάζεσαι τα παρακάτω credentials στο Jenkins (Manage Jenkins → Credentials):
+
+- **`azure-client-id`** (Secret text): Azure Service Principal Client ID
+- **`azure-client-secret`** (Secret text): Azure Service Principal Client Secret  
+- **`azure-tenant-id`** (Secret text): Azure Tenant ID
+
+**Πώς να δημιουργήσεις Azure Service Principal:**
+```bash
+# Δημιουργία Service Principal
+az ad sp create-for-rbac --name "jenkins-deployment" --role Contributor --scopes /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/ergohub-production
+
+# Το output θα είναι κάτι σαν:
+{
+  "appId": "your-client-id",           # Αυτό είναι το azure-client-id
+  "displayName": "jenkins-deployment",
+  "password": "your-client-secret",    # Αυτό είναι το azure-client-secret
+  "tenant": "your-tenant-id"           # Αυτό είναι το azure-tenant-id
+}
+
+# Δώσε επιπλέον δικαιώματα για ACR
+az role assignment create --assignee "your-client-id" --role AcrPush --scope /subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/ergohub-production/providers/Microsoft.ContainerRegistry/registries/ergohubregistry
+```
 
 #### Tools
 - **Maven 3**: Για το backend build

@@ -158,7 +158,11 @@ pipeline {
         stage('Azure Login & Setup') {
             steps {
                 echo '☁️ Setting up Azure CLI and ACR access...'
-                withCredentials([azureServicePrincipal('azure-service-principal')]) {
+                withCredentials([
+                    string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
+                    string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
+                    string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                ]) {
                     sh '''
                         # Login to Azure
                         az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
