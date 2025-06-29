@@ -92,61 +92,46 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                        // Check if KUBE_SERVER_URL is provided as environment variable
-                        def kubeServerUrl = env.KUBE_SERVER_URL
+                    // This assumes the 'kubeconfig-secret' is a valid kubeconfig file,
+                    // but the server IP might be outdated. We will update it dynamically.
+                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG_TEMPLATE')]) {
                         
-                        if (!kubeServerUrl) {
-                            // Dynamically find Docker gateway IP for cross-machine compatibility
-                            def dockerGatewayIP = sh(
-                                script: "docker network inspect bridge | grep 'Gateway' | head -1 | sed 's/.*\"Gateway\": \"\\([^\"]*\\)\".*/\\1/'",
-                                returnStdout: true
-                            ).trim()
-                            
-                            kubeServerUrl = "http://${dockerGatewayIP}:8080"
-                            echo "Auto-detected Docker Gateway IP: ${dockerGatewayIP}"
-                        } else {
-                            echo "Using provided KUBE_SERVER_URL: ${kubeServerUrl}"
+                        echo "📝 Using kubeconfig template from Jenkins credentials..."
+                        
+                        // Get the current Minikube IP.
+                        // This requires 'minikube' to be installed on the Jenkins agent.
+                        def minikubeIp = ''
+                        try {
+                            minikubeIp = sh(script: 'minikube ip', returnStdout: true).trim()
+                        } catch (Exception e) {
+                            error "❌ Failed to execute 'minikube ip'. Is Minikube running and is the command available in the agent's PATH?"
                         }
+
+                        if (!minikubeIp) {
+                            error "❌ Failed to get Minikube IP. Is Minikube running?"
+                        }
+                        echo "✅ Found Minikube IP: ${minikubeIp}"
                         
-                        // Create a dynamic kubeconfig that uses the detected/provided server URL
-                        sh """
-                            cat > /tmp/dynamic-kubeconfig.yaml << EOF
-apiVersion: v1
-clusters:
-- cluster:
-    server: ${kubeServerUrl}
-    insecure-skip-tls-verify: true
-  name: minikube
-contexts:
-- context:
-    cluster: minikube
-    namespace: default
-    user: minikube
-  name: minikube
-current-context: minikube
-kind: Config
-preferences: {}
-users:
-- name: minikube
-  user: {}
-EOF
-                        """
+                        // The standard Minikube API port is 8443
+                        def minikubeServerUrl = "https://${minikubeIp}:8443"
+                        echo "➡️  Target Minikube server URL: ${minikubeServerUrl}"
+
+                        // Create a temporary, updated kubeconfig file by replacing the server URL
+                        // in the template. This is safer than building one from scratch.
+                        def updatedKubeconfigPath = "/tmp/kubeconfig-minikube-updated-${env.BUILD_NUMBER}.yaml"
                         
-                        // Export the dynamic kubeconfig
-                        env.KUBECONFIG = '/tmp/dynamic-kubeconfig.yaml'
+                        // Use 'sed' to replace the server line. This works for standard kubeconfig files.
+                        sh "sed -E 's|server:.*|server: ${minikubeServerUrl}|g' ${KUBECONFIG_TEMPLATE} > ${updatedKubeconfigPath}"
                         
-                        // Debug: Check what kubeconfig is being used
-                        sh 'echo "KUBECONFIG path: $KUBECONFIG"'
-                        sh 'echo "Kubeconfig content (first 10 lines):"'
-                        sh 'head -10 $KUBECONFIG'
-                        sh 'echo "Server URL from kubeconfig:"'
-                        sh 'grep -A 1 -B 1 "server:" $KUBECONFIG || echo "No server found"'
+                        echo "📄 Generated updated kubeconfig at ${updatedKubeconfigPath}."
                         
-                        // Test kubectl connectivity
-                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG || echo "kubectl failed"'
+                        // Set the KUBECONFIG environment variable for the subsequent steps
+                        env.KUBECONFIG = updatedKubeconfigPath
                         
-                        // Run the deployment
+                        echo "🔎 Testing connectivity with updated kubeconfig..."
+                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG'
+                        
+                        echo "🚀 Deploying to Minikube using Ansible..."
                         sh 'ansible-playbook ansible/deploy-kubernetes-minikube.yml -i ansible/inventory.yml'
                     }
                 }
