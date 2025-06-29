@@ -4,7 +4,11 @@ pipeline {
         nodejs 'Node 21'
     }
     environment {
-        DOCKER_IMAGE = "papadooo/freelance-frontend:${env.BUILD_NUMBER}"
+        // Azure Configuration
+        ACR_NAME = 'ergohubregistry'
+        RESOURCE_GROUP = 'ergohub-production'
+        AKS_CLUSTER = 'ergohub-k8s'
+        DOCKER_IMAGE = "${ACR_NAME}.azurecr.io/freelance-frontend:${env.BUILD_NUMBER}"
         CI = 'true'
         GENERATE_SOURCEMAP = 'false'
     }
@@ -151,40 +155,92 @@ pipeline {
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Azure Login & Setup') {
             steps {
-                echo '🐳 Building Docker image...'
-                // Build Docker image for frontend using the correct Dockerfile
-                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/'
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                echo '📤 Pushing Docker image to registry...'
-                // Push Docker image to Docker Hub
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                    sh 'docker push $DOCKER_IMAGE'
+                echo '☁️ Setting up Azure CLI and ACR access...'
+                withCredentials([azureServicePrincipal('azure-service-principal')]) {
+                    sh '''
+                        # Login to Azure
+                        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                        
+                        # Login to Azure Container Registry
+                        az acr login --name $ACR_NAME
+                        
+                        # Get AKS credentials
+                        az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --overwrite-existing
+                    '''
                 }
             }
         }
         
-        stage('Deploy to Kubernetes') {
+        stage('Build & Push Docker Image') {
             steps {
-                script {
-                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                        echo '🚀 Deploying to Kubernetes using Ansible...'
-                        // Deploy using Ansible playbook
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
-                    }
-                }
+                echo '🐳 Building and pushing Docker image to Azure Container Registry...'
+                sh '''
+                    # Build Docker image (build context is frontend directory)
+                    docker build -t $DOCKER_IMAGE -f docker/Dockerfile.frontend frontend/
+                    
+                    # Push to Azure Container Registry
+                    docker push $DOCKER_IMAGE
+                    
+                    # Also tag and push as latest
+                    docker tag $DOCKER_IMAGE ${ACR_NAME}.azurecr.io/freelance-frontend:latest
+                    docker push ${ACR_NAME}.azurecr.io/freelance-frontend:latest
+                '''
+            }
+        }
+        
+        stage('Deploy to Azure AKS') {
+            steps {
+                echo '🚀 Deploying to Azure Kubernetes Service...'
+                sh '''
+                    # Update frontend deployment with new image
+                    kubectl set image deployment/frontend frontend=$DOCKER_IMAGE -n freelance
+                    
+                    # Wait for rollout to complete
+                    kubectl rollout status deployment/frontend -n freelance --timeout=300s
+                    
+                    # Verify deployment
+                    kubectl get pods -n freelance -l app=frontend
+                '''
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                echo '🔍 Performing health check...'
+                sh '''
+                    # Wait a bit for the service to be ready
+                    sleep 20
+                    
+                    # Check if frontend pods are running
+                    kubectl get pods -n freelance -l app=frontend
+                    
+                    # Check service endpoints
+                    kubectl get svc -n freelance
+                    
+                    # Check ingress status
+                    kubectl get ingress -n freelance || echo "No ingress found"
+                '''
+            }
+        }
+        
+        stage('Verify Application') {
+            steps {
+                echo '✅ Verifying application accessibility...'
+                sh '''
+                    # Get the external IP or URL
+                    echo "Application should be available at: https://ergohub.duckdns.org"
+                    
+                    # Optional: Test if the application responds (with timeout)
+                    curl -f -m 10 https://ergohub.duckdns.org || echo "Application may still be starting up"
+                '''
             }
         }
     }
     post {
         always {
-            echo '🏁 Frontend pipeline completed.'
+            echo '🏁 Frontend Azure pipeline completed.'
             // Archive test reports
             archiveArtifacts(
                 artifacts: 'frontend/coverage/**/*',
@@ -192,11 +248,20 @@ pipeline {
             )
         }
         success {
-            echo '✅ Frontend pipeline completed successfully!'
-            echo 'Docker image built and pushed: ' + env.DOCKER_IMAGE
+            echo '✅ Frontend deployed successfully to Azure AKS!'
+            echo "Docker image: ${env.DOCKER_IMAGE}"
+            echo "Deployed to: ${env.AKS_CLUSTER} in ${env.RESOURCE_GROUP}"
+            echo "Application URL: https://ergohub.duckdns.org"
         }
         failure {
-            echo '❌ Frontend pipeline failed. Check the logs for details.'
+            echo '❌ Frontend Azure deployment failed. Check the logs for details.'
+        }
+        cleanup {
+            // Clean up local Docker images to save space
+            sh '''
+                docker rmi $DOCKER_IMAGE || true
+                docker rmi ${ACR_NAME}.azurecr.io/freelance-frontend:latest || true
+            '''
         }
     }
 }

@@ -5,7 +5,11 @@ pipeline {
         jdk 'JDK 21 Linux'
     }
     environment {
-        DOCKER_IMAGE = "papadooo/freelance-backend:${env.BUILD_NUMBER}"
+        // Azure Configuration
+        ACR_NAME = 'ergohubregistry'
+        RESOURCE_GROUP = 'ergohub-production'
+        AKS_CLUSTER = 'ergohub-k8s'
+        DOCKER_IMAGE = "${ACR_NAME}.azurecr.io/freelance-backend:${env.BUILD_NUMBER}"
         SPRING_PROFILES_ACTIVE = 'test'
     }
     stages {
@@ -18,7 +22,6 @@ pipeline {
         
         stage('Unit Tests') {
             environment {
-                // Ensure tests use an in-memory database and test profile
                 SPRING_PROFILES_ACTIVE = 'test'
                 SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
                 SPRING_DATASOURCE_USERNAME = 'sa'
@@ -33,7 +36,6 @@ pipeline {
             }
             post {
                 always {
-                    // Publish unit test results
                     junit(
                         allowEmptyResults: true,
                         testResults: '**/target/surefire-reports/*.xml'
@@ -44,7 +46,6 @@ pipeline {
         
         stage('Integration Tests') {
             environment {
-                // Same test environment as unit tests
                 SPRING_PROFILES_ACTIVE = 'test'
                 SPRING_DATASOURCE_URL = 'jdbc:h2:mem:integrationtestdb'
                 SPRING_DATASOURCE_USERNAME = 'sa'
@@ -55,13 +56,11 @@ pipeline {
             }
             steps {
                 echo 'Running integration tests...'
-                // Run integration tests using test-compile goal to ensure fresh compilation
                 sh 'mvn test-compile'
                 sh 'mvn surefire:test -Dtest=TestFreelancerProjectApplicationTests -Dspring.profiles.active=test'
             }
             post {
                 always {
-                    // Archive integration test results
                     archiveArtifacts(
                         artifacts: '**/target/surefire-reports/TEST-*TestFreelancerProjectApplicationTests.xml',
                         allowEmptyArchive: true
@@ -77,104 +76,95 @@ pipeline {
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Azure Login & Setup') {
             steps {
-                echo 'Building Docker image...'
-                // Build Docker image for backend using the correct Dockerfile
-                sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend .'
-            }
-        }
-        
-        stage('Push Docker Image') {
-            steps {
-                echo 'Pushing Docker image to registry...'
-                // Push Docker image to Docker Hub
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh 'docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD'
-                    sh 'docker push $DOCKER_IMAGE'
+                echo 'Setting up Azure CLI and ACR access...'
+                withCredentials([azureServicePrincipal('azure-service-principal')]) {
+                    sh '''
+                        # Login to Azure
+                        az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                        
+                        # Login to Azure Container Registry
+                        az acr login --name $ACR_NAME
+                        
+                        # Get AKS credentials
+                        az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --overwrite-existing
+                    '''
                 }
             }
         }
         
-        stage('Deploy to Kubernetes') {
+        stage('Build & Push Docker Image') {
             steps {
-                script {
-                    withCredentials([file(credentialsId: 'kubeconfig-secret', variable: 'KUBECONFIG')]) {
-                        // Check if KUBE_SERVER_URL is provided as environment variable
-                        def kubeServerUrl = env.KUBE_SERVER_URL
-                        
-                        if (!kubeServerUrl) {
-                            // Dynamically find Docker gateway IP for cross-machine compatibility
-                            def dockerGatewayIP = sh(
-                                script: "docker network inspect bridge | grep 'Gateway' | head -1 | sed 's/.*\"Gateway\": \"\\([^\"]*\\)\".*/\\1/'",
-                                returnStdout: true
-                            ).trim()
-                            
-                            kubeServerUrl = "http://${dockerGatewayIP}:8080"
-                            echo "Auto-detected Docker Gateway IP: ${dockerGatewayIP}"
-                        } else {
-                            echo "Using provided KUBE_SERVER_URL: ${kubeServerUrl}"
-                        }
-                        
-                        // Create a dynamic kubeconfig that uses the detected/provided server URL
-                        sh """
-                            cat > /tmp/dynamic-kubeconfig.yaml << EOF
-apiVersion: v1
-clusters:
-- cluster:
-    server: ${kubeServerUrl}
-    insecure-skip-tls-verify: true
-  name: minikube
-contexts:
-- context:
-    cluster: minikube
-    namespace: default
-    user: minikube
-  name: minikube
-current-context: minikube
-kind: Config
-preferences: {}
-users:
-- name: minikube
-  user: {}
-EOF
-                        """
-                        
-                        // Export the dynamic kubeconfig
-                        env.KUBECONFIG = '/tmp/dynamic-kubeconfig.yaml'
-                        
-                        // Debug: Check what kubeconfig is being used
-                        sh 'echo "KUBECONFIG path: $KUBECONFIG"'
-                        sh 'echo "Kubeconfig content (first 10 lines):"'
-                        sh 'head -10 $KUBECONFIG'
-                        sh 'echo "Server URL from kubeconfig:"'
-                        sh 'grep -A 1 -B 1 "server:" $KUBECONFIG || echo "No server found"'
-                        
-                        // Test kubectl connectivity
-                        sh 'kubectl cluster-info --kubeconfig=$KUBECONFIG || echo "kubectl failed"'
-                        
-                        // Run the deployment
-                        sh 'ansible-playbook ansible/deploy-kubernetes.yml -i ansible/inventory.yml'
-                    }
-                }
+                echo 'Building and pushing Docker image to Azure Container Registry...'
+                sh '''
+                    # Build Docker image
+                    docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend .
+                    
+                    # Push to Azure Container Registry
+                    docker push $DOCKER_IMAGE
+                    
+                    # Also tag and push as latest
+                    docker tag $DOCKER_IMAGE ${ACR_NAME}.azurecr.io/freelance-backend:latest
+                    docker push ${ACR_NAME}.azurecr.io/freelance-backend:latest
+                '''
+            }
+        }
+        
+        stage('Deploy to Azure AKS') {
+            steps {
+                echo 'Deploying to Azure Kubernetes Service...'
+                sh '''
+                    # Update backend deployment with new image
+                    kubectl set image deployment/backend backend=$DOCKER_IMAGE -n freelance
+                    
+                    # Wait for rollout to complete
+                    kubectl rollout status deployment/backend -n freelance --timeout=300s
+                    
+                    # Verify deployment
+                    kubectl get pods -n freelance -l app=backend
+                '''
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                echo 'Performing health check...'
+                sh '''
+                    # Wait a bit for the service to be ready
+                    sleep 30
+                    
+                    # Check if backend pods are running
+                    kubectl get pods -n freelance -l app=backend
+                    
+                    # Check service endpoints
+                    kubectl get svc -n freelance
+                '''
             }
         }
     }
     post {
         always {
-            echo 'Backend pipeline completed.'
-            // Archive test reports
+            echo 'Backend Azure pipeline completed.'
             archiveArtifacts(
                 artifacts: '**/target/surefire-reports/*.xml',
                 allowEmptyArchive: true
             )
         }
         success {
-            echo '✅ Backend pipeline completed successfully!'
-            echo 'Docker image built and pushed: ' + env.DOCKER_IMAGE
+            echo '✅ Backend deployed successfully to Azure AKS!'
+            echo "Docker image: ${env.DOCKER_IMAGE}"
+            echo "Deployed to: ${env.AKS_CLUSTER} in ${env.RESOURCE_GROUP}"
         }
         failure {
-            echo '❌ Backend pipeline failed. Check the logs for details.'
+            echo '❌ Backend Azure deployment failed. Check the logs for details.'
+        }
+        cleanup {
+            // Clean up local Docker images to save space
+            sh '''
+                docker rmi $DOCKER_IMAGE || true
+                docker rmi ${ACR_NAME}.azurecr.io/freelance-backend:latest || true
+            '''
         }
     }
 } 
