@@ -36,7 +36,7 @@
     docker logs jenkins
     ```
     Αναζητήστε στο output ένα μήνυμα παρόμοιο με το παρακάτω και αντιγράψτε τον κωδικό:
-    ```
+    ```text
     *************************************************************
     
     Jenkins initial setup is required. An admin user has been created and a password generated.
@@ -98,5 +98,3 @@
 
 *   **Αυτόματη**: Εάν έχετε ρυθμίσει webhooks στο GitHub repository σας που να δείχνουν στον Jenkins server, κάθε `git push` στον `main` κλάδο θα ενεργοποιεί αυτόματα το αντίστοιχο pipeline.
 *   **Χειροκίνητη**: Μπορείτε να ενεργοποιήσετε οποιοδήποτε pipeline χειροκίνητα, πηγαίνοντας στη σελίδα του pipeline και πατώντας **"Build Now"**.
-
-</rewritten_file>
