@@ -12,7 +12,7 @@ const ReportManagement = () => {
 
     const fetchReports = async () => {
         try {
-            const response = await fetch('/report', {
+            const response = await fetch('/api/report', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -28,7 +28,7 @@ const ReportManagement = () => {
 
     const handleStatusUpdate = async (reportId, status) => {
         try {
-            const response = await fetch(`/report/${reportId}`, {
+            const response = await fetch(`/api/report/${reportId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
