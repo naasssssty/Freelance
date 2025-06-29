@@ -161,7 +161,8 @@ const ClientApplicationCard = ({ application, onAccept, onReject }) => {
         const token = localStorage.getItem("token");
         if (!token) return;
         
-        window.open(`http://freelance.local/api/application/${applicationId}/download-cv`, '_blank');
+        const apiUrl = process.env.REACT_APP_API_URL || window.location.origin;
+        window.open(`${apiUrl}/api/application/${applicationId}/download-cv`, '_blank');
     };
 
     return (

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
 @RequestMapping("/api/test-email")
-@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://ergohub.duckdns.org"})
 public class TestEmailController {
 
     private final EmailService emailService;

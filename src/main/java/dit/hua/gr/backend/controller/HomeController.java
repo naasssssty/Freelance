@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://ergohub.duckdns.org"})
 public class HomeController {
 
     @GetMapping("/home")

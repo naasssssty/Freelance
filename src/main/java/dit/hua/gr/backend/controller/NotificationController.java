@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
-@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://ergohub.duckdns.org"})
 public class NotificationController {
     private final NotificationService notificationService;
     private final UserService userService;

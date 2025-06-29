@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"}) // Επιτρέπει CORS από React
+@CrossOrigin(origins = {"http://localhost:3000", "https://ergohub.duckdns.org"}) // Επιτρέπει CORS από React
 public class UserController {
 
     private final UserService userService;

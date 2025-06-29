@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/report")
-@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://ergohub.duckdns.org"})
 public class ReportController {
     private final ReportService reportService;
     private final ProjectService projectService;

@@ -23,7 +23,7 @@ import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/project")
-@CrossOrigin(origins = {"http://localhost:3000", "http://freelance.local"})
+@CrossOrigin(origins = {"http://localhost:3000", "https://ergohub.duckdns.org"})
 public class ProjectController {
 
     private final ProjectService projectService;
