@@ -23,7 +23,7 @@ all:
     # Application Configuration
     app_name: freelance
     app_namespace: freelance
-    docker_registry: papadooo
+    docker_registry: ergohubregistry.azurecr.io
     
     # Docker Images (will be updated by Jenkins)
     backend_image: "{{ docker_registry }}/freelance-backend:latest"

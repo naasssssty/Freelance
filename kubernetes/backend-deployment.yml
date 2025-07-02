@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: backend
-        image: papadooo/freelance-backend:latest  # Use Docker Hub image
-        imagePullPolicy: IfNotPresent  # Pull from registry if not present locally
+        image: ergohubregistry.azurecr.io/freelance-backend:latest  # Use Azure Container Registry
+        imagePullPolicy: Always  # Always pull latest from ACR
         ports:
         - containerPort: 8080
         env:

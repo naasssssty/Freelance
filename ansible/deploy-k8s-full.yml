@@ -29,7 +29,7 @@
     - name: Apply all non-deployment configurations from kubernetes/ directory
       kubernetes.core.k8s:
         state: present
-        src: "{{ item }}"
+        src: "{{ playbook_dir }}/../{{ item }}"
         kubeconfig: "{{ kubeconfig_path }}"
       loop:
         - "kubernetes/namespace.yml"
@@ -40,6 +40,21 @@
         - "kubernetes/minio-deployment.yml"
         - "kubernetes/mailhog-deployment.yml"
         - "kubernetes/ingress.yml"
+        
+    - name: Check if ACR secret exists
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Secret
+        name: acr-secret
+        namespace: "{{ namespace }}"
+        kubeconfig: "{{ kubeconfig_path }}"
+      register: acr_secret_info
+      ignore_errors: true
+      
+    - name: Warn if ACR secret is missing
+      debug:
+        msg: "⚠️  ACR secret 'acr-secret' not found. Images may fail to pull from private registry."
+      when: acr_secret_info.resources | length == 0
 
     - name: Get Backend Deployment manifest
       kubernetes.core.k8s_info:
@@ -70,18 +85,30 @@
         definition: "{{ frontend_deployment_info.resources[0] | combine({'spec': {'template': {'spec': {'containers': [{'name': 'frontend', 'image': acr_name + '.azurecr.io/freelance-frontend:' + frontend_image_tag }]}}}}, recursive=True) }}"
         
     - name: Wait for backend rollout to complete
-      kubernetes.core.k8s_rollout_status:
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
         kind: Deployment
         name: backend
         namespace: "{{ namespace }}"
+        wait: true
+        wait_condition:
+          type: Progressing
+          status: "True"
+          reason: NewReplicaSetAvailable
         wait_timeout: 300
         kubeconfig: "{{ kubeconfig_path }}"
 
     - name: Wait for frontend rollout to complete
-      kubernetes.core.k8s_rollout_status:
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
         kind: Deployment
         name: frontend
         namespace: "{{ namespace }}"
+        wait: true
+        wait_condition:
+          type: Progressing
+          status: "True"
+          reason: NewReplicaSetAvailable
         wait_timeout: 300
         kubeconfig: "{{ kubeconfig_path }}"
 
