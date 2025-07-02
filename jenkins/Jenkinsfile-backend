@@ -130,20 +130,15 @@ pipeline {
         
         stage('Deploy to Azure AKS') {
             steps {
-                echo 'Deploying to Azure Kubernetes Service...'
+                echo 'Deploying to Azure Kubernetes Service using Ansible...'
                 script {
-                    // Use kubectl with the kubeconfig file created in Azure Login stage
                     sh '''
+                        # Ensure Kubeconfig from previous step is used by Ansible
                         export KUBECONFIG=./kubeconfig
                         
-                        # Update backend deployment with new image
-                        kubectl set image deployment/backend backend=$DOCKER_IMAGE -n freelance
-                        
-                        # Wait for rollout to complete
-                        kubectl rollout status deployment/backend -n freelance --timeout=300s
-                        
-                        # Verify deployment
-                        kubectl get pods -n freelance -l app=backend
+                        # Execute the Ansible playbook to deploy the backend
+                        # We pass the new docker image as an extra variable
+                        ansible-playbook ansible/deploy-k8s-full.yml -i ansible/inventory.yml --extra-vars "backend_image_tag=${env.BUILD_NUMBER}"
                     '''
                 }
             }
