@@ -132,14 +132,14 @@ pipeline {
             steps {
                 echo 'Deploying to Azure Kubernetes Service using Ansible...'
                 script {
-                    sh '''
+                    sh """
                         # Ensure Kubeconfig from previous step is used by Ansible
                         export KUBECONFIG=./kubeconfig
                         
                         # Execute the Ansible playbook to deploy the backend
                         # We pass the new docker image as an extra variable
                         ansible-playbook ansible/deploy-k8s-full.yml -i ansible/inventory.yml --extra-vars "backend_image_tag=${env.BUILD_NUMBER}"
-                    '''
+                    """
                 }
             }
         }
@@ -147,7 +147,7 @@ pipeline {
         stage('Health Check') {
             steps {
                 echo 'Performing health check...'
-                sh '''
+                sh """
                     export KUBECONFIG=./kubeconfig
                     
                     # Wait a bit for the service to be ready
@@ -158,7 +158,7 @@ pipeline {
                     
                     # Check service endpoints
                     kubectl get svc -n freelance
-                '''
+                """
             }
         }
     }
