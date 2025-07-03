@@ -221,7 +221,7 @@ pipeline {
                 echo 'Performing post-deployment verification...'
                 script {
                     sh '''
-                        export KUBECONFIG=./kubeconfig
+                        export KUBECONFIG=$WORKSPACE/.kube/config
                         
                         # Run additional Ansible tasks for verification
                         ansible-playbook -i ansible/inventory.yml /dev/stdin --limit localhost <<EOF
@@ -233,7 +233,7 @@ pipeline {
   tasks:
     - name: Check frontend deployment status
       kubernetes.core.k8s_info:
-        kubeconfig: ./kubeconfig
+        kubeconfig: $WORKSPACE/.kube/config
         api_version: apps/v1
         kind: Deployment
         namespace: freelance
@@ -250,7 +250,7 @@ pipeline {
         
     - name: Get frontend pod logs (last 10 lines)
       kubernetes.core.k8s_log:
-        kubeconfig: ./kubeconfig
+        kubeconfig: $WORKSPACE/.kube/config
         namespace: freelance
         name: "deployment/frontend"
         tail_lines: 10
@@ -262,7 +262,7 @@ pipeline {
         
     - name: Check ingress status
       kubernetes.core.k8s_info:
-        kubeconfig: ./kubeconfig
+        kubeconfig: $WORKSPACE/.kube/config
         api_version: networking.k8s.io/v1
         kind: Ingress
         namespace: freelance
@@ -303,7 +303,7 @@ EOF
                 echo 'Running basic performance checks...'
                 script {
                     sh '''
-                        export KUBECONFIG=./kubeconfig
+                        export KUBECONFIG=$WORKSPACE/.kube/config
                         
                         # Check resource usage
                         kubectl top pods -n freelance || echo "Metrics server not available"
@@ -334,7 +334,7 @@ EOF
             // Clean up sensitive files
             sh '''
                 rm -f acr_token.txt || true
-                rm -f kubeconfig || true
+                rm -rf $WORKSPACE/.kube || true
             '''
         }
         success {
