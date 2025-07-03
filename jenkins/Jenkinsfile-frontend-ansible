@@ -138,7 +138,8 @@ pipeline {
                                 az acr login --name $ACR_NAME --expose-token --output tsv --query accessToken > acr_token.txt
                                 
                                 # Get AKS credentials and save to workspace
-                                az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file ./kubeconfig --overwrite-existing
+                                mkdir -p $WORKSPACE/.kube
+                                az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file $WORKSPACE/.kube/config --overwrite-existing
                                 
                                 # (Optional) Install kubectl if not present
                                 if ! command -v kubectl &> /dev/null; then
@@ -147,7 +148,7 @@ pipeline {
                                 fi
                                 
                                 # Verify kubeconfig
-                                export KUBECONFIG=./kubeconfig
+                                export KUBECONFIG=$WORKSPACE/.kube/config
                                 kubectl get nodes
                             '''
                         }
@@ -186,15 +187,24 @@ pipeline {
             steps {
                 echo 'Deploying to Azure Kubernetes Service using Ansible...'
                 script {
+                    // Verify kubeconfig exists before proceeding
+                    sh '''
+                        if [ ! -f "$WORKSPACE/.kube/config" ]; then
+                            echo "❌ kubeconfig file not found at $WORKSPACE/.kube/config"
+                            exit 1
+                        else
+                            echo "✅ kubeconfig file found at $WORKSPACE/.kube/config"
+                        fi
+                    '''
                     // Use Ansible playbook to deploy to AKS
                     sh '''
-                        export KUBECONFIG=./kubeconfig
+                        export KUBECONFIG=$WORKSPACE/.kube/config
                         
                         # Run Ansible playbook for Azure deployment
                         ansible-playbook -i ansible/inventory.yml ansible/deploy-azure-k8s.yml \
                             -e "backend_docker_image=${ACR_NAME}.azurecr.io/freelance-backend:latest" \
                             -e "frontend_docker_image=$DOCKER_IMAGE" \
-                            -e "kubeconfig_path=./kubeconfig" \
+                            -e "kubeconfig_path=$WORKSPACE/.kube/config" \
                             -e "app_namespace=freelance" \
                             -e "azure_acr_name=$ACR_NAME" \
                             -e "azure_resource_group=$RESOURCE_GROUP" \
