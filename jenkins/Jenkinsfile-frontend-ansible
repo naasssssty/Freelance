@@ -12,8 +12,8 @@ pipeline {
         
         // Ansible Configuration
         ANSIBLE_HOST_KEY_CHECKING = 'False'
-        ANSIBLE_STDOUT_CALLBACK = 'yaml'
-        ANSIBLE_FORCE_COLOR = 'true'
+        ANSIBLE_STDOUT_CALLBACK = 'default'
+        ANSIBLE_FORCE_COLOR = 'false'
     }
     stages {
         stage('Install Dependencies') {
@@ -263,7 +263,7 @@ pipeline {
       
     - name: Display frontend logs
       debug:
-        msg: "{{ item.log_lines }}"
+        msg: "{{ item.log_lines | replace('<', '&lt;') | replace('>', '&gt;') | regex_replace('\\x1b\\[[0-9;]*m', '') }}"
       loop: "{{ frontend_logs.results }}"
       when: 
         - frontend_logs.results is defined
@@ -297,7 +297,7 @@ pipeline {
       
     - name: Display frontend test results
       debug:
-        msg: "Frontend accessibility test: {{ 'PASSED' if frontend_test.status is defined and frontend_test.status in [200, 301, 302] else 'PENDING - ' + (frontend_test.msg | default('Unknown error')) }}"
+        msg: "Frontend accessibility test: {{ 'PASSED' if frontend_test.status is defined and frontend_test.status in [200, 301, 302] else 'PENDING - ' + (frontend_test.msg | default('Unknown error') | replace('<', '&lt;') | replace('>', '&gt;')) }}"
 EOF
                     '''
                 }
