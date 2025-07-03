@@ -263,7 +263,7 @@ pipeline {
       
     - name: Display frontend logs
       debug:
-        msg: "{{ item.log_lines | replace('<', '&lt;') | replace('>', '&gt;') | regex_replace('\\x1b\\[[0-9;]*m', '') }}"
+        msg: "{{ item.log_lines | replace('<', '&lt;') | replace('>', '&gt;') }}"
       loop: "{{ frontend_logs.results }}"
       when: 
         - frontend_logs.results is defined
