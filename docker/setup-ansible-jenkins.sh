@@ -32,7 +32,7 @@ pip3 install ansible
 # Install required Python packages for Kubernetes
 echo "🐍 Installing Python packages for Kubernetes..."
 pip3 install \
-    kubernetes \
+    kubernetes==24.2.0 \
     openshift \
     pyyaml \
     jsonpatch \

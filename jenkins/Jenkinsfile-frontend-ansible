@@ -240,18 +240,36 @@ pipeline {
         fail_msg: "Frontend deployment is not available"
         success_msg: "Frontend deployment is running successfully"
         
+    - name: Get frontend pods
+      kubernetes.core.k8s_info:
+        kubeconfig: $WORKSPACE/.kube/config
+        api_version: v1
+        kind: Pod
+        namespace: freelance
+        label_selectors:
+          - app=frontend
+      register: frontend_pods
+      
     - name: Get frontend pod logs (last 10 lines)
       kubernetes.core.k8s_log:
         kubeconfig: $WORKSPACE/.kube/config
         namespace: freelance
-        name: "deployment/frontend"
+        name: "{{ item.metadata.name }}"
         tail_lines: 10
       register: frontend_logs
+      loop: "{{ frontend_pods.resources }}"
+      when: frontend_pods.resources | length > 0
+      ignore_errors: true
       
     - name: Display frontend logs
       debug:
-        msg: "{{ frontend_logs.log_lines }}"
-        
+        msg: "{{ item.log_lines }}"
+      loop: "{{ frontend_logs.results }}"
+      when: 
+        - frontend_logs.results is defined
+        - item.log_lines is defined
+        - item.skipped is not defined or not item.skipped
+      
     - name: Check ingress status
       kubernetes.core.k8s_info:
         kubeconfig: $WORKSPACE/.kube/config
