@@ -105,8 +105,7 @@ pipeline {
                         if ! command -v ansible &> /dev/null; then
                             echo "Installing Ansible..."
                             apt-get update
-                            apt-get install -y python3-pip
-                            pip3 install ansible
+                            apt-get install -y ansible
                         fi
                         
                         # Install required Ansible collections
