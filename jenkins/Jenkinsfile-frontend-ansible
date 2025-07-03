@@ -141,15 +141,7 @@ pipeline {
                                 mkdir -p $WORKSPACE/.kube
                                 az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file $WORKSPACE/.kube/config --overwrite-existing
                                 
-                                # (Optional) Install kubectl if not present
-                                if ! command -v kubectl &> /dev/null; then
-                                  echo "Installing kubectl..."
-                                  az aks install-cli
-                                fi
                                 
-                                # Verify kubeconfig
-                                export KUBECONFIG=$WORKSPACE/.kube/config
-                                kubectl get nodes
                             '''
                         }
                     }
