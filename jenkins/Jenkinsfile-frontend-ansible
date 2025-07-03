@@ -140,9 +140,6 @@ pipeline {
                                 # Get AKS credentials and save to workspace
                                 az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file ./kubeconfig --overwrite-existing
                                 
-                                # Verify kubeconfig
-                                export KUBECONFIG=./kubeconfig
-                                kubectl get nodes
                             '''
                         }
                     }
