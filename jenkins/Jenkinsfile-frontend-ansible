@@ -287,20 +287,17 @@ pipeline {
       
     - name: Test frontend accessibility
       uri:
-        url: "http://{{ item.status.loadBalancer.ingress[0].ip | default('localhost') }}"
+        url: "https://ergohub.duckdns.org"
         method: GET
-        timeout: 30
+        timeout: 60
         status_code: [200, 301, 302]
+        follow_redirects: all
       register: frontend_test
       ignore_errors: true
-      loop: "{{ ingresses.resources }}"
-      when: 
-        - ingresses.resources | length > 0
-        - item.status.loadBalancer.ingress is defined
-        
+      
     - name: Display frontend test results
       debug:
-        msg: "Frontend accessibility test: {{ 'PASSED' if frontend_test.results | selectattr('status', 'defined') | selectattr('status', 'in', [200, 301, 302]) | list | length > 0 else 'PENDING' }}"
+        msg: "Frontend accessibility test: {{ 'PASSED' if frontend_test.status is defined and frontend_test.status in [200, 301, 302] else 'PENDING - ' + (frontend_test.msg | default('Unknown error')) }}"
       when: frontend_test.results is defined
 EOF
                     '''
