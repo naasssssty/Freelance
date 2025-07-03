@@ -58,14 +58,12 @@ pipeline {
             }
             post {
                 always {
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'frontend/coverage/lcov-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Frontend Coverage Report'
-                    ])
+                    // Archive coverage reports instead of publishHTML
+                    archiveArtifacts(
+                        artifacts: 'frontend/coverage/**/*',
+                        allowEmptyArchive: true
+                    )
+                    echo "📊 Coverage reports archived - check build artifacts"
                 }
             }
         }
