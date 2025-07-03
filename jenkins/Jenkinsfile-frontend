@@ -287,12 +287,41 @@ pipeline {
         }
         cleanup {
             // Clean up local Docker images to save space
-            sh '''
-                docker rmi $DOCKER_IMAGE || true
-                docker rmi ${ACR_NAME}.azurecr.io/freelance-frontend:latest || true
-                rm -f acr_token.txt || true
-                rm -f kubeconfig || true
-            '''
+            script {
+                try {
+                    sh '''
+                        set +e  # Don't exit on error
+                        
+                        echo "🧹 Starting cleanup process..."
+                        
+                        # Clean up Docker images with better error handling
+                        if docker images | grep -q "$DOCKER_IMAGE"; then
+                            echo "Removing Docker image: $DOCKER_IMAGE"
+                            docker rmi "$DOCKER_IMAGE" || echo "Failed to remove $DOCKER_IMAGE"
+                        else
+                            echo "Docker image $DOCKER_IMAGE not found locally, skipping removal"
+                        fi
+                        
+                        if docker images | grep -q "${ACR_NAME}.azurecr.io/freelance-frontend:latest"; then
+                            echo "Removing Docker image: ${ACR_NAME}.azurecr.io/freelance-frontend:latest"
+                            docker rmi "${ACR_NAME}.azurecr.io/freelance-frontend:latest" || echo "Failed to remove latest image"
+                        else
+                            echo "Latest frontend image not found locally, skipping removal"
+                        fi
+                        
+                        # Clean up sensitive files
+                        echo "Removing sensitive files..."
+                        rm -f acr_token.txt
+                        rm -f kubeconfig
+                        
+                        echo "✅ Cleanup completed successfully"
+                        
+                        set -e  # Re-enable exit on error
+                    '''
+                } catch (Exception e) {
+                    echo "⚠️ Cleanup encountered issues but continuing: ${e.getMessage()}"
+                }
+            }
         }
     }
 }
