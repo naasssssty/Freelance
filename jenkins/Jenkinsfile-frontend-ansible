@@ -140,6 +140,15 @@ pipeline {
                                 # Get AKS credentials and save to workspace
                                 az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file ./kubeconfig --overwrite-existing
                                 
+                                # (Optional) Install kubectl if not present
+                                if ! command -v kubectl &> /dev/null; then
+                                  echo "Installing kubectl..."
+                                  az aks install-cli
+                                fi
+                                
+                                # Verify kubeconfig
+                                export KUBECONFIG=./kubeconfig
+                                kubectl get nodes
                             '''
                         }
                     }
