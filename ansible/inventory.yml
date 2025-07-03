@@ -13,6 +13,13 @@ all:
           ansible_python_interpreter: "{{ ansible_playbook_python }}"
           kubeconfig_path: ~/.kube/config
           
+    azure_k8s:
+      hosts:
+        azure-aks:
+          ansible_connection: local
+          ansible_python_interpreter: "{{ ansible_playbook_python }}"
+          kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('./kubeconfig', true) }}"
+          
     docker_hosts:
       hosts:
         docker-host:
@@ -23,11 +30,24 @@ all:
     # Application Configuration
     app_name: freelance
     app_namespace: freelance
+    
+    # Azure Configuration
+    azure_acr_name: ergohubregistry
+    azure_resource_group: ergohub-production
+    azure_aks_cluster: ergohub-k8s
+    azure_region: "Italy North"
+    
+    # Docker Registry Configuration
     docker_registry: papadooo
+    azure_docker_registry: "{{ azure_acr_name }}.azurecr.io"
     
     # Docker Images (will be updated by Jenkins)
     backend_image: "{{ docker_registry }}/freelance-backend:latest"
     frontend_image: "{{ docker_registry }}/freelance-frontend:latest"
+    
+    # Azure Docker Images (for Azure deployments)
+    azure_backend_image: "{{ azure_docker_registry }}/freelance-backend:latest"
+    azure_frontend_image: "{{ azure_docker_registry }}/freelance-frontend:latest"
     
     # Database Configuration
     postgres_db: freelancer_db

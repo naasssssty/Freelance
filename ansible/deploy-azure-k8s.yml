@@ -1,0 +1,337 @@
+---
+- name: Deploy Freelance Platform to Azure Kubernetes Service
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  
+  vars:
+    namespace: "{{ app_namespace | default('freelance') }}"
+    kubeconfig_path: "{{ lookup('env', 'KUBECONFIG') | default('~/.kube/config', true) }}"
+    # Azure specific variables
+    acr_name: "{{ azure_acr_name | default('ergohubregistry') }}"
+    resource_group: "{{ azure_resource_group | default('ergohub-production') }}"
+    aks_cluster: "{{ azure_aks_cluster | default('ergohub-k8s') }}"
+    # Image variables (can be overridden from Jenkins)
+    backend_image: "{{ backend_docker_image | default('ergohubregistry.azurecr.io/freelance-backend:latest') }}"
+    frontend_image: "{{ frontend_docker_image | default('ergohubregistry.azurecr.io/freelance-frontend:latest') }}"
+  
+  tasks:
+    - name: Display deployment information
+      debug:
+        msg: |
+          🚀 Starting Azure Kubernetes Service deployment
+          📦 Namespace: {{ namespace }}
+          🏗️ AKS Cluster: {{ aks_cluster }}
+          🐳 Backend Image: {{ backend_image }}
+          🐳 Frontend Image: {{ frontend_image }}
+          📁 Kubeconfig: {{ kubeconfig_path }}
+
+    - name: Verify kubeconfig exists
+      stat:
+        path: "{{ kubeconfig_path }}"
+      register: kubeconfig_stat
+      failed_when: not kubeconfig_stat.stat.exists
+      
+    - name: Test Kubernetes connection
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Node
+      register: node_info
+      
+    - name: Display cluster information
+      debug:
+        msg: "✅ Connected to AKS cluster with {{ node_info.resources | length }} nodes"
+
+    - name: Create namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        name: "{{ namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+        
+    - name: Apply ConfigMap and Secrets
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/configmap.yml
+        state: present
+      when: lookup('file', '../kubernetes/configmap.yml', errors='ignore') is not none
+        
+    - name: Deploy PostgreSQL
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/postgres-deployment.yml
+        state: present
+        
+    - name: Deploy MailHog
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/mailhog-deployment.yml
+        state: present
+        
+    - name: Deploy MinIO
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/minio-deployment.yml
+        state: present
+        
+    - name: Wait for infrastructure services to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Pod
+        namespace: "{{ namespace }}"
+        label_selectors:
+          - app in (postgres,mailhog,minio)
+        wait: true
+        wait_condition:
+          type: Ready
+          status: "True"
+        wait_timeout: 300
+        
+    - name: Apply Nginx ConfigMap
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/nginx-configmap.yml
+        state: present
+      when: lookup('file', '../kubernetes/nginx-configmap.yml', errors='ignore') is not none
+        
+    - name: Update backend deployment with new image
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: backend
+            namespace: "{{ namespace }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: backend
+            template:
+              metadata:
+                labels:
+                  app: backend
+              spec:
+                containers:
+                - name: backend
+                  image: "{{ backend_image }}"
+                  imagePullPolicy: Always
+                  ports:
+                  - containerPort: 8080
+                  envFrom:
+                  - configMapRef:
+                      name: freelance-config
+                  - secretRef:
+                      name: freelance-secrets
+                  resources:
+                    requests:
+                      memory: "512Mi"
+                      cpu: "500m"
+                    limits:
+                      memory: "1Gi"
+                      cpu: "1000m"
+                  startupProbe:
+                    httpGet:
+                      path: /api/home
+                      port: 8080
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                    failureThreshold: 30
+                  livenessProbe:
+                    httpGet:
+                      path: /actuator/health
+                      port: 8080
+                    initialDelaySeconds: 60
+                    periodSeconds: 30
+                  readinessProbe:
+                    httpGet:
+                      path: /actuator/health
+                      port: 8080
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+        
+    - name: Update frontend deployment with new image
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: frontend
+            namespace: "{{ namespace }}"
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: frontend
+            template:
+              metadata:
+                labels:
+                  app: frontend
+              spec:
+                containers:
+                - name: frontend
+                  image: "{{ frontend_image }}"
+                  imagePullPolicy: Always
+                  ports:
+                  - containerPort: 80
+                  resources:
+                    requests:
+                      memory: "128Mi"
+                      cpu: "100m"
+                    limits:
+                      memory: "256Mi"
+                      cpu: "200m"
+                  livenessProbe:
+                    httpGet:
+                      path: /
+                      port: 80
+                    initialDelaySeconds: 30
+                    periodSeconds: 30
+                  readinessProbe:
+                    httpGet:
+                      path: /
+                      port: 80
+                    initialDelaySeconds: 10
+                    periodSeconds: 10
+                volumes:
+                - name: nginx-config
+                  configMap:
+                    name: nginx-config
+        
+    - name: Ensure backend service exists
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/backend-deployment.yml
+        state: present
+        
+    - name: Ensure frontend service exists
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/frontend-deployment.yml
+        state: present
+        
+    - name: Wait for application deployments to be ready
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: apps/v1
+        kind: Deployment
+        namespace: "{{ namespace }}"
+        name: "{{ item }}"
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 300
+      loop:
+        - backend
+        - frontend
+        
+    - name: Deploy Ingress
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        src: ../kubernetes/ingress.yml
+        state: present
+      when: lookup('file', '../kubernetes/ingress.yml', errors='ignore') is not none
+        
+    - name: Get deployment status
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Pod
+        namespace: "{{ namespace }}"
+      register: pods
+      
+    - name: Get service information
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: v1
+        kind: Service
+        namespace: "{{ namespace }}"
+      register: services
+      
+    - name: Get ingress information
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig_path }}"
+        api_version: networking.k8s.io/v1
+        kind: Ingress
+        namespace: "{{ namespace }}"
+      register: ingresses
+      ignore_errors: true
+      
+    - name: Show deployment summary
+      debug:
+        msg: |
+          ✅ Azure Kubernetes Service deployment completed successfully!
+          
+          🏗️ Cluster: {{ aks_cluster }} ({{ resource_group }})
+          📦 Namespace: {{ namespace }}
+          
+          🐳 Images deployed:
+          - Backend: {{ backend_image }}
+          - Frontend: {{ frontend_image }}
+          
+          📊 Pod Status:
+          {% for pod in pods.resources %}
+          - {{ pod.metadata.name }}: {{ pod.status.phase }}
+          {% endfor %}
+          
+          🌐 Services:
+          {% for service in services.resources %}
+          - {{ service.metadata.name }}: {{ service.spec.type }}
+          {% endfor %}
+          
+          {% if ingresses.resources %}
+          🔗 Ingress URLs:
+          {% for ingress in ingresses.resources %}
+          {% for rule in ingress.spec.rules %}
+          - https://{{ rule.host }}
+          {% endfor %}
+          {% endfor %}
+          {% endif %}
+          
+          🎉 Deployment completed at {{ ansible_date_time.iso8601 | default('now') }}
+
+    - name: Health check - Backend
+      uri:
+        url: "http://{{ item.status.podIP }}:8080/actuator/health"
+        method: GET
+        timeout: 10
+      register: backend_health
+      ignore_errors: true
+      loop: "{{ pods.resources }}"
+      when: 
+        - item.metadata.labels.app == "backend"
+        - item.status.phase == "Running"
+        - item.status.podIP is defined
+      
+    - name: Health check - Frontend
+      uri:
+        url: "http://{{ item.status.podIP }}:80"
+        method: GET
+        timeout: 10
+      register: frontend_health
+      ignore_errors: true
+      loop: "{{ pods.resources }}"
+      when: 
+        - item.metadata.labels.app == "frontend"
+        - item.status.phase == "Running"
+        - item.status.podIP is defined
+      
+    - name: Final deployment verification
+      debug:
+        msg: |
+          🔍 Deployment Verification:
+          ✅ Backend health: {{ 'OK' if backend_health.results | selectattr('status', 'defined') | selectattr('status', 'equalto', 200) | list | length > 0 else 'Checking...' }}
+          ✅ Frontend health: {{ 'OK' if frontend_health.results | selectattr('status', 'defined') | selectattr('status', 'equalto', 200) | list | length > 0 else 'Checking...' }}
+          
+          📋 Next steps:
+          - Monitor pods: kubectl get pods -n {{ namespace }}
+          - Check logs: kubectl logs -f deployment/backend -n {{ namespace }}
+          - Access application: {{ 'https://ergohub.duckdns.org' if ingresses.resources else 'kubectl port-forward svc/frontend 8080:80 -n ' + namespace }} 

@@ -1,0 +1,328 @@
+pipeline {
+    agent any
+    tools {
+        maven 'Maven 3'
+        jdk 'JDK 21 Linux'
+    }
+    environment {
+        // Azure Configuration
+        ACR_NAME = 'ergohubregistry'
+        RESOURCE_GROUP = 'ergohub-production'
+        AKS_CLUSTER = 'ergohub-k8s'
+        DOCKER_IMAGE = "${ACR_NAME}.azurecr.io/freelance-backend:${env.BUILD_NUMBER}"
+        SPRING_PROFILES_ACTIVE = 'test'
+        
+        // Ansible Configuration
+        ANSIBLE_HOST_KEY_CHECKING = 'False'
+        ANSIBLE_STDOUT_CALLBACK = 'yaml'
+        ANSIBLE_FORCE_COLOR = 'true'
+    }
+    stages {
+        stage('Compile') {
+            steps {
+                echo 'Compiling the backend application...'
+                sh 'mvn clean compile -DskipTests'
+            }
+        }
+        
+        stage('Unit Tests') {
+            environment {
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:testdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+            }
+            steps {
+                echo 'Running unit tests...'
+                sh 'mvn test -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    junit(
+                        allowEmptyResults: true,
+                        testResults: '**/target/surefire-reports/*.xml'
+                    )
+                }
+            }
+        }
+        
+        stage('Integration Tests') {
+            environment {
+                SPRING_PROFILES_ACTIVE = 'test'
+                SPRING_DATASOURCE_URL = 'jdbc:h2:mem:integrationtestdb'
+                SPRING_DATASOURCE_USERNAME = 'sa'
+                SPRING_DATASOURCE_PASSWORD = ''
+                SPRING_DATASOURCE_DRIVER_CLASS_NAME = 'org.h2.Driver'
+                SPRING_JPA_DATABASE_PLATFORM = 'org.hibernate.dialect.H2Dialect'
+                SPRING_JPA_HIBERNATE_DDL_AUTO = 'create-drop'
+            }
+            steps {
+                echo 'Running integration tests...'
+                sh 'mvn test-compile'
+                sh 'mvn surefire:test -Dtest=TestFreelancerProjectApplicationTests -Dspring.profiles.active=test'
+            }
+            post {
+                always {
+                    archiveArtifacts(
+                        artifacts: '**/target/surefire-reports/TEST-*TestFreelancerProjectApplicationTests.xml',
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        
+        stage('Package') {
+            steps {
+                echo 'Packaging the application...'
+                sh 'mvn package -DskipTests'
+            }
+        }
+        
+        stage('Setup Ansible Environment') {
+            steps {
+                echo 'Setting up Ansible environment for Jenkins container...'
+                script {
+                    // Install Ansible and required collections in the Jenkins container
+                    sh '''
+                        # Check if Ansible is installed, if not install it
+                        if ! command -v ansible &> /dev/null; then
+                            echo "Installing Ansible..."
+                            apt-get update
+                            apt-get install -y python3-pip
+                            pip3 install ansible
+                        fi
+                        
+                        # Install required Ansible collections
+                        ansible-galaxy collection install kubernetes.core --force
+                        ansible-galaxy collection install ansible.posix --force
+                        
+                        # Verify installation
+                        ansible --version
+                        ansible-galaxy collection list
+                    '''
+                }
+            }
+        }
+        
+        stage('Azure Login & Setup') {
+            steps {
+                echo 'Setting up Azure CLI and ACR access...'
+                script {
+                    docker.image('mcr.microsoft.com/azure-cli:latest').inside('--entrypoint=""') {
+                        withCredentials([
+                            string(credentialsId: 'azure-client-id', variable: 'AZURE_CLIENT_ID'),
+                            string(credentialsId: 'azure-client-secret', variable: 'AZURE_CLIENT_SECRET'),
+                            string(credentialsId: 'azure-tenant-id', variable: 'AZURE_TENANT_ID')
+                        ]) {
+                            sh '''
+                                # Login to Azure
+                                az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+                                
+                                # Get ACR access token and save to file
+                                az acr login --name $ACR_NAME --expose-token --output tsv --query accessToken > acr_token.txt
+                                
+                                # Get AKS credentials and save to workspace
+                                az aks get-credentials --resource-group $RESOURCE_GROUP --name $AKS_CLUSTER --file ./kubeconfig --overwrite-existing
+                                
+                                # Verify kubeconfig
+                                export KUBECONFIG=./kubeconfig
+                                kubectl get nodes
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Build & Push Docker Image') {
+            steps {
+                echo 'Building and pushing Docker image to Azure Container Registry...'
+                script {
+                    // Build Docker image on the Jenkins agent
+                    sh 'docker build -t $DOCKER_IMAGE -f docker/Dockerfile.backend .'
+                    
+                    // Login to ACR using token and push images
+                    sh '''
+                        # Login to ACR using the token
+                        cat acr_token.txt | docker login $ACR_NAME.azurecr.io --username 00000000-0000-0000-0000-000000000000 --password-stdin
+                        
+                        # Push to Azure Container Registry
+                        docker push $DOCKER_IMAGE
+                        
+                        # Also tag and push as latest
+                        docker tag $DOCKER_IMAGE ${ACR_NAME}.azurecr.io/freelance-backend:latest
+                        docker push ${ACR_NAME}.azurecr.io/freelance-backend:latest
+                        
+                        # Logout for security
+                        docker logout $ACR_NAME.azurecr.io
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy to Azure AKS with Ansible') {
+            steps {
+                echo 'Deploying to Azure Kubernetes Service using Ansible...'
+                script {
+                    // Use Ansible playbook to deploy to AKS
+                    sh '''
+                        export KUBECONFIG=./kubeconfig
+                        
+                        # Run Ansible playbook for Azure deployment
+                        ansible-playbook -i ansible/inventory.yml ansible/deploy-azure-k8s.yml \
+                            -e "backend_docker_image=$DOCKER_IMAGE" \
+                            -e "frontend_docker_image=${ACR_NAME}.azurecr.io/freelance-frontend:latest" \
+                            -e "kubeconfig_path=./kubeconfig" \
+                            -e "app_namespace=freelance" \
+                            -e "azure_acr_name=$ACR_NAME" \
+                            -e "azure_resource_group=$RESOURCE_GROUP" \
+                            -e "azure_aks_cluster=$AKS_CLUSTER" \
+                            --limit localhost \
+                            -v
+                    '''
+                }
+            }
+        }
+        
+        stage('Post-Deployment Verification') {
+            steps {
+                echo 'Performing post-deployment verification...'
+                script {
+                    sh '''
+                        export KUBECONFIG=./kubeconfig
+                        
+                        # Run additional Ansible tasks for verification
+                        ansible-playbook -i ansible/inventory.yml /dev/stdin --limit localhost <<EOF
+---
+- name: Post-deployment verification
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Check deployment status
+      kubernetes.core.k8s_info:
+        kubeconfig: ./kubeconfig
+        api_version: apps/v1
+        kind: Deployment
+        namespace: freelance
+        name: backend
+      register: backend_deployment
+      
+    - name: Verify backend deployment is available
+      assert:
+        that:
+          - backend_deployment.resources | length > 0
+          - backend_deployment.resources[0].status.availableReplicas | default(0) > 0
+        fail_msg: "Backend deployment is not available"
+        success_msg: "Backend deployment is running successfully"
+        
+    - name: Get backend pod logs (last 20 lines)
+      kubernetes.core.k8s_log:
+        kubeconfig: ./kubeconfig
+        namespace: freelance
+        name: "deployment/backend"
+        tail_lines: 20
+      register: backend_logs
+      
+    - name: Display backend logs
+      debug:
+        msg: "{{ backend_logs.log_lines }}"
+        
+    - name: Check service endpoints
+      kubernetes.core.k8s_info:
+        kubeconfig: ./kubeconfig
+        api_version: v1
+        kind: Service
+        namespace: freelance
+      register: services
+      
+    - name: Display service information
+      debug:
+        msg: "Service {{ item.metadata.name }} is available on port {{ item.spec.ports[0].port }}"
+      loop: "{{ services.resources }}"
+EOF
+                    '''
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Backend Azure Ansible pipeline completed.'
+            archiveArtifacts(
+                artifacts: '**/target/surefire-reports/*.xml',
+                allowEmptyArchive: true
+            )
+            // Clean up sensitive files
+            sh '''
+                rm -f acr_token.txt || true
+                rm -f kubeconfig || true
+            '''
+        }
+        success {
+            echo '✅ Backend deployed successfully to Azure AKS using Ansible!'
+            echo "Docker image: ${env.DOCKER_IMAGE}"
+            echo "Deployed to: ${env.AKS_CLUSTER} in ${env.RESOURCE_GROUP}"
+            
+            // Send notification (optional)
+            script {
+                sh '''
+                    # Optional: Send Slack/Teams notification
+                    echo "🎉 Backend deployment successful!"
+                    echo "Image: $DOCKER_IMAGE"
+                    echo "Cluster: $AKS_CLUSTER"
+                    echo "Namespace: freelance"
+                '''
+            }
+        }
+        failure {
+            echo '❌ Backend Azure Ansible deployment failed. Check the logs for details.'
+            
+            // Collect debug information
+            script {
+                sh '''
+                    echo "=== DEBUG INFORMATION ==="
+                    echo "Kubeconfig file:"
+                    ls -la kubeconfig || echo "kubeconfig not found"
+                    
+                    echo "Environment variables:"
+                    env | grep -E "(DOCKER_IMAGE|ACR_NAME|AKS_CLUSTER|KUBECONFIG)" || true
+                    
+                    echo "Ansible version:"
+                    ansible --version || echo "Ansible not found"
+                    
+                    echo "Docker images:"
+                    docker images | grep freelance || echo "No freelance images found"
+                    
+                    if [ -f "./kubeconfig" ]; then
+                        export KUBECONFIG=./kubeconfig
+                        echo "Kubernetes cluster info:"
+                        kubectl cluster-info || echo "Cannot connect to cluster"
+                        
+                        echo "Pods in freelance namespace:"
+                        kubectl get pods -n freelance || echo "Cannot get pods"
+                        
+                        echo "Events in freelance namespace:"
+                        kubectl get events -n freelance --sort-by='.lastTimestamp' || echo "Cannot get events"
+                    fi
+                '''
+            }
+        }
+        cleanup {
+            // Clean up local Docker images to save space
+            sh '''
+                docker rmi $DOCKER_IMAGE || true
+                docker rmi ${ACR_NAME}.azurecr.io/freelance-backend:latest || true
+                rm -f acr_token.txt || true
+                rm -f kubeconfig || true
+                
+                # Clean up any temporary Ansible files
+                rm -f *.retry || true
+                rm -rf .ansible || true
+            '''
+        }
+    }
+} 
